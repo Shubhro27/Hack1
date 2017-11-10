@@ -1,0 +1,247 @@
+User-Defined functions in Python:
+
+Syntax being:
+	def functionName(parameter1, parameter2, ...):   #This is function header. def is for define
+		logic/algorithm statements
+		...
+		return someData                              #return statement is not mandatory.
+		
+example:
+	>>>def add(a, b):
+			return (a+b)
+	>>>print add(5,9)
+	14
+
+NOTE, we can also pass function as a parameter. example,
+	>>> print add(5, add(7, 6))
+	18
+
+Return type of a function:
+a function may not return anything, it is then called void function. example,
+def printme( str ):
+   "This prints a passed string into this function"
+   print str
+   return
+ 
+NOTE: A return statement with no arguments is the same as return None.
+ 
+ calling a function:
+ example,
+	# Function definition is here
+	def printme( str ):
+	   "This prints a passed string into this function"
+	   print str
+	   return;
+
+	# Now you can call printme function
+	printme("I'm first call to user defined function!")
+	printme("Again second call to the same function")
+	
+ o/p:
+ I'm first call to user defined function!
+ Again second call to the same function
+ 
+ Pass by reference vs value:
+ All parameters (arguments) in the Python language are passed by reference.
+ example,
+		# Function definition is here
+		def changeme( mylist ):
+		   "This changes a passed list into this function"
+		   mylist.append([1,2,3,4]);
+		   print "Values inside the function: ", mylist
+		   return
+
+		# Now you can call changeme function
+		mylist = [10,20,30];
+		changeme( mylist );
+		print "Values outside the function: ", mylist
+		
+ o/p:
+ Values inside the function:  [10, 20, 30, [1, 2, 3, 4]]
+ Values outside the function:  [10, 20, 30, [1, 2, 3, 4]]
+ 
+other example,
+	# Function definition is here
+	def changeme( mylist ):
+	   "This changes a passed list into this function"
+	   mylist = [1,2,3,4]; # This would assig new reference in mylist
+	   print "Values inside the function: ", mylist
+	   return
+
+	# Now you can call changeme function
+	mylist = [10,20,30];
+	changeme( mylist );
+	print "Values outside the function: ", mylist	
+	
+ o/p:
+ Values inside the function:  [1, 2, 3, 4]
+ Values outside the function:  [10, 20, 30]
+		
+function arguments:
+1) Required arguments: arguments passed to a function in correct positional order.
+	example,
+		# Function definition is here
+		def printme( str ):
+		   "This prints a passed string into this function"
+		   print str
+		   return;
+
+		# Now you can call printme function
+		printme()
+
+		o/p: this program will error.
+		
+2) Keyword arguments: Keyword arguments are related to the function calls. Syntax is (arg = <value). This allows to tweak the order of the parameters passed.
+	example,
+		# Function definition is here
+		def printinfo( name, age ):
+		   "This prints a passed info into this function"
+		   print "Name: ", name
+		   print "Age ", age
+		   return;
+
+		# Now you can call printinfo function
+		printinfo( age=31, name="Shubhro" )
+		
+		o/p: 
+		Name:  miki	
+		Age  50
+		
+3) Default arguments: assumes a default value if a value is not provided in the function call for that argument.
+	example,
+		# Function definition is here
+		def printinfo( name, age = 35 ):
+		   "This prints a passed info into this function"
+		   print "Name: ", name
+		   print "Age ", age
+		   return;
+
+		# Now you can call printinfo function
+		printinfo( age=50, name="miki" )
+		printinfo( name="miki" )
+		
+	o/p: 
+		Name:  miki
+		Age  50
+		Name:  miki
+		Age  35    //since age is not passed, it takes the default argument in the function definition parameter.
+		
+4) Variable-length arguments: arguments that are not named in the function definition.
+	An asterisk (*) is placed before the variable name specifies it as "Variable-length argument"
+	example,
+		# Function definition is here
+		def printinfo( arg1, *vartuple ):
+		   "This prints a variable passed arguments"
+		   print "Output is: "
+		   print arg1
+		   for var in vartuple:
+			  print var
+		   return;
+
+		# Now you can call printinfo function
+		printinfo( 10 )
+		printinfo( 70, 60, 50 )
+		
+	o/p:
+	Output is:
+	10
+	Output is:  #as the vartuple has been declared as variable length argument.
+	70
+	60
+	50
+	
+Anonymous Functions: these functions not declared as a standard function. Some features include.
+1) To declare an anonymous function, we use lambda keyword (instead of def keyword).
+2) Lambda forms can take any number of arguments but return a value in the form of expression.
+3) These cannot print values on their own
+4) cannot access variables other than those in their parameter list and global variables.
+
+Syntax: lambda [arg1 [,arg2,.....argn]]:expression
+example,
+	# Function definition is here
+	sum = lambda arg1, arg2: arg1 + arg2;
+
+	# Now you can call sum as a function
+	print "Value of total : ", sum( 10, 20 )
+	print "Value of total : ", sum( 20, 20 )
+	
+output: 
+Value of total :  30
+Value of total :  40
+
+	
+Global vs. Local variables:
+	total = 0; # This is global variable.
+	# Function definition is here
+	def sum( arg1, arg2 ):
+	   # Add both the parameters and return them."
+	   total = arg1 + arg2; # Here total is local variable.
+	   print "Inside the function local total : ", total
+	   return total;
+
+	# Now you can call sum function
+	sum( 10, 20 );
+	print "Outside the function global total : ", total 
+	
+--------------------------------------------------------------------
+Modules in Python (revisited):
+Modules is a source file (with .py extension) which holds methods/functions.
+
+Import statement: syntax: import module1[, module2[,... moduleN]
+When the interpreter encounters an import statement, it imports the module if the module is present in the search path.
+
+from...import * Statement: is used to import all functions within a module. example, (from modname import *)
+
+for an import statement, python interpreter searches the path in,
+a) current directory
+b) then in direcory PYTHONPATH (for unix: /usr/local/lib/python/).
+
+Scoping (Global vs Local): 
+
+Namespace:  is a naming system for making names unique to avoid ambiguity.
+			NOTE: Python namespace is a dictionary of variable names (keys) and their corresponding objects (values).
+			
+If a local and a global variable have the same name, the local variable shadows the global variable.
+
+a) Python assumes that any variable assigned a value in a function is local.
+b) To assign a value to a global variable within a function, you must first use the global statement.(example, global VarName)
+
+example,
+	Money = 2000
+	def AddMoney():
+	   # Uncomment the following line to fix the code:
+	   # global Money
+	   Money = Money + 1
+	   
+	print Money
+	AddMoney()
+	print Money
+	
+	o/p: this program will error.
+	Reason, Within the function AddMoney, we assign Money a value, therefore Python assumes Money as a local variable. However, we accessed the value of the 
+	local variable Money before setting it, so it errors.
+	
+	to correct the error "uncomment global Money"
+	
+Some Built in functions:
+1) dir( ) Function: returns a sorted list of names of all the modules, variables and functions that are defined in a module.
+	example,
+		#!/usr/bin/python
+		# Import built-in module math
+		import math
+
+		content = dir(math)
+		print content
+
+	o/p: 
+		['__doc__', '__file__', '__name__', 'acos', 'asin', 'atan', 
+		'atan2', 'ceil', 'cos', 'cosh', 'degrees', 'e', 'exp', 
+		'fabs', 'floor', 'fmod', 'frexp', 'hypot', 'ldexp', 'log',
+		'log10', 'modf', 'pi', 'pow', 'radians', 'sin', 'sinh', 
+		'sqrt', 'tan', 'tanh']
+		
+2) globals() and locals() Functions: 
+		If locals() is called from within a function, it will return all the names that can be accessed locally from that function.
+		If globals() is called from within a function, it will return all the names that can be accessed globally from that function.
+
+--------------------------------------------
