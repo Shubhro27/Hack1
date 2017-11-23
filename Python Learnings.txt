@@ -1,0 +1,1608 @@
+Number and Math functions:
+1) There are 6 basic mathematical operators
+	Addition: done via "+". example, 8+12, x+y, 4.5+5.3
+	Subtraction: done via "-". example, 12-8, x-y, 10.23-5.11
+	Multiplication: done via "*"
+	Division: done via "/". example, 15/2 = 7 but 15.0/2 = 7.5. Reason, answer is determined as the closest, smaller integer to the original answer
+	Modulo: done via "%" and gives reminder of a division. example, 12%2 = 0; 13%2 = 1
+	Power: done via "**". example, 5**2 = 25.
+	
+	Mathematical expressions follow the BODMAS rule.
+	
+2) math functions: there are libraries for almost every mathematical function.
+
+***** python will compile everything from right to left
+
+In python, there are two types of pre-defined functions,
+1) Inbuilt functions: These are a part of the python core and are just built within the Python compiler. So no "Importing" required.
+2) external files i.e. Modules/Library Files: "importing" is required.
+
+for math operations,
+1) Inbuild functions:
+	a) Power - pow(x,y). example, pow(3,2) = 9; pow(4.89,05) = 2.211334438749598.
+	b) Absolute - abs(x). i.e. modulus, returns not-negative value of the argument value. example, abs(-5) = 5; abs(-99.99) = 99.99.
+2) External files:
+	a) sin - math.sin(x). so we will have to import math. i.e.
+		>>>import math
+		>>>math.sin(0)
+		0.0
+-------------
+Variables in Python:
+a) The variable name can consist of alphabet(s), number(s) and underscore(s) only.
+b) The first character in variable's name cannot be a number.
+
+	Invalid: i-am-variable, variable!, 1variable, #variable.
+	
+>>> x = 10  - to store a value to a variable.
+>>> x       - to display the value stored in the variable.
+10
+
+--example 2
+>>> x = 10
+>>> y = 25
+>>> x=y
+>>> x
+25
+
+-- variable holding string value
+>>> name = "Studytonight"  
+>>> name
+Studytonight
+>>> name = 'Studytonight'
+>>>name
+'Studytonight'
+
+-- in following case, python will consider Studytonight as another variable and will try to find the value stored within it so that it can further assign it to the variable name. But since we never declared any variable with the name Studytonight, python won't be able to find any value for it and in the end, it will throw an error saying that the variable with name Studytonight is not defined.
+>>> name = Studytonight
+
+-----------------------------
+Modules and Functions:
+
+modules are python code, saved somewhere within the python package for code reusability. 
+
+Functions are code or logic that reside inside the module. This code/logic is called function definition.
+
+**function definition itself that decides the type and number of input(s) and output. Inputs are also called function parameters.
+
+**Parameter: Structure that defines the type of the input accepted, while defining the function.
+
+**Argument: The actual value that is inserted as an input while calling/using the function.
+
+Note: StudyTonight.py : .py implies a python module. Inside this module we can define a function, qSolver(a, b, c) to solve ax2 + bx + c = 0.
+
+https://docs.python.org/2/index.html contains name of the functions and module contains that function, how to use them, all available in python documentation.
+
+Calling a function in a module looks like,
+variable-name = <module-name>.<function-name>(<argument-1>, <argument-2>, ...)
+example, math.floor(8.4).
+
+-----------------------------
+Strings in Python:
+
+string variables: Variable which stores a string inside them. enclosed in single or double quotes ('...'/ "..."). 
+string module: This one is just a module with name string with functions. example, string.lower(S) will convert upper case letters to lower.
+
+example,
+>>> import string
+>>> string_variable = "Let's StudyTonight"
+>>> string.lower(string_variable)
+"let's studytonight"
+
+>>> string.lower("Let's StudyTonight") -- would also have worked the same.
+
+NOTE: the module name is case sensitive, so string if changed to String will not work i.e.
+>>> string.lower(string_variable)
+"let's studytonight"
+>>> String.lower(string_variable)
+NameError: name 'String' is not defined
+
+string "Hello, World" is basically a sequence ['H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd'] and its length can be calculated by counting number of characters inside the sequence, i.e. 12 in this case.
+
+NOTE: In Python, there is no character data type. Instead characters are just treated as a string of length 1.
+
+You can access each individual character of a string too.
+example,
+>>> mystring = "This is not my first String"
+>>> print mystring
+This is not my first String
+>>> print mystring[0]
+T
+
+NOTE: First variable will have index number as 0 (zero). So,
+>>> mystring = "This is not my first String"
+>>> print mystring[-1]
+g
+>>> print mystring[-5]
+t
+
+Escape Sequence,
+>>>print ""You must be the change you wish to see in the world" - Gandhi"
+SyntaxError: invalid syntax
+
+In order to address this issue, we can follow mentioned paths,
+a) 
+	>>> print "'You must be the change you wish to see in the world' - Gandhi"
+	‘You must be the change you wish to see in the world' - Gandhi
+	
+	NOTE: reverse is not true. i.e. '"You must be the change you wish to see in the world" - Gandhi' will error.
+
+b) Use escape sequence, i.e. a back-slash "\".
+	>>> print "\"You must be the change you wish to see in the world\" – Gandhi"
+
+	
+Operations on String,
+a) concatenation: "+" is the concatenation operator.
+	example,
+	>>> print "Hello" + "World"
+	HelloWorld
+	
+b) Repetation: example, repeat "Hi!" a 100 times,
+	>>> print "Hi!"*100
+	
+	other example,
+	>>> n = input("Number of times you want the text to repeat: ")
+	Number of times you want the text to repeat: 5
+	>>> print "Text"*n
+	TextTextTextTextText
+	
+c) Check existence of a character or a sub-string in a string: 
+	example,
+	>>> "won" in "India won the match"
+	True
+
+	example,
+	>>> s = raw_input("String:")
+	>>> String: My twitter is @xyz
+	>>> ss = raw_input ("Sub-String:")
+	>>> Sub-String: twitter
+	>>> print ss in s
+	True
+	>>> ss2 = raw_input ("Sub-String2:")
+	>>> facebook
+	>>> print ss2 in s
+	False
+	
+	
+d) check non-existance of a character or a sub-string in a string:
+	i.e. opposite of the "in" keyword.
+	example,
+	>>> "won" not in "India won the match"
+	False
+
+Slicing of a string,
+i.e.  extract a part/character of any string based on a start index and an end index.
+Syntax: string_name[starting_index : finishing_index : character_iterate]
+		example,
+>>> str = "Hello Brother!"
+>>> str[0:10:2]
+HloBo
+
+str[0:10:2] means, we want to extract a substring starting from the index 0 (beginning of the string), to the index value 10, and the last parameter means, that we want every second character, starting from the starting index. Hence in the output we will get, HloBo.
+	i.e.
+	Hello Brother!
+	0123456789012
+	so o/p is,
+	HloBo
+
+in this regard,
+>>> print s[0:5:1] // slicing will be done from 0th character to the 4th character (5-1) by iterating 1 character in each jump.
+>>> print s[0:5]  // will be same as print s[0:5:1]
+
+
+String Functions:
+1) len(string): find the character length of any string.
+	example,
+		>>> s = "Hello"
+		>>> len(s)
+		5
+		
+2) find(subString): find the position of any character or of a subString within any given string.
+	example,
+		>>> s = "Hello"
+		>>> ss = "He"
+		>>> print s.find(ss)
+		0   //as the function returns the index where the string has been found.
+		
+3) string_name.lower() and string_name.upper():
+	lower() function is used to convert all the uppercase characters present in a string into lowercase.
+	upper() is used to turn all the characters in a string to uppercase.
+	example,
+	>>> print "Hello, World".lower()
+	hello, world
+	>>> print "Hello, World".upper()
+	HELLO, WORLD
+	
+4) string_name.islower() and string_name.isupper():
+	islower() is used to check if string_name string is in lowercase or not. Returns True/False
+	isupper() is used to check if the given string is in uppercase or not. Returns True/False.
+	
+	>>> print "hello, world".islower()
+	>>> True
+	>>> print "Hello, World".islower()
+	>>> False	
+	>>> print "HELLO, WORLD".isupper()
+	>>> True
+	>>> print "Hello, World".isupper()
+	>>> False
+
+5) string_name.replace(old_string, new_string):
+	example,
+	>>> print "Hello, World".replace("World", "India")
+	>>> Hello, India
+	
+6) string_name.split(character, integer):
+	this is used to split the string. . All the sub-pieces of the string will be stored in a list.
+	example,
+	>>> mystring = "Hello World! Welcome to the Python tutorial"
+	>>> print mystring.split("!")
+	>>> ['Hello World', ' Welcome to the Python tutorial']
+	
+	We can store these values in different variables
+	>>> myNEWstring = mystring.split("!")
+	>>> print myNEWstring[0]
+	>>> print myNEWstring[1]
+	Hello World
+	Welcome to the Python tutorial
+	
+7) string_name.swapcase(): swaps the case of the string content.
+	example,
+		string1 = "UPX is a institute for learning big data technologies"
+		print(string1.swapcase())
+		
+	o/p: upx IS A INSTITUTE FOR LEARNING BIG DATA TECHNOLOGIES
+	
+8) strip(), rstrip(), lstrip(): used for stripping spaces from a string.
+	a) strip(): removes all spaces.
+	b) rstrip(): removes spaces to the right.
+	c) lstring(): removes spaces on the left.
+	
+	example,
+		str1 = "    This is a bright, sunny day      "
+		print (str1.lstrip())                   # Remove spaces to the right 
+		print (str1.rstrip())                   # Remove spaces to the left 
+		print (str1.strip())                    # Remove spaces on both side
+		
+	o/p: 
+	This is a bright, sunny day      '
+	'	This is a bright, sunny day'      
+	'This is a bright, sunny day'
+	
+Typecasting a string into Integer:
+Example-1,
+	a = '20'
+	anum = int(a)         # Typecaste/Convert String '20' to Integer - Possible
+	print (anum + anum)
+	
+	o/p: 40.
+
+Example-2,
+	a = "hi"
+	anum = int(a)         # Typecaste/Convert String 'hi' to Integer - Not Possible
+	print (anum)
+
+	o/p:
+	ValueError                                Traceback (most recent call last)
+	<ipython-input-18-0f48ce9eac14> in <module>()
+		  1 a = "hi"
+	----> 2 anum = int(a)         # Typecaste/Convert String 'hi' to Integer - Not Possible
+		  3 print (anum)
+
+	ValueError: invalid literal for int() with base 10: 'hi'
+	
+Typecasting any other data type can be done via: str()
+Example,
+	a = "hi"
+	print (a)
+	a + len(a) # Concatenating String & Integer - Error
+	a + str(len(a)) # Convert to String so that concatenation works
+	
+	
+------------------------------
+Input and Output in Python:
+a) Taking Input from user:
+	The inputs must be assigned to or stored in variables.
+	example,
+	>>> x = input()
+	>>> 3
+	>>> x = input("Enter the first number:")
+	Enter the first number:3
+	>>> y = input("Enter the second number:")
+	Enter the second number:5
+	
+	NOTE: input() method is not capable of handling anything other than numbers.
+	
+	so,
+	>>> y = input("Enter the second number:")
+	Enter the second number:ShubhroB
+	<error> 'ShubhroB' is not defined
+	
+	This can be accomplished via raw_input() is the function which helps us to do that. Every input, with raw_input() function, is stored in the form of a 
+	string during the input.
+	>>>name = raw_input("your name?:")
+	your name?: ShubhroB
+	
+	NOTE: if you use raw_input() and input any number, python won't be able to do any mathematical operation on it.
+
+b) Taking Output from user:
+	IDLE usually displays an output when we hit the variable name
+	example,
+	>>> x = 3
+	>>> x
+	3
+	
+	"but this only works when you are working on IDLE."
+	
+	In real world python programs, we can also use the "print" statement.
+	example
+	>>> print "Hello, World"
+	>>> "Hello, World"
+	>>> print 9
+	9
+	>>> a = "Hello"
+	>>> b = "World"
+	>>> print a + b
+	HelloWorld
+	
+	NOTE: 
+	if "+" operator encounters 2 strings, it will concatenate the strings and not attempt "addition".
+	>>> print 5 + " is a number"
+	will error as we tried to join an integer with a string
+	so => While printing we can't mix up two literals of different types
+	>>> print "5" + " is a number"
+	>>> 5 is a number
+	>>> print str(5) + " is a number"
+	>>> 5 is a number.
+	
+	Another example,
+	>>> x = input("Enter the first number:")
+	>>> Enter the first number:2
+	>>> y = input("Enter the second number")
+	>>> Enter the second number:3
+	>>> print x+y
+	5
+	>>> print str(x+y)
+	5
+	
+-----------------------------
+Data Types in Python:
+1.Numbers
+	a) Integers and Boolean.
+	b) Floating Point Numbers.
+	c) Complex Numbers: In py, if we type 1+2j or 1+2J, it is valid. python opted for j instead i for representing complex numbers.
+	
+2.None
+	>>> x = None
+	x will have no value.
+	
+3.Sequences: collection of items, indexed by positive integers.
+	mutable (a mutable variable is one, whose value can be changed).
+	immutable (an immutable variable is one, whose value can not be changed).
+	There are three types of sequence data types,
+	a) String (immutable): enclosed in single quotes (' ') or double quotes (" "). 
+	b) Lists (mutable): sequence of indexed variables. Each element of the list can be accessed by using it's index number.
+		example, [2, 6, 8, 3, 1] or ["Python", "Java", "C++"] or [2,"Hi",5,6.4,5]
+	c) Tuples (immutable): Tuples are also pretty much like Lists, except that they are immutable and faster.
+		Tuples are enclosed in curved brackets i.e., ().		
+
+4.Sets: This is immutable unordered collection of values of any type with no duplicate entry. The values in a set cannot be changed later.
+
+5.Mappings: This data type is unordered and mutable. example, Dictionaries
+			Dictionaries can store any number of python objects. What they store is a key-value pair, which is accessed using the key. Dictionary is 
+			enclosed in curly brackets { }.
+			
+----------
+Formatting in python:
+
+a) basic formatting: i.e. used when the order of the elements are not going to change.
+	example,
+		'{} {}'.format('one', 'two')  # o/p is 'one two'
+		
+	if we want to change the order of the elements being displayed,
+	'{1} {0}'.format('one', 'two')  # o/p will be 'two one'
+	
+b) padding and aligning of strings.
+	Align right: 
+		'{:>10}'.format('test')  #output will be <6 spaces>test.
+	Align left:
+		'{:10}'.format('test')   #output will be test<6 spaces>.
+		'{:<10}'.format('test')  #output will be test<6 spaces>.
+	center align values:
+		'{:^10}'.format('test')  #<3 spaces>test<3 spaces>.
+		
+c) truncating strings with format:
+	The number behind "." in the format specifies the precision of the output.
+	'{:.5}'.format('xylophone') #output will be "xylop"
+	
+	truncating and padding combined will be like,
+	{:>10.5}.format('xylophone') #output will be "xylop<5 spaces>"
+	
+d) formatting numbers:
+	'{:d}'.format(42)  #output is 42
+	'{:f}'.format(3.141592653589793)  #output is 3.141593
+	
+	padding numbers:
+		'{:4d}'.format(42) #output is <2 spaces>42
+		'{:06.2f}'.format(3.141592653589793)  #output is 003.14
+			i.e. padding number (06) is the length of the whole number and (.2) is precision after decimals.
+			
+		'{:04d}'.format(42) #output is 0042.
+		
+	signed numbers: BY-DEFAULT only negative numbers are prefixed with sign.
+		'{:+d}'.format(42) #output will be +42
+		
+		adding a space to indicate negative vs positive numbers i.e.
+		'{: d}'.format(-42) #output is -42
+		'{: d}'.format(42)  #output is ' 42'
+		
+	In order to control the position of the sign symbol relative to the padding:
+		'{:=5d}'.format((- 23)) #output is -   23
+		'{:=+5d}'.format(23)    #output is +   23 
+	
+e) named placeholder for dictionaries:
+	data = {'first': 'Hodor', 'last': 'Hodor!'}
+	'{first} {last}'.format(**data)  #output is Hodor Hodor!
+	'{last} {first}'.format(**data)  #output is Hodor! Hodor
+	
+	other example,
+	person = {'first': 'Jean-Luc', 'last': 'Picard'}
+	'{p[first]} {p[last]}'.format(p=person)  #output is Jean-Luc Picard
+	
+f) place holders for lists
+	data = [4, 8, 15, 16, 23, 42]
+	'{d[4]} {d[5]}'.format(d=data)  #output will be 23 42
+
+			
+-------------------------------------
+-------------------------------------
+Lists In Python:
+the list is an ordered set of values enclosed in square brackets [ ]. It is mutable.
+
+The values that make up a list are called its elements, and they can be of any type. Indexing is used to access an element.
+
+NOTE: Python has both forward and backwards index number, so for each element there exists one positive and one negative number to access that element
+
+to create an empty list: >>> myEmptyList = []
+>>> myIntegerList = [9, 4, 3, 2, 8]
+>>> myFloatList = [2.0, 9.1, 5.9, 8.123432]
+>>> myCharList = ['p', 'y', 't', 'h', 'o', 'n']
+>>> myStringList = ["Hello", "Python", "Ok done!"]
+
+Copy elements from one list to another:
+>>> myList1 = ['first', 'second', 'third', 'fourth', 'fifth']
+>>> myList2 = myList1
+>>> print myList2
+['first', 'second', 'third', 'fourth', 'fifth']
+
+Slicing of a list:
+>>> myList1 = ['first', 'second', 'third', 'fourth', 'fifth']
+>>> myList2 = myList1[0:3]  //copying 1st 3 elements.
+>>> print myList2
+['first', 'second', 'third']
+>>> myList2 = myList1[-4:-1] //copying last 4 elements
+['second', 'third', 'fourth', 'fifth']
+
+Adding Serial Numbers in a List:
+>>> myList1 = range(9)
+>>> print myList1
+[0, 1, 2, 3, 4, 5, 6, 7, 8]
+
+>>> myList1 = range(5, 9)
+>>> print myList1
+[5, 6, 7, 8]
+
+>>> myQuickList = [x**2 for x in range(5)]
+>>> print myQuickList
+[0, 1, 4, 9, 16]
+
+Appending to an existing List:
+>>> emptyList = []
+>>> emptyList.append('The Big Bang Theory')
+>>> emptyList.append('F.R.I.E.N.D.S')
+>>> emptyList.append('How I Met Your Mother')
+>>> emptyList.append('Seinfeld')
+>>>print emptyList
+['The Big Bang Theory', 'F.R.I.E.N.D.S', 'How I Met Your Mother', 'Seinfeld']
+
+
+>>> fruitsList = ["Orange", "Mango", "Banana", "Cherry", "Blackberry", "Avocado", "Apple"]
+>>> len(fruitsList)
+7
+
+Using Loops with List:
+example 1
+>>> myList = ['Last Of Us', 'Doom', 'Dota', 'Halo', ' ']
+>>> for x in myList:
+	print x
+	
+Last Of Us
+Doom
+Dota
+Halo
+
+Iterate two Lists simultaneously:
+a) Using a while loop:
+		>>> i=0
+		>>> A=[1,2,3,4]
+		>>> B=[5,6,7,8]
+		>>> C=[]
+		>>> while i < len(A)
+		SyntaxError: invalid syntax
+		>>> while i < len(A):
+			C.append(A[i]+B[i])
+			i=i+1
+
+			
+		>>> print C
+		[6, 8, 10, 12]
+		
+b) Using a for loop
+		>>> i=0
+		>>> A=[1,2,3,4]
+		>>> B=[5,6,7,8]
+		>>> for x,y in zip(A,B):
+			C.append(x+y)
+
+			
+		>>> print C
+		[6, 8, 10, 12, 6, 8, 10, 12]
+		
+	NOTE: Since both A and B have 5 elements, hence zip() will make the loop iterate 5 times
+	However, if both the lists have different number of elements, zip will loop on the bigger list.
+	
+
+Deleting elements from a list:
+1) pop() function: requires the index number of the element that you want to delete
+		>>> print myList
+		['Last Of Us', 'Doom', 'Dota', 'Halo', ' ']
+		>>> myList.pop(3)
+		'Halo'
+		>>> print myList
+		['Last Of Us', 'Doom', 'Dota', ' ']
+		
+2) del keyword:requires the index number. But can also delete sequence of elements together.
+		>>> del myList[4]
+		>>> del myList[3:7]
+		
+3) remove() function: requires the value that has to be deleted
+		>>> myList = ['Apple', 'Orange', 'Apple', 'Guava']
+		>>> myList.remove('Apple')
+		>>> print myList
+		['Orange', 'Apple', 'Guava']
+		
+Other functions on list:
+1) insert(int, item):   insert values, anywhere in the list.
+						first argument of the list takes the index where the items will be inserted and 
+						second is the value that has to be inserted
+
+		>>> myList = ['Python', 'C++', 'Java', 'Ruby', 'Perl']
+		>>> myList.insert(1, 'JavaScript')
+		>>> print myList
+		['Python', 'JavaScript', 'C++', 'Java', 'Ruby', 'Perl']
+		
+2) reverse(): reverse the order of the elements. example, >>> myList.reverse()
+
+3) sort():  sorted in lexicographic ascending/descending order.
+			>>> myList = ['Python', 'C++', 'Java', 'Ruby', 'Perl']
+			>>> print myList
+			['Python', 'C++', 'Java', 'Ruby', 'Perl']
+			>>> myList.sort()
+			>>> print myList
+			['C++', 'Java', 'Perl', 'Python', 'Ruby']
+			
+		TO sort in descending order use, myList.sort().reverse() i.e.
+		a) 1st sort in asc order.
+		b) reverse it using myList.reverse().
+		
+-----------------------------------------------------
+Dictionary in Python:
+Dictionaries are like lists but we use keys to access the elements of a dictionary (or values to access keys, works both ways).
+
+keys can be of any data type varying from integer to string.
+
+Creating a Dictionary:
+keys in a dictionary can be integer or string.
+>>> myDictionary = {'Key-1': 'Element-1', 'Key-2': 'Element-2', 'Key-3': 'Element-3', 'Key-4': 'Element-4'}
+>>> print myDictionary['Key-3']
+Element-3
+
+NOTE: each element must have a unique key. 
+
+String keys are case sensitive i.e.
+>>> myDictionary = {'Key-1': 'Element-1', 'Key-2': 'Element-2', 'Key-3': 'Element-3', 'KEY-3': 'Element-4'}
+>>> print myDictionary['Key-3']
+Element-3
+>>> print myDictionary['KEY-3']
+Element-4
+
+Dictionary with Integer Keys
+>>> integerDictionary = {10: "C++", 20: "Java", 30: "Python", 40: "Ruby", 50: "C#", 60: "Perl"}
+>>> integerDictionary[30]
+Python
+
+Another example of Dictionary with String keys
+>>> identity = {"name": "StudyTonight", "type": "Educational", "link": "https://studytonight.com", "tag": "Best place to learn"}
+>>> print identity['name'] + ": " + identity['tag']
+StudyTonight: Best place to learn
+
+TO create an empty Dictionary: >>> emptyList = {}  // initialized an empty dictionary
+
+To append an element to a dictionary:
+a) consider an empty Dictionary,
+	>>> emptyList = {}   //empty Dictionary
+	>>> emptyList["India"] = "Delhi" //add Delhi with key India to your dictionary
+	>>> emptyList
+	{'India': 'Delhi'}	
+	>>> print emptyList
+	{'India': 'Delhi'}
+	
+b) to add an extra element to your already initialized list which has elements,
+	>>> emptyList.update({"Bangladesh":"Dhaka"}) //to append at the end.
+	>>> emptyList
+	{'India': 'Mumbai', 'Bangladesh': 'Dhaka'}	 
+	>>> emptyList["Srilanka"]="Colombo"          //to append at the beginning.
+	>>> emptyList
+	{'Srilanka': 'Colombo', 'India': 'Delhi', 'Bangladesh': 'Dhaka'}
+	
+	NOTE: if the key is already existing, update will replace its value.
+	example,
+			>>> emptyList
+			{'India': 'Mumbai', 'Bangladesh': 'Dhaka'}
+			>>> emptyList.update({"India":"Delhi"})
+			>>> emptyList
+			{'India': 'Delhi', 'Bangladesh': 'Dhaka'}
+			
+
+Accessing the elements in a dictionary:
+a) To access the value of a particular key. 
+	>>> emptyList["India"]
+	'Delhi'
+	
+b) To access all the elements
+	>>>for i in myDictionary:
+		print "Key: " + i + " and Element: " + myDictionary[i]
+		
+
+Deleting an Element(s) from Dictionary:
+	>>> emptyList
+	{'Srilanka': 'Colombo', 'India': 'Delhi', 'Bangladesh': 'Dhaka'}
+	>>> del emptyList["Srilanka"]
+	>>> emptyList
+	{'India': 'Delhi', 'Bangladesh': 'Dhaka'}
+	
+
+Updating an existing element(s) in a dictionary:
+a) copy all elements from one dictionary to another.
+		>>> MyDictionary1 = {1:"A",2:"B",3:"C"}
+		>>> MyDictionary2 = {5:"E"}
+		>>> MyDictionary1.update(MyDictionary2)
+		>>> MyDictionary2
+		{5: 'E'}
+		>>> MyDictionary1
+		{1: 'A', 2: 'B', 3: 'C', 5: 'E'}
+		
+b) copy one element to  an existing dictionary.
+		>>> emptyList
+		{'India': 'Mumbai', 'Bangladesh': 'Dhaka'}
+		>>> emptyList.update({"India":"Delhi"})
+		>>> emptyList
+		{'India': 'Delhi', 'Bangladesh': 'Dhaka'}
+		
+
+Dictionary Functions:
+a) len(): >>> len(emptyList). o/p 2
+
+b) clear(): delete all the elements of a dictionary. 
+			>>> integerDictionary = {10: "C++", 20: "Java", 30: "Python", 40: "Ruby", 50: "C#", 60: "Perl"} 
+			>>> integerDictionary.clear()
+			>>> integerDictionary
+			{}
+			
+c) values(): will show ONLY the values stored in the dictionary.
+			>>> integerDictionary = {10: "C++", 20: "Java", 30: "Python", 40: "Ruby", 50: "C#", 60: "Perl"}
+			>>> integerDictionary.values()
+			{"C++", "Java", "Python", "Ruby", "C#", "Perl"}
+			
+d) keys() : will display ONLY the keys.
+			>>> integerDictionary.keys()
+			{10, 20, 30, 40, 50, 60}
+			
+e) items() :  display both, keys and values with a representation.
+				>>> integerDictionary.items()
+				{(10: "C++"), (20: "Java"), (30: "Python"), (40: "Ruby"), (50: "C#"), (60: "Perl")}
+			
+f) has_key() : To check if a particular key exists in the dictionary. Returns a boolean value.
+				>>> integerDictionary.has_key(10)
+				True
+				>>> integerDictionary.has_key("India")
+				False
+	
+g) cmp() : compares two dictionaries. It can return 3 possible values, i.e., 
+			0 : both dictionaries are equal. 
+			1 : 1st dictionary is greater number of elements. 
+		   -1 : 2nd dictionary is greater number of elements.
+		   
+			>>> x = {1: 1, 2:2, 3:3}
+			>>> y = {1:1, 2:2, 3:3}
+			>>> cmp(x, y)
+			0
+			>>> x[4] = 4
+			>>> cmp(x, y)
+			1
+			>>> cmp(y,x)
+			-1
+
+-------------------------------------------------
+Tuples in Python:
+Similar to list but immutable (the values cannot be updated).
+Definition: Tuples is an ordered immutable set of values.
+
+>>> myTuple = 1, 2, 3, 4
+>>> print myTuple
+(1, 2, 3, 4)
+
+NOTE: While printing tuples, the element are inside () while printing lists, the elements are inside [], this distinguishes between tuples and lists.
+
+We can add different data types in a tuple,
+>>> secondTuple = 1, 2, "python", 4
+>>> print secondTuple
+(1, 2, "python", 4)
+
+Empty tuple can be created as
+>>> emptyTuple = ()
+
+Indexing of tuples is same as that of lists. Both forward and backward indexing is same.
+>>> example = "apple", "orange", "banana", "berry", "mango"
+>>> example[0]
+'apple'
+>>> example[-1]
+'mango'
+
+Adding Elements to a Tuple: is done using the addition operator.
+>>> t = (1, 2, 3, 4, 5)
+>>> t = t + (7,)
+>>> print t
+(1, 2, 3, 4, 5, 7)
+
+NOTE: any kind of element can be added to a tuple, using the + operator.
+>>> print (1, 2, 5, 8) + (2, 9, 4)
+(1, 2, 5, 8, 2, 9, 4)
+
+Deleting a Tuple:
+>>> print myTuple
+(1, 2, 3, 4)
+>>> del myTuple
+
+Slicing in Tuples:
+>>> t = (1, 2, 3, 4)
+>>> t[2:4]    //slice the tuple starting from index 2 upto the index 4, and take that slice out.
+(3,4)  
+
+Note: if the index is greater than the tuple length, it will print till the last element of the tuple.
+
+Tuples basic Operations and Functions:
+a) Multiplication ("*"): "*" with an integer => first tuple being repeated x number of times
+	example,
+	>>> t = (2, 5)
+	>>> print t*3
+	(2,5,2,5,2,5)
+	
+b) Addition ("+"): adds up all the elements into a new tuple.
+	example,
+	>>> t = (2, 5, 0) + (1, 3) + (4,)
+	>>> print t
+	(2, 5, 0, 1, 3, 4)
+
+c) "in" Keyword: checks if any element is present in the sequence or not. Returns boolean value.
+	example,
+	>>> t = (1, 2, 3, 6, 7, 8)
+	>>> 2 in t
+	True
+	>>> 5 in t
+	False
+
+d) len(): finds number of elements. 
+	example,
+	>>> t = 1, 2, 3
+	>>> print len(t)
+	3 
+
+e) cmp(): compares 2 tuples
+			if T1 > T2, then cmp(T1, T2) returns 1
+			if T1 = T2, then cmp(T1, T2) returns 0
+			if T1 > T2, then cmp(T1, T2) returns -1
+			
+f) max() and min(): "max" finds max value among tuple elements and "min" finds min value among tuple elements
+	example,
+	>>> t = (1, 4, 2, 7, 3, 9)
+	>>> print max(t)
+	9
+	>>> print min(t)
+	1
+ 
+	other example,
+	Tup3 = ('r','n','a','g','A','B')
+	print max(Tup3)
+	print min(Tup3)
+	
+	o/p:
+	r
+	A
+------------------------------------------------------
+Relational and Logical Operators in Python:
+
+a) Relational Operators: o/p of relational operators is always True or False.
+	list of operators available includes:
+	1.Less than → used with <
+	2.Greater than → used with >
+	3.Equal to → used with ==
+	4.Not equal to → used with !=
+	5.Less than or equal to → used with <=
+	6.Greater than or equal to → used with >=
+	
+	>>> "abc" > "aaa"
+	True
+	>>> "abc" == "bcd"
+	False
+	
+b) Logical Operators: operands are either True or False.
+	example
+	>>> True and False
+	False
+	>>> not True
+	False
+	>>> (2 < 3) and (2 < 5)
+	True
+	
+	3 basic logical operators:
+	1. Logical AND
+	2. Logical OR
+	3. Logical NOT
+	
+----------------------------------------------------------
+Conditional Statements in Python:
+1) "if" statement:
+			>>> savingAmt = 1000
+			>>> withdrawAmt = int(raw_input("Amount to Withdraw: "))
+			Amount to Withdraw: 2000
+			>>> if withdrawAmt > savingAmt:
+					print "Insufficient balance"
+			Insufficient balance
+					
+2) "else" statement: 
+		>>>if withdrawAmt > savingAmt:
+			print "Insufficient balance"
+		   else:
+			savingAmt = savingAmt - withdrawAmt
+			print "Account Balance:" + str(savingAmt)
+
+
+3) "elif" statement:
+		time = input("type any time of the the day")
+		if (time >= 600) and (time < 1200):
+			print "Morning"
+		elif (time == 1200):
+			print "Noon"
+		elif (time > 1200) and (time <= 1700):
+			print "Afternoon"
+		elif (time > 1700) and (time <= 2000):
+			print "Evening"
+		elif ((time > 2000) and (time < 2400)) or ((time >= 0) and (time < 600)):
+			print "Night"
+		else:
+			print "Invalid time!"	
+
+4) Nesting if-else statements:
+		if (time >= 600) and (time < 1200):
+			print "Morning"
+		else:
+			if (time == 1200):
+				print "Noon"
+			else:
+				if (time > 1200) and (time <= 1700):
+					print "Afternoon"
+				else:
+					if (time > 1700) and (time <= 2000):
+						print "Evening"
+					else:
+						if ((time > 2000) and (time < 2400)) or ((time >= 0) and (time < 600)):
+							print "Night"
+						else:
+							print "Invalid time!"
+							
+--------------------------------------------------------
+Loops in Python:
+1) For Loop:
+	example,
+	>>> myList = [1,2,3,4]
+	>>> for i in myList:
+			print i
+	1
+	2
+	3
+	4
+
+	Range can also be used to accomplish the same task.
+	example,
+	>>> range(5)
+	[0,1,2,3,4]
+	>>> range (5,10)
+	[5,6,7,8,9]
+	>>> range (2,12,2)
+	[2,4,6,8,10]
+	
+	xrange() function is also pretty much the same, although it's a little faster.
+	
+	using range with for loop:
+	>>> myList = [1,2,3,4]
+	>>> for i in xrange(0, len(myList)):
+		print myList[i]
+	0
+	1
+	2
+	3
+		
+	nested for loop:
+	>>> bigList = [[1, 3, 6], [8, 2,], [0, 4, 7, 10], [1, 5, 2], [6]]
+	>>> for i in myList:
+			for j in i:
+			print "Element of list within a list - ", j
+			
+			Element of list within a list - 1 
+			Element of list within a list - 3
+			Element of list within a list - 6
+			Element of list within a list - 8
+			Element of list within a list - 2
+			Element of list within a list - 0
+			Element of list within a list - 4
+			Element of list within a list - 7
+			Element of list within a list - 10
+			Element of list within a list - 1
+			Element of list within a list - 5 
+			Element of list within a list - 2
+			Element of list within a list - 6
+			
+	else in for loop:
+		for n in range(2, 10):
+			for x in range(2, n):
+				if n % x == 0:
+					print( n, 'equals', x, '*', n/x)
+					break
+			else:
+				# loop fell through without finding a factor
+				print(n, 'is a prime number')
+			
+2) while loop:  if the condition holds True, then the statement is executed.
+	example,
+			i = 0
+			while i < 5:
+				i=i+1
+				print "i =", i
+				
+	nested While loop:
+			bigList = [[1, 3, 6], [8, 2,], [0, 4, 7, 10], [1, 5, 2], [6]]
+			i = 0
+			j = 0
+			while i<len(bigList):
+				while j<len(bigList[i]):
+					print “Element of list within a list -”,bigList[i][j]
+					j=j+1
+				i=i+1
+				
+3) continue: will skip the current statement execution and it will check the condition again.
+	example,
+			>>> name = "ShubhroB"
+			>>> for i in name:
+				if i == 'S':
+					continue
+				print i
+				
+			h
+			u
+			b
+			h
+			r
+			o
+			B
+			
+4) break: 
+	example,
+			>>> name = "ShubhroB"
+			>>> for i in name:
+				if i == 'o':
+					break
+				print i
+				
+			S
+			h
+			u
+			b
+			h
+			r
+-------------------------------------------------------
+User-Defined functions in Python:
+
+Syntax being:
+	def functionName(parameter1, parameter2, ...):   #This is function header. def is for define
+		logic/algorithm statements
+		...
+		return someData                              #return statement is not mandatory.
+		
+example:
+	>>>def add(a, b):
+			return (a+b)
+	>>>print add(5,9)
+	14
+
+NOTE, we can also pass function as a parameter. example,
+	>>> print add(5, add(7, 6))
+	18
+
+Return type of a function:
+a function may not return anything, it is then called void function. example,
+def printme( str ):
+   "This prints a passed string into this function"
+   print str
+   return
+ 
+NOTE: A return statement with no arguments is the same as return None.
+ 
+ calling a function:
+ example,
+	# Function definition is here
+	def printme( str ):
+	   "This prints a passed string into this function"
+	   print str
+	   return;
+
+	# Now you can call printme function
+	printme("I'm first call to user defined function!")
+	printme("Again second call to the same function")
+	
+ o/p:
+ I'm first call to user defined function!
+ Again second call to the same function
+ 
+ Pass by reference vs value:
+ All parameters (arguments) in the Python language are passed by reference.
+ example,
+		# Function definition is here
+		def changeme( mylist ):
+		   "This changes a passed list into this function"
+		   mylist.append([1,2,3,4]);
+		   print "Values inside the function: ", mylist
+		   return
+
+		# Now you can call changeme function
+		mylist = [10,20,30];
+		changeme( mylist );
+		print "Values outside the function: ", mylist
+		
+ o/p:
+ Values inside the function:  [10, 20, 30, [1, 2, 3, 4]]
+ Values outside the function:  [10, 20, 30, [1, 2, 3, 4]]
+ 
+other example,
+	# Function definition is here
+	def changeme( mylist ):
+	   "This changes a passed list into this function"
+	   mylist = [1,2,3,4]; # This would assig new reference in mylist
+	   print "Values inside the function: ", mylist
+	   return
+
+	# Now you can call changeme function
+	mylist = [10,20,30];
+	changeme( mylist );
+	print "Values outside the function: ", mylist	
+	
+ o/p:
+ Values inside the function:  [1, 2, 3, 4]
+ Values outside the function:  [10, 20, 30]
+		
+function arguments:
+1) Required arguments: arguments passed to a function in correct positional order.
+	example,
+		# Function definition is here
+		def printme( str ):
+		   "This prints a passed string into this function"
+		   print str
+		   return;
+
+		# Now you can call printme function
+		printme()
+
+		o/p: this program will error.
+		
+2) Keyword arguments: Keyword arguments are related to the function calls. Syntax is (arg = <value). This allows to tweak the order of the parameters passed.
+	example,
+		# Function definition is here
+		def printinfo( name, age ):
+		   "This prints a passed info into this function"
+		   print "Name: ", name
+		   print "Age ", age
+		   return;
+
+		# Now you can call printinfo function
+		printinfo( age=31, name="Shubhro" )
+		
+		o/p: 
+		Name:  miki	
+		Age  50
+		
+3) Default arguments: assumes a default value if a value is not provided in the function call for that argument.
+	example,
+		# Function definition is here
+		def printinfo( name, age = 35 ):
+		   "This prints a passed info into this function"
+		   print "Name: ", name
+		   print "Age ", age
+		   return;
+
+		# Now you can call printinfo function
+		printinfo( age=50, name="miki" )
+		printinfo( name="miki" )
+		
+	o/p: 
+		Name:  miki
+		Age  50
+		Name:  miki
+		Age  35    //since age is not passed, it takes the default argument in the function definition parameter.
+		
+4) Variable-length arguments: arguments that are not named in the function definition.
+	An asterisk (*) is placed before the variable name specifies it as "Variable-length argument"
+	example,
+		# Function definition is here
+		def printinfo( arg1, *vartuple ):
+		   "This prints a variable passed arguments"
+		   print "Output is: "
+		   print arg1
+		   for var in vartuple:
+			  print var
+		   return;
+
+		# Now you can call printinfo function
+		printinfo( 10 )
+		printinfo( 70, 60, 50 )
+		
+	o/p:
+	Output is:
+	10
+	Output is:  #as the vartuple has been declared as variable length argument.
+	70
+	60
+	50
+	
+Anonymous Functions: these functions not declared as a standard function. Some features include.
+1) To declare an anonymous function, we use lambda keyword (instead of def keyword).
+2) Lambda forms can take any number of arguments but return a value in the form of expression.
+3) These cannot print values on their own
+4) cannot access variables other than those in their parameter list and global variables.
+
+Syntax: lambda [arg1 [,arg2,.....argn]]:expression
+example,
+	# Function definition is here
+	sum = lambda arg1, arg2: arg1 + arg2;
+
+	# Now you can call sum as a function
+	print "Value of total : ", sum( 10, 20 )
+	print "Value of total : ", sum( 20, 20 )
+	
+output: 
+Value of total :  30
+Value of total :  40
+
+	
+Global vs. Local variables:
+	total = 0; # This is global variable.
+	# Function definition is here
+	def sum( arg1, arg2 ):
+	   # Add both the parameters and return them."
+	   total = arg1 + arg2; # Here total is local variable.
+	   print "Inside the function local total : ", total
+	   return total;
+
+	# Now you can call sum function
+	sum( 10, 20 );
+	print "Outside the function global total : ", total 
+	
+--------------------------------------------------------------------
+Modules in Python (revisited):
+Modules is a source file (with .py extension) which holds methods/functions.
+
+Import statement: syntax: import module1[, module2[,... moduleN]
+When the interpreter encounters an import statement, it imports the module if the module is present in the search path.
+
+from...import * Statement: is used to import all functions within a module. example, (from modname import *)
+
+for an import statement, python interpreter searches the path in,
+a) current directory
+b) then in direcory PYTHONPATH (for unix: /usr/local/lib/python/).
+
+Scoping (Global vs Local): 
+
+Namespace:  is a naming system for making names unique to avoid ambiguity.
+			NOTE: Python namespace is a dictionary of variable names (keys) and their corresponding objects (values).
+			
+If a local and a global variable have the same name, the local variable shadows the global variable.
+
+a) Python assumes that any variable assigned a value in a function is local.
+b) To assign a value to a global variable within a function, you must first use the global statement.(example, global VarName)
+
+example,
+	Money = 2000
+	def AddMoney():
+	   # Uncomment the following line to fix the code:
+	   # global Money
+	   Money = Money + 1
+	   
+	print Money
+	AddMoney()
+	print Money
+	
+	o/p: this program will error.
+	Reason, Within the function AddMoney, we assign Money a value, therefore Python assumes Money as a local variable. However, we accessed the value of the 
+	local variable Money before setting it, so it errors.
+	
+	to correct the error "uncomment global Money"
+	
+Some Built in functions:
+1) dir( ) Function: returns a sorted list of names of all the modules, variables and functions that are defined in a module.
+	example,
+		#!/usr/bin/python
+		# Import built-in module math
+		import math
+
+		content = dir(math)
+		print content
+
+	o/p: 
+		['__doc__', '__file__', '__name__', 'acos', 'asin', 'atan', 
+		'atan2', 'ceil', 'cos', 'cosh', 'degrees', 'e', 'exp', 
+		'fabs', 'floor', 'fmod', 'frexp', 'hypot', 'ldexp', 'log',
+		'log10', 'modf', 'pi', 'pow', 'radians', 'sin', 'sinh', 
+		'sqrt', 'tan', 'tanh']
+		
+2) globals() and locals() Functions: 
+		If locals() is called from within a function, it will return all the names that can be accessed locally from that function.
+		If globals() is called from within a function, it will return all the names that can be accessed globally from that function.
+
+--------------------------------------------
+FIle handling in Python:
+a file operation takes place in the following order:
+1.Open a file
+2.Read or write (perform operation)
+3.Close the file
+
+Open a file: with built-in function open().
+			This function returns a file object, also called a handle, as it is used to read or modify the file accordingly.
+			
+	syntax: file object = open(file_name [, access_mode][, buffering])
+	
+	buffering − If the buffering value is set to 0, no buffering takes place. If the buffering value is 1, line buffering is performed while accessing a file. Buffering value can be >1 or <0. 
+	
+	f = open("test.txt")    # open file in current directory
+	f = open("C:/Python33/README.txt")  # specifying full path
+	 
+	We can specify the mode while opening a file (read 'r', write 'w' or append 'a')
+	We can also open a file in text mode (we get strings when reading) or binary mode (returns bytes, used for non text files like images or exe files).
+	
+	Mode	Description
+	'r'		Open a file for reading. (default). The file pointer is placed at the beginning of the file.
+	'rb'	Opens a file for reading only in binary format. The file pointer is placed at the beginning of the file.
+	'r+'	Opens a file for both reading and writing. The file pointer placed at the beginning of the file.
+	'rb+'	r+ in binary mode.
+	'w'		Open a file for writing. Creates a new file if it does not exist or truncates the file if it exists.
+	'w+'	Opens a file in reading/writing. Creates a new file if it does not exist or truncates the file if it exists.
+	'wb+'	'w+' in binary mode.
+	'a'		Open for appending at the end of the file without truncating it. Creates a new file if it does not exist.
+	'a+'    Opens for appending and reading.file pointer is at EOF. Creates new file if it does not exist.
+	'ab+'	Opens a file for both appending and reading in binary format.
+	
+	f = open("test.txt",'w')  # write in text mode
+	f = open("img.bmp",'rb+') # read and write in binary mode
+	
+	file object attributes: i.e information related to file attributes once it is opened.
+	Attribute		Description
+	file.closed		Returns true if file is closed, false otherwise.
+	file.mode		Returns access mode.
+	file.name		Returns name of the file.
+	file.softspace	Returns false if space explicitly required with print, true otherwise.
+	
+	example,
+	# Open a file
+	fo = open("foo.txt", "wb")
+	print "Name of the file: ", fo.name
+	print "Closed or not : ", fo.closed
+	print "Opening mode : ", fo.mode
+	print "Softspace flag : ", fo.softspace
+	
+	o/p:
+	Name of the file:  foo.txt
+	Closed or not :  False
+	Opening mode :  wb
+	Softspace flag :  0		
+		
+	File close() method:
+	The close() method of a file object flushes any unwritten information and closes the file object, after which no more writing can be done.
+	
+
+Reading and Writing Files:
+a) write() method: writes "STRING" to an open file. Python strings can have binary/text data.
+	NOTE: write method does not add "\n" to End of string.
+	
+	example
+	# Open a file
+	fo = open("foo.txt", "wb")
+	fo.write( "Python is a great language.\nYeah its great!!\n");
+
+	# Close opend file
+	fo.close()
+	
+b) read() method: reads a string from an open file.
+	syntax is: fileObject.read([count]);
+				where count: number of bytes to be read from the opened file.
+							 if count is not mentioned, it prints till EOF.
+							 
+		# Open a file
+		fo = open("foo.txt", "r+")
+		str = fo.read(10);
+		print "Read String is : ", str
+		# Close opened file
+		fo.close()
+
+	Read String is :  Python is
+	
+c) tell() method: tells you the current cursor position within the file.i.e. the next Read/write operation will happen after 
+   the position specified by tell() option.
+   
+d) seek() method: changes the current file position.
+	syntax: seek(offset[, from])
+		here, offset argument indicates the number of bytes to be moved
+			  from argument specifies the reference position from where the bytes are to be moved.
+				i.e. 0 -> beginning of the file.
+					 1 -> use current position as reference position.
+					 2 -> end of file.
+	
+	example,
+	# Open a file
+	fo = open("foo.txt", "r+")
+	str = fo.read(10);
+	print "Read String is : ", str
+
+	# Check current position
+	position = fo.tell();
+	print "Current file position : ", position
+
+	# Reposition pointer at the beginning once again
+	position = fo.seek(0, 0);
+	str = fo.read(10);
+	print "Again read String is : ", str
+	# Close opend file
+	fo.close()
+	
+	o/p:
+	Read String is :  Python is
+	Current file position :  10
+	Again read String is :  Python is
+	
+Renaming and Deleting Files:
+1) rename() method: takes two arguments, the current filename and the new filename.
+	syntax: os.rename(current_file_name, new_file_name)
+			where we will have to import "os" module.
+	
+	example,
+	import os
+	# Rename a file from test1.txt to test2.txt
+	os.rename( "test1.txt", "test2.txt" )
+	
+2) remove() method: deletes file. 
+	syntax: os.remove(file_name)
+	
+	example,
+	import os
+	# Delete file test2.txt
+	os.remove("text2.txt")
+	
+Directoris in Python:
+"OS" module has several functions to create, remove, and change directories.
+
+1) mkdir() method: create directories in the current directory.
+	syntax: os.mkdir("newdir")
+	example,
+	import os
+	# Create a directory "test"
+	os.mkdir("test")
+	
+2) chdir() method: change the current directory. 
+	syntax: os.chdir("newdir")
+	example,
+	import os
+	# Changing a directory to "/home/newdir"
+	os.chdir("/home/newdir")
+	
+3) getcwd() method: displays the current working directory.
+	example,
+	import os
+	# This would give location of the current directory
+	os.getcwd()
+	
+4) rmdir() method: deletes the directory passed as argument.
+	syntax: os.rmdir('dirname')
+	
+	NOTE: It is required to give fully qualified name of the directory, otherwise it would search for that directory in the current directory.
+	
+------------------------------------------------
+Assertions and Exceptions in Python:
+1) Assertions in Python: usually used to check for valid input, and after a function call to check for valid output.
+	Assertions are carried out by the "assert" statement.
+	
+	Syntax: assert Expression[, Arguments]
+	
+	evaluates the expression
+		if FALSE, raises AssertionError exception.
+	
+	AssertionError exceptions can be caught and handled like any other exception using the try-except statement, but if not handled, they will terminate the program and produce a traceback.
+	
+	example of Assert,
+
+		def KelvinToFahrenheit(Temperature):
+		   assert (Temperature >= 0),"Colder than absolute zero!"
+		   return ((Temperature-273)*1.8)+32
+		print KelvinToFahrenheit(273)
+		print int(KelvinToFahrenheit(505.78))
+		print KelvinToFahrenheit(-5)  #this will fail as zero degrees Kelvin is as cold as it gets.
+		
+	output,
+	32.0
+	451
+	Traceback (most recent call last):
+	File "test.py", line 9, in <module>
+	print KelvinToFahrenheit(-5)
+	File "test.py", line 4, in KelvinToFahrenheit
+	assert (Temperature >= 0),"Colder than absolute zero!"
+	AssertionError: Colder than absolute zero!
+	
+a) handling an exception (similar to java):
+	syntax is,
+		try:
+		   You do your operations here;
+		   ......................
+		except ExceptionI:
+		   If there is ExceptionI, then execute this block.
+		except ExceptionII:
+		   If there is ExceptionII, then execute this block.
+		   ......................
+		else:
+		   If there is no exception then execute this block.
+		   
+	Note: an else-block is a good place for code that does not need the try: block's protection.
+	
+	example,
+	try:
+	   fh = open("testfile", "w")
+	   fh.write("This is my test file for exception handling!!")
+	except IOError:
+	   print "Error: can\'t find file or read data"
+	else:
+	   print "Written content in the file successfully"
+	   fh.close()
+	   
+	o/p:
+	a) if file is present: Written content in the file successfully.
+	b) if file is not present: Error: can\'t find file or read data
+	
+b) If we want to catch all exceptions in a single "except" block, it can be done as,
+	try:
+	   You do your operations here;
+	   ......................
+	except:
+	   If there is any exception, then execute this block.
+	   ......................
+	else:
+	   If there is no exception then execute this block.
+	
+	NOTE: this is not considered a good programming practice.
+	
+	
+c) except Clause with Multiple Exceptions.
+	try:
+	   You do your operations here;
+	   ......................
+	except(Exception1[, Exception2[,...ExceptionN]]]):
+	   If there is any exception from the given exception list, 
+	   then execute this block.
+	   ......................
+	else:
+	   If there is no exception then execute this block.
+	   
+d) try-finally Clause.
+	try:
+	   You do your operations here;
+	   ......................
+	   Due to any exception, this may be skipped.
+	finally:
+	   This would always be executed.
+	   ......................
+	   
+	NOTE: YOU CANNOT USE ELSE CLAUSE AS WELL ALONG WITH A FINALLY CLAUSE.
+
+	example,
+	 def divide(x, y):
+		try:
+			result = x / y
+		except ZeroDivisionError:
+			print "division by zero!"
+		else:
+			print "result is", result
+		finally:
+			print "executing finally clause"
+			
+	o/p:
+	divide(2, 1)
+	result is 2
+	executing finally clause
+	
+	divide(2, 0)
+	division by zero!
+	executing finally clause
+	
+	divide("2", "1")
+	executing finally clause
+	Traceback (most recent call last):
+	File "<stdin>", line 1, in <module>
+	File "<stdin>", line 3, in divide
+	TypeError: unsupported operand type(s) for /: 'str' and 'str'
+	
+	Note: in the 3rd example, The TypeError raised by dividing two strings is not handled by the except clause and therefore re-raised after the finally clause has been executed.
+	
+e) Argument of an Exception: we can add Argument to the exception to add further details to the exception.
+		example,
+		def divide(x,y):
+			try:
+				result = x/y
+			except ZeroDivisionError, Argument:
+				print "division by zero!", Argument
+			else:
+				print "result is", result
+			finally:
+				print "executing finally clause"
+				
+		print divide(10,0)
+		
+		o/p:
+		division by zero! integer division or modulo by zero
+		executing finally clause
+		
+		other example,
+			# Define a function here.
+			def temp_convert(var):
+			   try:
+				  return int(var)
+			   except ValueError, Argument:
+				  print "The argument does not contain numbers\n", Argument
+
+			# Call above function here.
+			temp_convert("xyz");
+			
+		o/p:
+		The argument does not contain numbers
+		invalid literal for int() with base 10: 'xyz'
+	   
+f) Raising Exceptions with "raise" statement:
+	allows the programmer to force a specified exception to occur.
+	syntax is: raise [Exception [, args [, traceback]]]  #both argument and traceback are optional.
+	
+	example,
+		try:
+			raise NameError('HiThere')
+		except NameError:
+			print 'An exception flew by!'
+			raise
+			
+	o/p:
+	An exception flew by!
+	Traceback (most recent call last):
+	File "<stdin>", line 2, in <module>
+	NameError: HiThere
+	
+	
+		
