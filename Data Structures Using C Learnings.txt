@@ -1,0 +1,1061 @@
+DS Interview Questions: http://studymild.com/technical/data-structures/
+reference: http://btechsmartclass.com/DS/U1_T11.html
+Data Structures:
+is a way of collecting and organising data in such a way that we can perform operations on these data in an effective way.
+DS facilitates better organization and storage.
+
+Basic types of Data Structures:
+a)  Primitive Data Structures: anything that can store data can be called as a data structure. So,Integer, Float, Boolean, Char etc, all are data structures.
+b)  Abstract Data Structure: used to store large and connected data. Linked List, Tree, Graph, Stack, Queue etc.
+
+The data structures can also be classified on the basis of following characteristics:
+
+Characterstic	Description
+Linear 			the data items are arranged in a linear sequence. Example: Array 
+Non-Linear 		the data items are not in sequence. Example: Tree, Graph 
+Homogeneous 	all the elements are of same type. Example: Array 
+Non-Homogeneous the elements may or may not be of the same type. Example: Structures 
+Static 			whose sizes and structures associated memory locations are fixed, at compile time. Example: Array 
+Dynamic 		which expands or shrinks depending upon the program execution. their associated memory locations changes. Example: Linked List
+
+performance of an algorithm is measured as,
+a) Space Complexity: amount of memory space required by the algorithm. An algo requires space for
+					a) store the executable version of the program.
+					b) store all the constants and variables value.
+					c) store the environment information.
+b) Time Complexity: amount of time needed by the program to run till its completion. 
+					The time complexity of algorithms is most commonly expressed using the big O notation (i.e. running time can be estimated in relation to 
+					N, as N approaches infinity). 
+					example,
+					Constant: for a single statement, the TC is constant as running time of the statement will not change in relation to N.
+					Linear: 
+								for(i=0; i < N; i++)
+								{
+								  statement;
+								}
+							running time is DIRECTLY Propotional to N i.e. N doubles, running time doubles.
+							doing something with every item in one dimension is linear
+					Quadratic: 
+								for(i=0; i < N; i++) 
+								{
+								  for(j=0; j < N;j++)
+								  { 
+									statement;
+								  }
+								}
+							running time is DIRECTLY Propotional to N * N. When N doubles, the running time increases by N * N.
+							i.e. doing something with every item in two dimensions is quadratic.
+					Logarithmic: assume as example, break a set of numbers into halves, to search a particular field.
+								 time complexity will be N*log( N ). 
+								 i.e. dividing the working area in half is logarithmic.
+----------------------------------
+Sorting:
+Sorting arranges data in a sequence which makes searching easier. Every record which is going to be sorted will contain one key. Based on the key the record will be sorted.example, a student record with Roll No, Name, Age, Class fields can be sorted with Key "Roll Number".
+
+Sorting techniques mainly depends on two parameters,
+1) execution time of program.
+2) space taken by the program.
+	
+Bubble Sorting: 
+compares all the element one by one and sort them based on their values. With each iteration the largest element in the list bubbles up towards the last place.
+
+Sorting takes place one by one between adjacent elements. example,
+5 1 6 2 4 3
+Sorting will go like,
+[1 5] 6 2 4 3
+1 [5 6] 2 4 3
+1 5 [2 6] 4 3
+1 5 2 [4 6] 3
+1 5 2 4 [3 6] 
+similarly there will be consecutive iterations till the entire array is sorted. 
+[1 5] 2 4 3 6
+1 [2 5] 4 3 6
+1 2 [4 5] 3 6
+1 2 4 [3 5] 6   // this iterations happened till N-1 members as Nth is already the highest among all
+
+i.e. In Bubble Sort, n-1 comparisons will be done in 1st pass, n-2 in 2nd pass, n-3 in 3rd pass and so on. 
+
+Program to accomplish Bubble sort
+		int a[6] = {5, 1, 6, 2, 4, 3};
+		int i, j, temp;
+		for(i=0; i<6; i++)
+		{
+		  for(j=0; j<6-i-1; j++)
+		  {
+			if( a[j] > a[j+1])
+			{
+			  temp = a[j];
+			  a[j] = a[j+1];
+			  a[j+1] = temp;
+			} 
+		  }
+		}
+	
+above algorithm is not efficient because "the for-loop will keep executing for six iterations even if the array gets sorted after the second iteration."
+
+to reduce the number of iterations, we can use the following,
+		int a[6] = {5, 1, 6, 2, 4, 3};
+		int i, j, temp;
+		for(i=0; i<6; i++)
+		{
+		  int flag = 0;        //taking a flag variable
+		  for(j=0; j<6-i-1; j++)
+		  {
+			if( a[j] > a[j+1])
+			{
+			  temp = a[j];
+			  a[j] = a[j+1];
+			  a[j+1] = temp;
+			  flag = 1;         //setting flag as 1, if swapping occurs
+			} 
+		  }
+		  if(!flag)             //breaking out of for loop if no swapping takes place
+		  {
+			break;
+		  }
+		}
+		
+-------------------------------------------------------------------------
+Insertion sort:
+This sorts the array by shifting elements one by one. It is efficient for smaller data sets, but very inefficient for larger lists.
+It is better than Selection Sort and Bubble Sort algorithms.
+NOTE: It is a Stable sorting, as it does not change the relative order of elements with equal keys.
+
+Example,
+5 1 6 2 4 3
+We will pick up a key and compare it with the elements BEFORE it
+[5] 1 6 2 4 3 //5 is the key, no elements before it
+5 [1] 6 2 4 3 //1 is the key and it is < 5
+1 5 [6] 2 4 3 //6 is the key, it is > 1,5 so left as it is.
+1 5 6 [2] 4 3 //2 is the key, it is < 5,6 but > 1.
+1 2 5 6 [4] 3 //4 is the key and it is compared with the elements before it
+1 2 4 5 6 [3] //3 is the key now
+1 2 3 4 5 6   
+
+Program to accomplish Insertion sort:
+			int a[6] = {5, 1, 6, 2, 4, 3};
+			int i, j, key;
+			for(i=1; i<6; i++)
+			{
+			  key = a[i];
+			  j = i-1;
+			  while(j>=0 && key < a[j])
+			  {
+				a[j+1] = a[j];
+				j--;
+			  }
+			  a[j+1] = key;
+			}
+
+-----------------------------------------------------------------
+Selection, Quick, heap, Merge sort will be taken up later
+-----------------------------------------------------------------
+Searching Algorithms for array:
+1) linear Search: compares the element with all the other elements given in the list and if the element is matched it returns 
+				  the value index else it return -1.
+				  
+				  NOTE: Linear Search is applied on the unsorted or unordered list when there are fewer elements in a list.
+				  
+					#include <stdio.h>
+					using namespace std;
+					int lin_search(int *p,int target);
+					int main() {
+						// your code goes here
+						int arr[] = {8 , 2 , 6 , 3 , 5};
+						int pos;
+						pos = lin_search(arr,5);
+						printf("value found in pos [%d]\n",pos);
+						
+						return 0;
+					}
+					int lin_search(int *p,int target)
+					{
+						int i;
+						for(i=0;i<5;i++,p++)
+						{
+							printf("%d,",*p);
+							if (*p == target)
+							{
+								return i;
+							}
+						}
+						return -1;
+					}
+					
+2) Binary Search:  
+In binary search, we first compare the value with the elements in the middle position of the array.
+	a) If the value is matched, then we return the value. 
+	b) If the value is less than the middle element, then it must lie in the lower half of the array. and 
+	c) if it's greater than the element then it must lie in the upper half of the array.
+	
+	This process is repeated till the elemet is found.
+	NOTE: BINARY SEARCH ONLY WORKS ON SORTED ARRAY/LIST.
+					
+			function findIndex(values, target) 
+			{
+			  return binarySearch(values, target, 0, values.length - 1);
+			};
+
+			function binarySearch(values, target, start, end) {
+			  if (start > end) { return -1; } //does not exist
+
+			  var middle = Math.floor((start + end) / 2);
+			  var value = values[middle];
+
+			  if (value > target) { return binarySearch(values, target, start, middle-1); }
+			  if (value < target) { return binarySearch(values, target, middle+1, end); }
+			  return middle; //found!
+			}
+
+			findIndex([2, 4, 7, 9, 13, 15], 13);
+			
+------------------------------------------------------------
+Abstract Data Structure:
+
+1) Stack:   abstract data type with a bounded(predefined) capacity.
+			a) Every time an element is added, it goes on the top of the stack, 
+			b) the only element that can be removed is the element that was at the top of the stack.
+			
+			i.e. Stack is an ordered list of similar data type with LIFO structure (Last in First out).
+			push() function is used to insert new elements into the Stack.
+			pop() function is used to delete an element from the stack.
+			
+			Stack is said to be in Overflow state when it is completely full and is said to be in Underflow state if it is completely empty.
+			
+			Push example,
+#include<stdio.h>
+#include<conio.h>
+#define MAX 5
+int top, status;
+void main() {
+	int stack [MAX], item;
+	int ch;
+	clrscr ();
+	top = -1;
+	printf ("\nEnter the Element to be pushed : ");
+	scanf  ("%d", &item);
+	printf (" %d", item);
+	push (stack, item);
+	if (status) {
+				printf ("\nAfter Pushing ");
+				display (stack);
+				if (top == (MAX-1))
+							printf ("\nThe Stack is Full");
+	} else
+			    printf ("\nStack overflow on Push");
+}
+/*PUSH FUNCTION*/
+void push (int stack[], int item) {
+	if (top == (MAX-1))
+		status = 0; 
+	else {
+		status = 1;
+		++top;
+		stack [top] = item;
+	}
+}
+
+STACK PUSH Example:
+#include <iostream>
+#include<stdio.h>
+#include<stdlib.h>
+using namespace std;
+
+#define MAX 5    //Maximum number of elements that can be stored
+int top=-1,stack[MAX];
+
+int main() {
+	int ch=0,i;
+	/*push();*/
+    int val;
+    while(1)
+	{
+		if(top==MAX-1)
+		{
+			printf("\nStack is full!!");
+			break;
+		}
+		else
+		{
+		    printf("\n%d", ch);
+			top=top+1;
+			stack[top]=ch;
+			ch++;
+		}
+	}
+	/* to display the stack contents */
+	printf ("\nThe Stack is: ");
+	if (top == -1)
+		printf ("empty"); 
+	else {
+		for (i=top; i>=0; --i)
+			   printf ("%d",stack[i]);
+	}
+	printf ("\n");
+	return 0;
+}
+
+Output:
+0
+1
+2
+3
+4
+Stack is full!!
+The Stack is: 43210
+
+STACK POP Example:
+in the above code, add the following code before return 0
+		/*logic for pop*/
+		if(top==-1)
+		{
+			printf("\nStack is empty!!");
+		}
+		else
+		{
+			printf("\nDeleted element is %d",stack[top]);
+			top=top-1;
+		}
+		/* to display the stack contents again */
+		printf ("\nThe Stack (after POP is: ");
+		if (top == -1)
+			printf ("empty"); 
+		else {
+			for (i=top; i>=0; --i)
+				   printf ("%d",stack[i]);
+		}
+
+Output: 
+Deleted element is 4
+The Stack (after POP is: 3210
+
+Position of Top     Status of Stack 
+-1 					Stack is Empty 
+0 					Only one element in Stack 
+N-1 				Stack is Full 
+N 					Overflow state of Stack 
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+Queues:
+linear data structure, in which the first element is inserted from one end called REAR (tail), and the deletion of existing element takes place from the other end called as FRONT (head).
+i.e. queue as FIFO(First in First Out), which means that element inserted first will also be removed first. 
+
+adding an element into queue is called Enqueue.
+removal of an element from queue is called Dequeue. 
+
+NOTE: Once a new element is inserted into the Queue, all the elements inserted before the new element in the queue must be removed, to remove the new element.
+
+In a queue,the tail keeps on moving ahead, always pointing to the position where the next element will be inserted, while the head remains at the first index.
+
+adding elements to a queue (using arrays):
+1) a[0] a[1] a[2] a[3] a[4] a[5] a[6] : here a[0] is the head and tail as no elements have been added to queue
+2) if a[0] = 27, head is still a[0] while tail is a[1].
+3) if a[0] = 27, a[1] = 19, a[2] = 17, head is still a[0] and tail becomes a[3].
+
+removing elements from a queue (using arrays):
+1) we remove the element at head position, and then one by one shift all the other elements in forward position.
+2) we remove the element from head position and then move head to the next position.
+Option 2 is preferred.
+
+Insert a value to a queue and deleting from the queue:
+#include<stdio.h>
+#include<conio.h>
+#define SIZE 5
+int queue[SIZE], front = -1, rear = -1;
+
+int main()
+{
+   int value, choice;
+   clrscr();
+   value = 10; //value to insert.
+   
+   /* enqueue the queue */
+   if(rear == SIZE-1)
+        printf("\nQueue is Full!!! Insertion is not possible!!!");
+   else{
+		if(front == -1)
+			front = 0;
+        rear++;
+        queue[rear] = value;
+        printf("\nInsertion success!!!");
+   }
+   /* display the queue */
+   if(rear == -1)
+      printf("\nQueue is Empty!!!");
+   else{
+		int i;
+		printf("\nQueue elements are:\n");
+		for(i=front; i<=rear; i++)
+			printf("%d\t",queue[i]);
+   }
+   
+   /* Dequeue the queue */
+	  if(front == rear)
+		  printf("\nQueue is Empty!!! Deletion is not possible!!!");
+	   else{
+		  printf("\nDeleted : %d", queue[front]);
+		  front++;
+		  if(front == rear)
+		 front = rear = -1;
+	   }
+
+   return 0;
+}
+
+-------------------------------------------------------------
+-------------------------------------------------------------
+Linked Lists:
+consists of group of nodes in a sequence which is divided in two parts.
+1) data
+2) address of the next node.
+
+LL are dynamic in nature as it allocates memory when required, and thus reduces access time. 
+
+Disadvantages of LL includes,
+a) memory is wasted as pointers require extra memory for storage.
+b) No element can be accessed randomly; it has to access each node sequentially.
+c) Reverse Traversing is difficult in linked list.
+
+Linked lists are used to implement stacks, queues, graphs, etc.
+
+Types of Linked List:
+1) Singly Linked List: contains nodes having data and address of the next node. The operations we can perform on singly linked lists are 
+					   insertion, deletion and traversal. 
+					   
+					   head (address of node1)-> node1 (data, next addr) -> node2 (data, next addr) -> ... so on.
+					   
+	NOTE: the address of the first node is always stored in a reference node known as "front" (Some times it is also known as "head").
+					   
+2) Doubly linked list: each node contains two links the first link points to the previous node and the next link points to the next node in the sequence.
+					   start -> (prev addr, data1, next addr) <-> (prev addr, data1, next addr) ... so on
+
+3) Circular Linked List : the last node of the list contains the address of the first node and forms a circular chain.
+
+				*head (address of 1st node) -> (data1, next addr) -> (data2, next addr) -> (data3, next addr)
+						                           |_________________________<_________________________|
+								                     last element points back to the first element
+								   
+--------------------------------------										
+Linear linked list:
+elements can only be inserted in the beginning or the end.
+
+node structure of a single linked list:
+struct node {
+      int data;
+      struct node *next;
+}start = NULL;  /* if next node is unavailable then initialize variable name to NULL. */
+
+creating a single linked list:
+void creat()
+{
+	 char ch;
+	 do
+	 {
+	 struct node *new_node,*current;
+	 /*We don’t know, how many nodes user is going to create once he execute the program.*/
+	 new_node=(struct node *)malloc(sizeof(struct node));
+     /*END*/
+	 
+	 /*Fill Information in newly Created Node. Whenever we create new node , Make its Next Field as NULL*/
+	 printf("nEnter the data : ");
+	 scanf("%d",&new_node->data);
+	 new_node->next=NULL;
+	 /*END*/
+	 
+	 /* Creating Very First Node. If start = NULL then we can identify node as first node */
+	  if(start==NULL)
+	  {
+		start=new_node; /* new_node->data = VALUE entered & new_node->next = NULL */
+		current=new_node;
+	  } /*END*/
+	  else 
+	  {
+		/* Creating 2nd or nth node */ 
+	    current->next=new_node; /*making link between new_node and current node.i.e. address on the current node shd point to new node*/
+	    current=new_node; 		/*move current pointer to next node.*/
+	  } /*END*/
+	 printf("nDo you want to creat another : ");
+	 ch=getche();
+	 }while(ch!='n');
+}
+
+Traversing through Singly Linked List: i.e. visiting each and every node of the Singly linked list
+steps will be like,
+1) Firstly move to the first node.
+2) Fetch the data from the node and perform the operation.
+3) After performing operation, advance pointer to next node.
+
+example,
+temp = start; //Move to First Node
+do {
+    // Do Your Operation
+    // Statement ...1
+    // Statement ...2
+    // Statement ...3
+    // Statement ...n
+    temp = temp->next; //Move Pointer to Next Node
+}while(temp!=NULL);
+
+Display Linked List from First to Last: 
+1) Traversal Starts from Very First node.We cannot modify the address stored inside global variable “start” thus 
+   we have to declare one temporary variable -“temp” of type node.
+2) assign Address of Starting node in Pointer variable i.e temp.
+
+void display()
+{
+    struct node *temp;
+    temp=start;
+    while(temp!=NULL)
+    {
+		printf("%d",temp->data);
+		temp=temp->next;
+    }
+}
+
+Insert node at First Position:
+1. Create New Node.
+2. Fill Data into “Data Field“.
+3. Make it’s “Pointer” or “Next Field” as NULL.
+4. Attach This newly Created node to Start
+5. Make newnode as Starting node
+
+void insert_at_beg()
+{
+	struct node *new_node,*current; 
+
+	new_node=(struct node *)malloc(sizeof(struct node));
+
+	if(new_node == NULL)
+		printf("nFailed to Allocate Memory");
+
+	printf("nEnter the data : ");
+	scanf("%d",&new_node->data);
+	new_node->next=NULL;
+
+	if(start==NULL)
+	{
+		start=new_node;
+		current=new_node;
+	}
+	else
+	{
+		new_node->next=start; /* this will point to the address of 1st node in the LL*/
+		start=new_node;       /* move the data in the new_node as start structure - > data */
+    }
+}
+          
+Insert node at Last Position:
+1.Create New Node
+2.Fill Data into “Data Field“
+3.Make it’s “Pointer” or “Next Field” as NULL
+4.Node is to be inserted at Last Position so we need to traverse SLL upto Last Node.
+5.Make link between last node and newnode.
+
+void insert_at_end()
+{
+	struct node *new_node,*current;
+
+	new_node=(struct node *)malloc(sizeof(struct node));
+
+	if(new_node == NULL)
+	   printf("nFailed to Allocate Memory");
+
+	 printf("nEnter the data : ");
+	 scanf("%d",&new_node->data);
+	 new_node->next=NULL;
+
+	 if(start==NULL)
+	 {
+	   start=new_node;
+	   current=new_node;
+	 }
+	 else
+	 {
+	   temp = start;
+		 while(temp->next!=NULL)
+		 {
+			temp = temp->next; /*Traverse Upto Last Node., So that temp can keep track of Last node*/
+		 }
+	   temp->next = new_node;
+	 }
+}
+
+Insert node at middle position: http://www.c4learn.com/data-structure/insert-node-at-middle-position-singly-linked-list/
+
+Delete from first position:
+void del_beg()
+{
+	struct node *temp;
+
+	temp = start;        /* Store Current Start in Another Temporary Pointer */
+	start = start->next; /* Move Start Pointer One position Ahead */ 
+
+	free(temp);			 /*Delete temp i.e Previous Starting Node as we have Updated Version of Start Pointer*/
+	printf("nThe Element deleted Successfully ");
+}  
+
+Delete from end of the list:
+	void del_tail()
+	{
+	   if(start == NULL)
+	   {
+		  printf("\nList is Empty!!!\n");
+	   }
+	   else
+	   {
+		  struct Node *temp1 = start,*temp2;
+		  
+		  if(start->next == NULL)
+				start = NULL;
+		  else
+		  {
+			 while(temp1->next != NULL)
+			 {
+				temp2 = temp1;
+				temp1 = temp1->next;
+			 }
+			 temp2->next = NULL;
+		  }
+		  free(temp1);
+		  printf("\nOne node deleted!!!\n\n");
+	   }	
+	}
+
+Search Particular Element in SLL:
+struct node * search(int num)
+{
+	int flag = 0;
+	struct node *temp;
+
+	temp = start;
+
+	while(temp!=NULL)
+	{
+		if(temp->data == num)
+		   return(temp); //Found
+		temp = temp->next;
+	}
+
+	if(flag == 0)
+		 return(start); // Not found
+}
+
+Recursive Program to Count Number of Nodes in Linked List:
+int count(node *temp)
+{
+	 if(temp == NULL)
+		return(0);
+	 return(1 + count(temp->next));
+}
+
+-----------------------------------------------------
+Operation on circular linked lists:
+a) structure of a circular LL
+		struct link
+		{
+			int data;
+			struct link *next;
+		};
+
+
+b) create a new circular linked list:
+
+	Algo:
+	Step 1: Create a newNode with given value.
+	Step 2: Check whether list is Empty (head == NULL)
+	Step 3: If it is Empty then, set head = newNode and newNode→next = head .
+	Step 4: If it is Not Empty then, define a Node pointer 'temp' and initialize with 'head'.
+	Step 5: Keep moving the 'temp' to its next node until it reaches to the last node (until 'temp → next == head').
+	Step 6: Set 'newNode → next =head', 'head = newNode' and 'temp → next = head'.
+	
+	
+		#include<stdio.h>
+		#include<conio.h>
+		#include<stdlib.h>
+		struct link
+		{
+			int data;
+			struct link *next;
+		};
+		int i=0;
+		struct link *node,*start;
+		 
+		void create_link(struct link *node)
+		{
+			char ch;
+			start->next=NULL;
+			node=start;
+			fflush(stdin);
+			printf("\n Enter 'n' for break:");
+			ch=getchar();
+			while(ch!='n')
+			{
+				node->next=(struct link *)malloc(sizeof(struct link)); /*if list is empty, start->next will be allocated mem*/
+				node=node->next;                                      
+		 
+				printf("\n Enter data for node:");
+				scanf("%d",&node->data);
+				node->next=start;
+				fflush(stdin);
+				printf("\n Enter 'n' for break:");
+				ch=getchar();
+				i++;
+			}
+		}
+		 
+		void display(struct link *node)
+		{
+			int count;
+			node=start->next;
+			count=i;  // i is populated from create function.
+		 
+			while(count)
+			{
+				printf("\t  %d",node->data);
+				node=node->next;
+				count--;
+			}
+		}
+		 
+		void main()
+		{
+			char ch;
+			clrscr();
+			create_link(node);
+			printf("List Item Are:-\n");
+			display(node);
+			getch();
+		}
+
+	o/p:
+	Enter 'n' for break:
+	Enter data for node: 10
+	Enter 'n' for break:
+	Enter data for node: 20
+	Enter 'n' for break:
+	Enter data for node: 30	
+	Enter 'n' for break:
+	Enter data for node: 40	
+	Enter 'n' for break:
+	Enter data for node: 50	
+	Enter 'n' for break: n
+	List Item Are:- 10 20 30 40 50
+		
+c) Insertion at the front of Circular linked list: http://scanftree.com/Data_Structure/Circular
+		 Step1. Create the new node
+		 Step2. Set the new node’s next to itself (circular!) 
+		 Step3. If the list is empty,return new node.
+		 Step4. Set our new node’s next to the front.
+		 Step5. Set tail’s next to our new node. 
+		 Step6. Return the end of the list.
+		 
+		node* AddFront(node* tail, int num)
+		{
+			node *temp = (node*)malloc(sizeof(node)); /*create a node*/
+			temp->data = num;                         /*populate the value in the node*/
+			temp->next = temp;	                      /*point to the same node as this is circular LL*/
+			if (tail == NULL)                         
+				return temp;						  /*if the list is empty, return the new node*/
+			temp->next = tail->next;                  /*the new node's addr field should point to the current node*/ 
+			tail->next = temp;						  /*point the last node to the new node for circular LL*/
+			return tail;                              
+		}
+		
+		OR Complete Program,
+			#include<stdio.h>
+			#include<conio.h>
+			#include<stdlib.h>
+			struct link
+			{
+				int data;
+				struct link *next;
+			};
+			int i=0;
+			struct link *node,*start,*ptr,*new1;
+			 
+			void create_link(struct link *node)
+			{
+				char ch;
+				start->next=NULL;
+				node=start;
+				fflush(stdin);
+				printf("\n Enter 'n' for break:");
+				ch=getchar();
+				while(ch!='n')
+				{
+					node->next=(struct link *)malloc(sizeof(struct link));
+					node=node->next;
+			 
+					printf("\n Enter data for node:");
+					scanf("%d",&node->data);
+					node->next=start;
+					fflush(stdin);
+					printf("\n Enter 'n' for break:");
+					ch=getchar();
+					i++;
+				}
+			}
+			void insert_first(struct link *node)
+			{
+				node=start->next;
+				ptr=start;
+				new1=(struct link *)malloc(sizeof(struct link));
+				printf("\n Insert data for first node:");
+				scanf("%d",&new1->data);
+				ptr->next=new1;
+				new1->next=node;
+				i++;
+			}
+			 
+			void display(struct link *node)
+			{
+				int count;
+				node=start->next;
+				count=i;
+			 
+				while(count)
+				{
+					printf("\t%d",node->data);
+					node=node->next;
+					count--;
+				}
+			}
+			 
+			void main()
+			{
+				char ch;
+				clrscr();
+				create_link(node);
+				insert_first(node);
+				printf("List Item Are:\n");
+				display(node);
+				getch();
+			}
+			
+		Output:
+	Enter 'n' for break:
+	Enter data for node: 10
+	Enter 'n' for break:
+	Enter data for node: 20
+	Enter 'n' for break:
+	Enter data for node: 30	
+	Enter 'n' for break:
+	Enter data for node: 40	
+	Enter 'n' for break:
+	Enter data for node: 50	
+	Enter 'n' for break: n
+	Insert data for first node: 10
+	List Item Are:- 10 20 30 40 50
+
+d) Insertion at the end of Circular linked list:
+		Step1. Create the new node
+		Step2. Set the new node’s next to itself (circular!) 
+		Step3. If the list is empty,return new node.
+		Step4. Set our new node’s next to the front.
+		Step5. Set tail’s next to our new node. 
+		Step6. Return the end of the list.
+		
+		node* AddEnd(node* tail, int num)
+		{
+			node *temp = (node*)malloc(sizeof(node));
+			temp->data = num;
+			temp->next = temp;	
+			if (tail == NULL) 
+				return temp;
+			temp->next = tail->next;
+			tail->next = temp;
+			return temp;
+		}
+		
+		Complete program:
+			#include<stdio.h>
+			#include<conio.h>
+			#include<stdlib.h>
+			struct link
+			{
+				int data;
+				struct link *next;
+			};
+			int i=0;
+			struct link *node,*start,*ptr,*new1;
+			 
+			void create_link(struct link *node)
+			{
+				char ch;
+				start->next=NULL;
+				node=start;
+				fflush(stdin);
+				printf("\n Enter 'n' for break:");
+				ch=getchar();
+				while(ch!='n')
+				{
+					node->next=(struct link *)malloc(sizeof(struct link));
+					node=node->next;
+			 
+					printf("\n Enter data for node:");
+					scanf("%d",&node->data);
+					node->next=start;
+					fflush(stdin);
+					printf("\n Enter 'n' for break:");
+					ch=getchar();
+					i++;
+				}
+			}
+			void insert_last(struct link *node)
+			{
+				int count;
+				node=start->next;
+				ptr=start;
+				count=i;
+				while(count)
+				{
+					ptr=ptr->next;
+					node=node->next;
+					count--;
+				}
+				new1=(struct link *)malloc(sizeof(struct link));
+				printf("\n Insert data for last node:");
+				scanf("%d",&new1->data);
+				ptr->next=new1;
+				new1->next=node;
+				i++;
+			}
+			 
+			void display(struct link *node)
+			{
+				int count;
+				node=start->next;
+				count=i;
+			 
+				while(count)
+				{
+					printf("\t%d",node->data);
+					node=node->next;
+					count--;
+				}
+			}
+			 
+			void main()
+			{
+				char ch;
+				clrscr();
+				create_link(node);
+				insert_last(node);
+				printf("List Item Are:\n");
+				display(node);
+				getch();
+			}
+		
+		o/p:
+		Output:
+	Enter 'n' for break:
+	Enter data for node: 10
+	Enter 'n' for break:
+	Enter data for node: 20
+	Enter 'n' for break:
+	Enter data for node: 30	
+	Enter 'n' for break:
+	Enter data for node: 40		
+	Enter 'n' for break: n
+	Insert data for last node: 50
+	List Item Are:- 10 20 30 40 50
+
+Deletion at beginning in the Circular linked list:
+		void delete_first(struct link *node)
+		{
+			node=start->next;
+			ptr=start;
+			if(i==0)
+			{
+				printf("\n List is empty");
+				exit(0);
+			}
+			ptr->next=node->next;
+			free(node);
+			i--;
+		}
+		
+	complete program in : http://scanftree.com/Data_Structure/deletion-in-front-circular-linked-list
+	
+Deletion at last in the Circular linked list:	
+		void delete_last(struct link *node)
+		{
+			int node_no=0,count;
+			node=start->next;
+			ptr=start;
+			count=i;
+			if(i==0)
+			{
+				printf("\n List is empty"); 
+				exit(0);
+			}
+			while(count)
+			{
+				node_no++;
+				ptr=ptr->next;
+				node=node->next;
+				count--;
+			}	
+			node=start->next;
+			ptr=start;
+			while(node_no!=1)
+			{
+				node_no--;
+				ptr=ptr->next;
+				node=node->next;
+			}
+			if(node_no==1)
+			{
+				ptr->next=node->next;
+				free(node);
+				i--;
+			}
+		}
+		
+		
+----------------------------------------------------------------
+DS Interview questions:
+1) What is data structure?
+2) List out the areas in which data structures are applied extensively?
+	Compiler Design, Operating System, Database Management System, Artificial Intelligence, Analytics.
+3) If you are using C language to implement the heterogeneous linked list, what pointer type will you use? Void pointer is capable of storing pointer to any data type
+4) 	Minimum number of queues needed to implement the priority queue?
+		Two. One queue is used for actual storing of data and another for storing priorities.
+5) 	What is the data structures used to perform recursion?
+		Stack. Because of its LIFO property it remembers its 'caller' so knows whom to return when the function has to return.
+		
+6) Sorting is not possible by using which of the following methods? (Insertion, Selection, Exchange, Deletion)?
+		Sorting is not possible in Deletion. Using insertion we can perform insertion sort, using selection we can perform selection sort, using exchange we can perform the bubble sort (and other similar sorting methods). But no sorting method can be done just using deletion.
+7) Which is the simplest file structure? (Sequential, Indexed, Random)
+		Sequential is the simplest file structure
+8) 	Whether Linked List is linear or Non-linear data structure?
+		According to Access strategies Linked list is a linear one. 
+		According to Storage Linked List is a Non-linear one.
+		
+9) What is algorithm?
+	Algorithm is a step by step procedure, which defines a set of instructions to be executed in certain order to get the desired output.
+	
+10) What is linear data structure? has sequentially arranged data items. The next time can be located in the next memory address.
+11) What is a linked-list? Most modern high-level programming language does not provide the feature of directly accessing memory location, therefore, linked-list are not supported in them or available in form of inbuilt functions.
+12) What is stack? abstract data type follows LIFO.
+13) Why do we use stacks? Stacks are used commonly in recursive function calls, expression parsing, depth first traversal of graphs etc.
+14) What operations can be performed on stacks?
+	push() − adds an item to stack
+	pop() − removes the top stack item
+	peek() − gives value of top item without removing it
+	isempty() − checks if stack is empty
+	isfull() − checks if stack is full
+15) What operations can be performed on Queues?
+		enqueue() − adds an item to rear of the queue
+		dequeue() − removes the item from front of the queue
+		peek() − gives value of front item without removing it
+		isempty() − checks if stack is empty
+		isfull() − checks if stack is full
+16) What is linear searching? Linear search tries to find an item in a sequentially arranged data type (array or list).Linear search compares expected data item with each of data items in list or array
+17) What is binary search? A binary search works only on sorted lists or arrays. This search selects the middle which splits the entire list into two parts. First the middle is compared.
+18) What is bubble sort and how bubble sort works?
+19)Tell me something about 'insertion sort'?
+20) What is selection sort? This algorithm first finds the smallest element in the array and exchanges it with the element in the first position, then find the second smallest element and exchange it with the element in the second position, and continues in this way until the entire array is sorted.
+
+
+	
