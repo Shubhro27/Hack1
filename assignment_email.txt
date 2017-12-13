@@ -1,0 +1,161 @@
+email assignment:
+mapper.py: directly uses the file in i/p and process over the input. Creates an output file as read by reducer
+	#! /usr/bin/python
+	import csv
+
+	f_out = open("email_out.csv","w")
+
+	with open("attachment_Emails.csv") as f:
+	 reader = csv.reader(f)
+	 for row in reader:
+	  if row[3] == "H" and row[4]:
+	   format = "\"%s\",%s\n"
+	   str1 = format %(row[4],1)
+	   print(str1)
+	   #f_out.write(str1)
+
+	f.close()
+	f_out.close()
+	
+reducer.py: uses the file created in mapper.py
+	#! /usr/bin/python
+	import csv
+	counter = 0
+	email_dict = {}
+	with open("email_out.csv") as f:
+		reader = csv.reader(f)
+		for row in reader:
+		  name = row[0]
+		  count = int(row[1])
+		  #print(row[0] + " occurrs " + row[1] + " times.")
+		  if counter == 0:
+			   email_dict[row[0]]= int(row[1])
+			   counter = counter + 1
+		  else:
+			   nh = [ names for names in email_dict ]
+			   print(nh)
+			   if row[0] in nh:
+				email_dict[row[0]] = int(email_dict[row[0]]) + 1
+			   else:
+				email_dict[row[0]] = 1
+
+	print(email_dict)
+	
+One disadvantage is to determine how to use these files in hadoop streaming
+
+----------------------------------------------------------------------------------------------------------------------
+mapper1.py : is same as before where takes i/p file but writes o/p to sysout for reducer to process:
+	#! /usr/bin/python
+	import csv
+
+	#f_out = open("email_out.csv","w")
+
+	with open("attachment_Emails.csv") as f:
+	 reader = csv.reader(f)
+	 for row in reader:
+	  if row[3] == "H" and row[4]:
+	   format = "\"%s\",%s"
+	   print(format %(row[4],1))
+	   #f_out.write(str1)
+	f.close()
+
+reducer1.py : creates a temprary .csv file, processes the file and finally removes the file.
+	#! /usr/bin/python
+	import sys
+	import csv
+	import os
+	#
+	f_out = open("email_out.csv","w")
+
+	for line in sys.stdin:
+	 f_out.write(line)
+
+	f_out.close()
+	#
+	counter = 0
+	email_dict = {}
+	with open("email_out.csv") as f:
+		reader = csv.reader(f)
+		for row in reader:
+		  name = row[0]
+		  count = int(row[1])
+		  #print(row[0] + " occurrs " + row[1] + " times.")
+		  if counter == 0:
+			   email_dict[row[0]]= int(row[1])
+			   counter = counter + 1
+		  else:
+			   nh = [ names for names in email_dict ]
+			   if row[0] in nh:
+				email_dict[row[0]] = int(email_dict[row[0]]) + 1
+			   else:
+				email_dict[row[0]] = 1
+
+	print(email_dict)
+	f.close()
+	os.remove("email_out.csv")
+
+	desc_email_dict = sorted(email_dict,key=email_dict.get,reverse=True)
+
+	print(desc_email_dict)
+
+	for item in range(0,3):
+	 print(desc_email_dict[item],email_dict[desc_email_dict[item]])
+
+------------------------------------------------------------------------------------------------------------
+mapper2.py: reads the file from stdin, puts it in a csv file and sends o/p to stdout. Removes the file in the end
+
+	#! /usr/bin/python
+	import sys
+	import csv
+	import os
+
+	f_in = open("email_input.csv","w")
+
+	for item in sys.stdin:
+	 f_in.write(item)
+
+	f_in.close()
+
+	with open("email_input.csv") as f:
+	 reader = csv.reader(f)
+	 for row in reader:
+	  if row[3] == "H" and row[4]:
+	   format = "\"%s\"\t%s"
+	   print(format %(row[4],1))
+	   #f_out.write(str1)
+
+	f.close()
+	os.remove("email_input.csv")
+
+reducer2.py: reads the stdin and writes to stdin.
+
+	#! /usr/bin/python
+	import sys
+	import csv
+	import os
+	#
+	counter = 0
+	email_dict = {}
+	for email_list in sys.stdin:
+	 email_list = email_list.strip("\n")
+	 from_name,count = email_list.split("\t",1)
+	 count = int(count)
+	 #
+	 if counter == 0:
+	  email_dict[from_name] = count
+	  counter = counter + 1
+	 else:
+	  nh = [names for names in email_dict]
+	  if from_name in nh:
+	   email_dict[from_name] = int(email_dict[from_name]) + count
+	  else:
+	   email_dict[from_name] = count
+	#
+	print(email_dict)
+	desc_email_dict = sorted(email_dict,key=email_dict.get,reverse=True)
+	print(desc_email_dict)
+	for item in range(0,3):
+	 print(desc_email_dict[item],email_dict[desc_email_dict[item]])
+
+
+
