@@ -1,7 +1,0 @@
-Movies case study: 
- Highest rating per year
- longest movie duration
- oldest movie
- newest movie
- movie with the highest rating
- how to get distinct movies for high rating?
