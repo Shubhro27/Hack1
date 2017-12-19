@@ -1,0 +1,92 @@
+pig -x local
+A = LOAD 'students.txt'; # A is a Bag or Tuple? it is a Bag
+describe A; # schema unknown, becoz workflow is not defined
+dump A; # Bag with a collection of TUples, tell PIG this is my workflow and tells it to optimize and learn
+
+A = LOAD 'students.txt' AS (name:chararray, age:int,gpa:float);
+#stud_info= LOAD 'students.txt' using PigStorage(',') AS (StudName:chararray,age:int,gpa:float);
+
+dump A;
+describe A;
+R = FILTER A by (age>=20);
+dump R;
+R = FILTER A by (age>=20) and (gpa>=3.5);
+dump R; 
+# background is mr job as can be seen behind
+
+# Variable R is created out of variable A
+illustrate R;
+# this is powerful if it has been created after a range of operations
+
+#Foreach - when you want to get only specific columns, like SELECT
+R = FOREACH A GENERATE  age,gpa;
+
+
+#delimited is fefault tab, but can be anything
+
+#grouping
+B = GROUP A by age;
+dump B;
+describe B;
+#resultant, for each tuple, first one is a number and second one is a bag, do data manipulation
+
+C = FOREACH B GENERATE group, A.name;
+dump C;
+#restricts output only to name
+
+STORE A into 'outputdir';
+# why in a dir and not dirrectly as a file?
+# output file depends on the # of reducers; behind the scenes all are MR's
+# dellimters of output can be changed
+STORE B into 'outputdir2' using PigStorage('|');
+
+#create an output dir new one
+pig -x local students.pig
+
+#Load movies_data.csv
+movies = LOAD 'movies_data.csv' USING PigStorage(',') AS (id:int,name:chararray,year:int,rating:double,duration:int);
+describe movies;
+DUMP movies;
+
+#high rated movies
+movies_greater_than_four = FILTER movies BY (float)rating>4.0;
+dump movies_greater_than_four;
+
+#How many movies are there in the file
+#do gorup by of the movies ...and then run count function...this s just one way
+count_all = GROUP movies ALL;
+total_count = FOREACH count_all GENERATE COUNT(movies.id);
+dump total_count;
+describe count_all; #it is a bag, in which first column is group that is character, then second column is movies, again a bag which has each row as tuples
+illustrate count_all;
+
+#WHICH  were the longest movies?
+#take only duration and movie title
+#order it as there is no sort kind of command
+movie_duration = FOREACH movies GENERATE name,(double)duration/60;#in minutes
+movie_duration_notnull = FILTER movie_duration by $1 is not null;#ones that duration is not null, $1 is first column which is duration
+movies_from_longest_to_shortest = ORDER movie_duration_notnull by $1 DESC;
+dump movies_from_longest_to_shortest;
+
+#longest movies
+Longest_movies= LIMIT movies_from_longest_to_shortest 50;
+dump Longest_movies;
+
+#each year pick up the highest rated movies --> workout
+grouped_by_year = Group movies by year;
+highest_ratings = FOREACH grouped_by_year Generate group as year, MAX(movies.rating);
+highest_ratings = FOREACH grouped_by_year Generate group as year, MAX(movies.rating) as highest_rating;
+#want to merge this with original movie list - like by Join
+describe highest_ratings;
+join_title = JOIN highest_ratings by (year, highest_rating), movies by(year,rating);
+descibe join_title;
+
+#select best_movies
+best_movies = FOREACH join_title GENERATE $0 as year, $3 as title, $1 as rating;
+dump best_movies;
+
+#no persistence of data, we close the session then schema goes away
+
+
+
+
