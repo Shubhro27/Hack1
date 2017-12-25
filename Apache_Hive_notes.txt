@@ -1,0 +1,210 @@
+Tutorials:
+https://hortonworks.com/blog/hive-cheat-sheet-for-sql-users/
+https://www.tutorialspoint.com/hive/
+http://blog.cloudera.com/blog/2012/12/how-to-use-a-serde-in-apache-hive/
+
+--------------------------------------------------------------------------
+copy files to local:
+
+hdfs dfs -get hive_shubhro/customer_information.txt
+hdfs dfs -get hive_shubhro/customer_transactions.txt
+
+hdfs dfs -ls hive_shubhro
+
+-------------------------------------------------------------------------
+#####################################################################################
+login to HIVE, create database and use the data base to create tables within the DB.
+#####################################################################################
+[shubhro2705854012@ip-172-31-20-58 hiveFiles]$ hive
+WARNING: Use "yarn jar" to launch YARN applications.Logging initialized using configuration in file:/etc/hive/2.3.4.0-3485/0/hive-log4j.properties
+hive (default)> create database customer_retail; 
+OK
+Time taken: 1.117 seconds
+
+NOTE: in cloudx lab, the DB will be created in /apps/hive/warehouse/, in cloudera it will be created in /hive/warehouse
+
+hive (default)> use customer_retail;   //any tables created from now on will be created under this database.
+OK
+Time taken: 1.105 seconds
+
+###########################################################
+creating a table within customer_retail database
+###########################################################
+CREATE TABLE IF NOT EXISTS cust_information (customer_id INT,customer_firstname STRING,customer_secondname STRING,customer_age INT,customer_occupation STRING)
+row format delimited
+fields terminated by ',';
+
+CREATE TABLE IF NOT EXISTS cust_transaction (transaction_id INT,transaction_date STRING,customer_id INT,transaction_amount DOUBLE,transaction_section STRING,transaction_equipment STRING,transaction_city STRING,transaction_state STRING,transaction_type STRING)
+row format delimited
+fields terminated by ',';
+
+00000000,06-26-2011,4007024,040.33,Exercise & Fitness,Cardio Machine Accessories,Clarksville,Tennessee,credit
+
+NOTE: If ROW FORMAT SERDE is not specified, ROW FORMAT defaults are the ROW FORMAT DELIMITED options that are not explicitly specified.
+DELIMITED specifies a delimiter at the table level for structured fields:
+FIELDS TERMINATED BY. example, fields terminated by ',';
+LINES TERMINATED BY.  example, LINES TERMINATED BY ‘\n’;
+STORED AS TEXTFILE;
+
+NOTE: this does not create a physical table but just sets up the structure of the table. This forms the Meta data that gets stored in Derby.
+
+################################################################
+DESCRIBE the tables
+################################################################
+DESCRIBE cust_information;
+OK
+customer_id             int                                         
+customer_firstname      string                                      
+customer_secondname     string                                      
+customer_age            int                                         
+customer_occupation     string                                      
+Time taken: 0.153 seconds, Fetched: 5 row(s)
+
+DESCRIBE cust_transaction;
+OK
+transaction_id          int                                         
+transaction_date        string                                      
+customer_id             int                                         
+transaction_amount      double                                      
+transaction_section     string                                     
+transaction_equipment   string                                      
+transaction_city        string                                      
+transaction_state       string                                      
+transaction_type        string                                      
+Time taken: 0.065 seconds, Fetched: 9 row(s)
+
+NOTE: This is the METADATA that gets stored in Derby.
+
+##############################################################
+Load the data into the table
+##############################################################
+LOAD DATA LOCAL INPATH 'customer_information.txt' OVERWRITE INTO TABLE cust_information;  #looks for the file in LOCAL FS
+
+LOAD DATA INPATH 'hive_shubhro/customer_transactions.txt' OVERWRITE INTO TABLE cust_transaction;  #no "LOCAL" Keyword. So directly loads from  HDFS.
+
+NOTE: Once the file has been loaded, it gets deleted from the i/p folder (hive_shubhro/customer_transactions.txt).
+
+hive (customer_retail)> SELECT * FROM cust_transaction LIMIT 5;
+OK
+0       06-26-2011      4007024 40.33   Exercise & Fitness      Cardio Machine Accessories      Clarksville     Tennessee       credit
+1       05-26-2011      4006742 198.44  Exercise & Fitness      Weightlifting Gloves    Long Beach      California      credit
+2       06-01-2011      4009775 5.58    Exercise & Fitness      Weightlifting Machine Accessories       Anaheim California      credit
+3       06-05-2011      4002199 198.19  Gymnastics      Gymnastics Rings        Milwaukee       Wisconsin       credit
+4       12-17-2011      4002613 98.81   Team Sports     Field Hockey    Nashville       Tennessee       credit
+Time taken: 0.305 seconds, Fetched: 5 row(s)
+
+
+hive (customer_retail)> SELECT * FROM cust_information LIMIT 5;
+OK
+4000001 Kristina        Chung   55      Pilot
+4000002 Paige   Chen    74      Teacher
+4000003 Sherri  Melton  34      Firefighter
+4000004 Gretchen        Hill    66      Computer hardware engineer
+4000005 Karen   Puckett 74      Lawyer
+Time taken: 0.062 seconds, Fetched: 5 row(s)
+
+hive (customer_retail)> DESCRIBE DATABASE customer_retail;
+OK
+customer_retail         hdfs://ip-172-31-53-48.ec2.internal:8020/apps/hive/warehouse/customer_retail.db shubhro2705854012       USER
+Time taken: 0.039 seconds, Fetched: 1 row(s)
+
+hive (customer_retail)> SHOW TABLES;
+OK
+cust_information
+cust_transaction
+Time taken: 0.064 seconds, Fetched: 2 row(s)
+
+-------------------------------------------------------------------------------
+NOTE: HIVE will activate map-reduce only when there is an operation (like cound, join) on the data. For LOADING, CREATING, DELETING or data transfer activities HIVE does not activate map-reduce
+
+example,
+hive (customer_retail)> SELECT * FROM cust_information LIMIT 5;   //no map-reduce
+Query ID = shubhro2705854012_20171225125108_e31ade44-8b83-47c8-acff-9e91ead630ba
+Total jobs = 1
+Launching Job 1 out of 1Tez session was closed. 
+Reopening...Session re-established.
+Status: Running (Executing on YARN cluster with App id application_1514101126282_0117)
+--------------------------------------------------------------------------------        
+VERTICES      STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+--------------------------------------------------------------------------------
+Map 1 ..........   SUCCEEDED      1          1        0        0       0       0
+Reducer 2 ......   SUCCEEDED      1          1        0        0       0       0
+--------------------------------------------------------------------------------
+VERTICES: 02/02  [==========================>>] 100%  ELAPSED TIME: 4.94 s     
+--------------------------------------------------------------------------------
+OK
+9999
+Time taken: 11.574 seconds, Fetched: 1 row(s)hive (customer_retail)> 
+--------------------------------------------------------------------------------------
+###############################################
+Operations on the tables: 
+###############################################
+SELECT transaction_section, SUM(transaction_amount) FROM cust_transaction GROUP BY transaction_section;
+
+Air Sports      99316.89999999994
+Combat Sports   164730.66999999995
+Dancing 42603.70999999998
+Exercise & Fitness      766463.8700000007
+Games   374932.69999999943
+Gymnastics      327225.3399999993
+Indoor Games    288506.0400000002
+Jumping 205842.66999999993
+Outdoor Play Equipment  294728.27999999956
+Outdoor Recreation      846678.6399999991
+Puzzles 61564.74999999998
+Racquet Sports  166976.05999999965
+Team Sports     617461.3799999995
+Water Sports    531815.9700000014
+Winter Sports   321973.56000000006
+
+SELECT customer_id, SUM(transaction_amount) FROM cust_transaction GROUP BY customer_id LIMIT 10;
+OK
+4000000 637.22
+4000001 980.5099999999999
+4000002 112.33
+4000003 371.01
+4000004 672.54
+4000005 1080.4199999999998
+4000006 184.01
+4000007 719.66
+4000009 364.69
+4000010 53.6
+Time taken: 4.903 seconds, Fetched: 10 row(s)
+
+NOTE: LIMIT o/ps the 1st 10 results
+
+SELECT customer_id, SUM(transaction_amount) AS sum_amt FROM cust_transaction GROUP BY customer_id ORDER BY sum_amt DESC LIMIT 3;
+OK
+4009485 1973.3
+4006425 1732.09
+4000221 1671.4700000000003
+
+##### Total Sales from customer_retail DB based on age group##################################################################
+CREATE TABLE IF NOT EXISTS cust_output1 (cust_ID INT, cust_fname STRING, cust_age INT, cust_occup STRING, cust_prod_purch STRING, cust_spent_amt DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'; 
+
+INSERT OVERWRITE TABLE cust_output1 SELECT ci.customer_id, ci.customer_firstname, ci.customer_age, ci.customer_occupation, ct.transaction_equipment, ct.transaction_amount FROM cust_information ci JOIN cust_transaction ct ON (ci.customer_id = ct.customer_id);
+
+
+CREATE TABLE IF NOT EXISTS cust_output2 (cust_ID INT, cust_fname STRING, cust_age INT, cust_occup STRING, cust_prod_purch STRING, cust_spent_amt DOUBLE, cust_age_categ STRING);
+
+
+INSERT OVERWRITE TABLE cust_output2
+SELECT * , CASE
+ WHEN cust_age <30 then 'low'
+ WHEN cust_age >=30 and cust_age < 50 then 'middle'
+ WHEN cust_age >=50 then 'old' 
+ ELSE 'others'
+END
+FROM cust_output1;
+
+SELECT cust_age_categ, SUM(cust_spent_amt) FROM cust_output2 GROUP BY cust_age_categ;
+
+O/p:
+OK
+low     725221.3399999988
+middle  1855861.669999996
+old     2529100.310000011
+####################################################################################################################################
