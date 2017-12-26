@@ -1,0 +1,8 @@
+John,Eickhoff,50
+Brenda,Akin,30
+Tina,Caffey,60
+Kathy,Rhodes,70
+Sue,Flachs,45
+Debra,Reller,45
+Keith,Rohrer,60
+George,Lucas,60

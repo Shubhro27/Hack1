@@ -2,6 +2,7 @@ Tutorials:
 https://hortonworks.com/blog/hive-cheat-sheet-for-sql-users/
 https://www.tutorialspoint.com/hive/
 http://blog.cloudera.com/blog/2012/12/how-to-use-a-serde-in-apache-hive/
+https://www.dezyre.com/hadoop-tutorial/apache-hive-tutorial-tables
 
 --------------------------------------------------------------------------
 copy files to local:
@@ -187,6 +188,7 @@ LINES TERMINATED BY '\n';
 
 INSERT OVERWRITE TABLE cust_output1 SELECT ci.customer_id, ci.customer_firstname, ci.customer_age, ci.customer_occupation, ct.transaction_equipment, ct.transaction_amount FROM cust_information ci JOIN cust_transaction ct ON (ci.customer_id = ct.customer_id);
 
+NOTE: INSERT OVERWRITE will overwrite any existing data in the table or partition and INSERT INTO will append to the table or partition keeping the existing data.
 
 CREATE TABLE IF NOT EXISTS cust_output2 (cust_ID INT, cust_fname STRING, cust_age INT, cust_occup STRING, cust_prod_purch STRING, cust_spent_amt DOUBLE, cust_age_categ STRING);
 
@@ -353,3 +355,75 @@ once we drop the table, the data is lost forever (unless we have backed it up in
 
 In order to BYPASS this shortcomming, we use the keyword 'EXTERNAL' (i.e. get control over location from HIVE).
 i.e. by "EXTERNAL" keyword, we create a softlink to the file, so when we drop the table, we do not lose data.
+
+SELECT COUNT(1) FROM FRAUD_ACH;
+
+CREATE DATABASE Telco_Customer;
+
+USE Telco_Customer;
+
+CREATE EXTERNAL TABLE IF NOT EXISTS Telco_Cust_Churn 
+(customerID STRING,gender STRING,SeniorCitizen INT,Partner STRING,Dependents STRING,tenure INT,PhoneService STRING,MultipleLines STRING,InternetService STRING,OnlineSecurity STRING,OnlineBackup STRING,DeviceProtection STRING,TechSupport STRING,StreamingTV STRING,StreamingMovies STRING,Contract STRING,PaperlessBilling STRING,PaymentMethod STRING,MonthlyCharges DOUBLE,TotalCharges DOUBLE,Churn DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION 'hive2_shubhro/data/telco';
+
+LOAD DATA INPATH "hive_shubhro/Telco_Customer_Churn.csv" OVERWRITE INTO TABLE Telco_Cust_Churn;
+----------------------------------------------------------------------------
+PARTITIONING AND BUCKETING: 
+
+a) partitioning: <https://acadgild.com/blog/partitioning-in-hive/>
+	a) static partitioning: is when user defines the partitions explicitely.
+	b) dynamic paritioning: 
+	
+	Static Partitioning:
+	CREATE DATABASE shubhro_country_info;
+
+	USE shubhro_country_info;
+
+	CREATE TABLE people_India (fname STRING, lname STRING, age INT)
+	PARTITIONED BY (countryName STRING, stateName STRING)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+	LINES TERMINATED BY '\n'
+	STORED AS TEXTFILE;
+
+	LOAD DATA INPATH 'hive_shubhro/UserInfo_India.txt' OVERWRITE INTO TABLE people_India PARTITION(countryName = "India", stateName = "Maharashtra");
+
+	hive (shubhro_country_info)> SELECT * FROM people_india;
+	OK
+	Akash   Chavan  34      India   Maharashtra
+	Prateek Kumar   35      India   Maharashtra
+	Shubhro Banerjee        33      India   Maharashtra
+	Sai     Tez     33      India   Maharashtra
+	Falak   Narang  35      India   Maharashtra
+	Sumit   Kumar   36      India   Maharashtra
+	Abhishek        Wason   33      India   Maharashtra
+	Ajay    Upadhyay        40      India   Maharashtra
+	Yogesh  Mandal  43      India   Maharashtra
+	Raj     Shekhar 34      India   Maharashtra
+	Amit    Dhaiya  32      India   Maharashtra
+	Yogesh  Shiva   28      India   Maharashtra
+	Ankur   Vyas    28      India   Maharashtra
+	Sapan   Jain    32      India   Maharashtra
+	Abhijeet        Mendelkar       32      India   Maharashtra
+
+	CREATE TABLE people_USA (fname STRING, lname STRING, age INT)
+	PARTITIONED BY (countryName STRING, stateName STRING)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+	LINES TERMINATED BY '\n'
+	STORED AS TEXTFILE;
+
+	LOAD DATA INPATH 'hive_shubhro/UserInfo_USA.txt' OVERWRITE INTO TABLE people_USA PARTITION(countryName = "NorthAmerica", stateName = "Missouri");
+
+	hive (shubhro_country_info)> SELECT * FROM people_USA;
+	OK
+	John    Eickhoff        50      NorthAmerica    Missouri
+	Brenda  Akin    30      NorthAmerica    Missouri
+	Tina    Caffey  60      NorthAmerica    Missouri
+	Kathy   Rhodes  70      NorthAmerica    Missouri
+	Sue     Flachs  45      NorthAmerica    Missouri
+	Debra   Reller  45      NorthAmerica    Missouri
+	Keith   Rohrer  60      NorthAmerica    Missouri
+	George  Lucas   60      NorthAmerica    Missouri
