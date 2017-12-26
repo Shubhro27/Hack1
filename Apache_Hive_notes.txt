@@ -208,3 +208,148 @@ low     725221.3399999988
 middle  1855861.669999996
 old     2529100.310000011
 ####################################################################################################################################
+
+Use a SerDe in Apache Hive: (http://blog.cloudera.com/blog/2012/12/how-to-use-a-serde-in-apache-hive/)
+semistructured and unstructured data can be queried gracefully via Hive, due to two core features: 
+a) Hive’s support of complex data types, such as structs, arrays, and unions (not available in RDBMS). 
+b) SerDe i.e. combination of a Serializer and a Deserializer (hence, Ser-De).
+
+SerDe in details:
+ instructs Hive as to how a record should be processed. Here,
+ a) DeSerializer : takes string record and translates into a java object. Usually used at query time to execute SELECT statements.
+ b) Serializer: takes the Java Object and translates into something which can be stored in HDFS.
+    used when writing data, such as through an INSERT-SELECT statement.
+	
+============================================================================================
+Hive complex data types: (https://acadgild.com/blog/working-with-hive-complex-data-types/)
+A) arrays: ARRAY<data_type>
+B) maps: MAP<primitive_type, data_type>
+C) structs: STRUCT<col_name : data_type [COMMENT col_comment], …>
+ 
+ARRAYS:
+1/2/17	Karnataka	23.2,22.3,20.5
+1/2/17	Maharashtra	25.2,23.3,24.5
+1/2/17	Tamilnadu	24.2,24.3,24.40
+1/2/17	Andhra Pradesh	28.2,21.1,22.2
+1/2/17	Kerala	27.2,25.3,20.50
+1/2/17	Jharkhand	27.7,23.3,22.2	
+
+a) In order to process, we create a table,
+	CREATE DATABASE complex_hive_datatype;
+
+	USE complex_hive_datatype;
+
+b) create table as,
+		CREATE TABLE array_dt (myDate STRING, state STRING, myTemp ARRAY<DOUBLE>)
+		ROW FORMAT DELIMITED
+		FIELDS TERMINATED BY '\t'
+		COLLECTION ITEMS TERMINATED BY ','
+		LINES TERMINATED BY '\n';     -- NOTE: LINES will always come last.
+
+c) Load data from file as,
+		LOAD DATA LOCAL INPATH 'temperature_Array.txt' OVERWRITE INTO TABLE array_dt;
+		
+d) SELECT * FROM array_dt;
+		1/2/17  Karnataka       [23.2,22.3,20.5]
+		1/2/17  Maharashtra     [25.2,23.3,24.5]
+		1/2/17  Tamilnadu       [24.2,24.3,24.4]
+		1/2/17  Andhra Pradesh  [28.2,21.1,22.2]
+		1/2/17  Kerala  [27.2,25.3,20.5]
+		1/2/17  Jharkhand       [27.7,23.3,22.2]
+		
+e) In order to access the array elements, we can use ARRAY[INDEX]. example,
+		SELECT state,myTemp[0] FROM array_dt;
+		
+f) WHAT happens if we give an index out of bounds,
+		Karnataka       NULL
+		Maharashtra     NULL
+		Tamilnadu       NULL
+		Andhra Pradesh  NULL
+		Kerala  NULL
+		Jharkhand       NULL
+
+	i.e. it does not error but provides NULL output.
+	
+MAP:
+Map is a collection of key-value pairs where fields are accessed using array notation of keys. i.e. [‘Key’]
+
+example,
+	SecondarySchool-Assam-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Assam-Female-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Bihar-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Bihar-Female-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chandigarh-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chandigar-Female-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chattisgarh-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chattisgarh-Female-2015:56344,2016:57573,2017:57563
+
+1) USE complex_hive_datatype;
+2) create a table in Hive for school_Map.txt
+		CREATE TABLE map_dt (school_Type STRING, school_State STRING, school_Gender STRING, school_Total MAP<INT,INT>)
+		ROW FORMAT DELIMITED
+		FIELDS TERMINATED BY '-'
+		COLLECTION ITEMS TERMINATED BY ','
+		MAP KEYS TERMINATED BY ':'
+		LINES TERMINATED BY '\n';
+3) load data from file to table
+		LOAD DATA LOCAL INPATH 'school_Map.txt' OVERWRITE INTO TABLE map_dt;
+5) select data,
+	SELECT * FROM map_dt;
+	SecondarySchool Assam   Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Assam   Female  {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Bihar   Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Bihar   Female  {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chandigarh      Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chandigar       Female  {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chattisgarh     Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chattisgarh     Female  {2015:56344,2016:57573,2017:57563}
+4) select data from table.
+	SELECT school_STATE,school_Total[2017] FROM map_dt WHERE school_Gender = 'Female';
+
+O/p:
+	Assam   57563
+	Bihar   57563
+	Chandigar       57563
+	Chattisgarh     57563
+	
+STRUCTURES:
+An element in STRUCT type can be accessed using the DOT (.) notation.
+
+1) USE complex_hive_datatype;
+2) create table struct_dt
+	CREATE TABLE IF NOT EXISTS struct_dt (name STRING,features STRUCT<engineType:STRING,cc:DOUBLE,power:DOUBLE,gears:INT>)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY '\t'
+	COLLECTION ITEMS TERMINATED BY ','
+	LINES TERMINATED BY '\n';
+3) load data into table struct_dt 
+	LOAD DATA LOCAL INPATH 'bike_Struct.txt' OVERWRITE INTO TABLE struct_dt;
+4) select data from the new table
+	SELECT * FROM struct_dt;
+
+	Yamaha Ray-Z    {"enginetype":"Aircooled","cc":149.0,"power":14.0,"gears":0}
+	Hero Maestro    {"enginetype":"Aircooled","cc":155.0,"power":14.8,"gears":0}
+	Tvs Wego        {"enginetype":"Aircooled","cc":159.0,"power":15.4,"gears":0}
+	Suzuki Swish    {"enginetype":"Dtsi-Aircooled","cc":149.0,"power":15.6,"gears":0}
+	Honda Dio       {"enginetype":"Fuel-injection","cc":223.0,"power":20.25,"gears":0}
+
+5) SELECT features.engineType FROM struct_dt;
+
+	O/p:
+	Aircooled
+	Aircooled
+	Aircooled
+	Dtsi-Aircooled
+	Fuel-injection
+	
+--------------------------------------------------------------------------
+EXTERNAL / MANAGED TABLES:
+
+Hive is a dataware house, whenever we LOAD a table from an external HDFS file, Hive moved the HDFS file to its
+warehouse (the original file is deleted from the path and now can be seen in the DB ONLY)
+
+BY DEFAULT, every table is a "MANAGED" table in HIVE i.e. HIVE handles the location of a managed table. So,
+once we drop the table, the data is lost forever (unless we have backed it up in local FS)
+
+In order to BYPASS this shortcomming, we use the keyword 'EXTERNAL' (i.e. get control over location from HIVE).
+i.e. by "EXTERNAL" keyword, we create a softlink to the file, so when we drop the table, we do not lose data.
