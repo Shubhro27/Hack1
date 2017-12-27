@@ -12,6 +12,14 @@ hdfs dfs -get hive_shubhro/customer_transactions.txt
 
 hdfs dfs -ls hive_shubhro
 
+WHAT is HIVE and WHAT is HIVE QL (Query Language):
+HIVE is Data Warehouse Infrastructure for Hadoop where data (huge) is stored as TABLES, PARTITIONS, BUCKETS and overlay on a MAP-REDUCE FRAMEWORK and stores data in HDFS 
+Hive Organization will look like,
+Command line, JDBC/ODBC, Web Interface -> Thrift Server -> Driver (Compiler, Optimizer, Executor) -> (Task Tracker, Name Node) -> Data Node
+
+Hive QL is a query language which can be used create and manage table partitions, evaluate functions, Download the contents of a table to a local directory 
+or result of queries to HDFS directory and other basic SQL like functions.
+
 -------------------------------------------------------------------------
 #####################################################################################
 login to HIVE, create database and use the data base to create tables within the DB.
@@ -24,7 +32,7 @@ Time taken: 1.117 seconds
 
 NOTE: in cloudx lab, the DB will be created in /apps/hive/warehouse/, in cloudera it will be created in /hive/warehouse
 
-hive (default)> use customer_retail;   //any tables created from now on will be created under this database.
+hive (default)> use customer_retail;   //any tables created from now on will be created under this database. Tables are by Default placed into "default" Database.
 OK
 Time taken: 1.105 seconds
 
@@ -32,8 +40,8 @@ Time taken: 1.105 seconds
 creating a table within customer_retail database
 ###########################################################
 CREATE TABLE IF NOT EXISTS cust_information (customer_id INT,customer_firstname STRING,customer_secondname STRING,customer_age INT,customer_occupation STRING)
-row format delimited
-fields terminated by ',';
+row format delimited    	i.e. 1 record per line.
+fields terminated by ',';	
 
 CREATE TABLE IF NOT EXISTS cust_transaction (transaction_id INT,transaction_date STRING,customer_id INT,transaction_amount DOUBLE,transaction_section STRING,transaction_equipment STRING,transaction_city STRING,transaction_state STRING,transaction_type STRING)
 row format delimited
@@ -48,6 +56,54 @@ LINES TERMINATED BY.  example, LINES TERMINATED BY ‘\n’;
 STORED AS TEXTFILE;
 
 NOTE: this does not create a physical table but just sets up the structure of the table. This forms the Meta data that gets stored in Derby.
+The Meta data is stored in METASTORE (either in DERBY or MYSQL) contains,
+Table Definitions, Column and data type details, HDFS location, row and storage format of files, i/p and o/p format used by MapReduce.	 
+
+################################################################
+Tables can be stored as
+################################################################
+a) TEXT FILE:
+	CREATE TABLE IF NOT EXISTS cust_information (customer_id INT,customer_firstname STRING,customer_secondname STRING,customer_age INT,customer_occupation STRING)
+	row format delimited    	
+	FIELDS TERMINATED BY ','
+	STORED AS TEXTFILE;	
+
+b) AVRO FORMAT: (https://acadgild.com/blog/avro-in-hive/)	
+	Data serialization which is language Neutral. It uses JSON for defining data types and protocols and serializes data in a compact binary format.
+	In order to create a table in AVRO FOrmat, 
+		create table olympic_avro
+		ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'  --acts as the default serialize for the data. If data is already serialized, this can be ignored.
+		STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat' --  file will be stored with extension .avro i.e. Default Hive Package.
+		OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'         --  output of the file is also in Avro format and will have the extension .avro 
+		tblproperties ('avro.schema.literal'='{
+		"name": "my_record",
+		"type": "record",
+		"fields": [
+		{"name":"athelete", "type":"string"},
+		{"name":"age", "type":"int"},
+		{"name":"country", "type":"string"},
+		{"name":"year", "type":"string"},
+		{"name":"closing", "type":"string"},
+		{"name":"sport", "type":"string"},
+		{"name":"gold", "type":"int"},
+		{"name":"silver", "type":"int"},
+		{"name":"bronze", "type":"int"},
+		{"name":"total", "type":"int"}
+		]}');
+		
+		OR IT CAN BE,
+		create table olympic_avro (name STRING, age INT, country STRING....)
+		STORED AS AVRO;
+
+		/* TO LOAD DATA, steps are provided in the link. Above applies both for MANAGED and EXTERNAL files */
+		
+c)  PARQUET FORMAT: <https://acadgild.com/blog/parquet-file-format-hadoop/>
+		Parquet, an open source file format for Hadoop. Parquet stores nested data structures in a flat columnar format. More efficient in terms of storage and performance.
+		In order to create table in PARQUET format,
+		create table olympic_avro (name STRING, age INT, country STRING....)
+		STORED AS PARQUET;
+		
+		/* TO LOAD DATA, steps are provided in the link. Above applies both for MANAGED and EXTERNAL files */
 
 ################################################################
 DESCRIBE the tables
@@ -355,6 +411,7 @@ once we drop the table, the data is lost forever (unless we have backed it up in
 
 In order to BYPASS this shortcomming, we use the keyword 'EXTERNAL' (i.e. get control over location from HIVE).
 i.e. by "EXTERNAL" keyword, we create a softlink to the file, so when we drop the table, we do not lose data.
+Whenever the EXTERNAL table gets dropped, only the metadata gets removed.
 
 SELECT COUNT(1) FROM FRAUD_ACH;
 
@@ -373,8 +430,9 @@ LOAD DATA INPATH "hive_shubhro/Telco_Customer_Churn.csv" OVERWRITE INTO TABLE Te
 PARTITIONING AND BUCKETING: 
 
 a) partitioning: <https://acadgild.com/blog/partitioning-in-hive/>
-	a) static partitioning: is when user defines the partitions explicitely.
-	b) dynamic paritioning: 
+	a) static partitioning: is when user defines the partitions explicitely. This needs to be applied when we know data(supposed to be inserted) belongs to which partition.
+	b) dynamic paritioning: Disadvantage of Static partitioning is that every partitioning needs to be backed with individual hive statement which is 
+							not feasible for large number of partitions as it will require writing of lot of hive statements.
 	
 	Static Partitioning:
 	CREATE DATABASE shubhro_country_info;
@@ -427,3 +485,27 @@ a) partitioning: <https://acadgild.com/blog/partitioning-in-hive/>
 	Debra   Reller  45      NorthAmerica    Missouri
 	Keith   Rohrer  60      NorthAmerica    Missouri
 	George  Lucas   60      NorthAmerica    Missouri
+	
+	
+	Dynamic paritioning:
+	1) Create a managed/External table (WITHOUT any Partition). Table1
+	2) Create a separate Partitioned table. Table2
+	3) Set up Dynamic partitioned parameters (in hive shell or in hive-site.xml file.)
+		set hive.exec.dynamic.partition=true;               /*enables dynamic paritioning*/
+		set hive.exec.dynamic.partition.mode=nonstrict;  	/*enables all partitioning to be determined dynamically*/
+		set hive.exec.max.dynamic.partitions = 1000;     	/*no of dynamic partitions created by one statement. Raises fatal error if limit is exceeded*/
+		set hive.exec.max.dynamic.partitions.pernode=100;  /*no of dynamic partitions created by each mapper or reducer. Raises fatal error if limit is exceeded*/
+	4) Load input into Table1.   
+	5) Insert the data in Table2 from Table1 i.e.
+		INSERT OVERWRITE TABLE Table2 PARTITION <fields> SELECT <data> FROM TABLE1 [WHERE....];
+	
+		
+	
+	
+1) Example of managed and External table
+2) Example of partitioning.
+3) How we do partitions in an external table.
+4) Insert into a Hive table (check from the PPT). One row
+5) Write Output from a table into local FS.
+
+BUCKETING.
