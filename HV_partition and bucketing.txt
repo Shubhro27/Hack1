@@ -1,0 +1,163 @@
+PARTITIONING:
+
+3 text files having data:
+•	user_info1.txt - country = 'New Zealand', region = 'Quebec'
+•	user_info2.txt - country = 'Nigeria',region = 'Pomorskie'
+•	user_info3.txt - left for Dynamic partitioning
+
+STATIC:
+USE shubhro_lib1_external;
+
+--
+CREATE TABLE user1 (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, region STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info1.txt' OVERWRITE INTO TABLE user1 PARTITION (country = 'New Zealand', region = 'Quebec');
+
+SELECT * FROM user1;
+
+Check Hue for the table
+
+
+--
+CREATE EXTERNAL TABLE user2 (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, region STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info2.txt' OVERWRITE INTO TABLE user1 PARTITION (country = 'Nigeria',region = 'Pomorskie');
+
+SELECT * FROM user2;
+
+Check Hue for the table
+
+
+DYNAMIC:
+
+CASE-1: managed tables:
+CREATE TABLE user3_no_partition (fname STRING, lname STRING, identity STRING, country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info3.txt' OVERWRITE INTO TABLE user3_no_partition;
+
+--
+set hive.exec.dynamic.partition=true;       
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions = 1000;
+set hive.exec.max.dynamic.partitions.pernode=100;
+--
+CREATE TABLE user3_partition (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+INSERT OVERWRITE INTO user3_partition PARTITION (country, region) SELECT * FROM user3_no_partition;  //if this does not work, instead of *, try the column names.
+
+CASE-2: external tables:
+CREATE EXTERNAL TABLE user4_no_partition (fname STRING, lname STRING, identity STRING, country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info3.txt' OVERWRITE INTO TABLE user4_no_partition;
+
+--
+CREATE EXTERNAL TABLE user4_partition (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+INSERT OVERWRITE INTO user4_partition PARTITION (country, region) SELECT * FROM user3_no_partition;  //if this does not work, instead of *, try the column names.
+
+CASE3: ALTER TABLE to create a PARTITION
+NOTE: DYNAMIC PARTITION cannot be created by ALTER TABLES as we will have to still has to provide values for the partitions.
+      If we have to create DYNAMIC, Run it through shell script.
+	  You can create a variable in shell script for partition and pass it in alter table command, otherwise no option available currently 
+
+CREATE EXTERNAL TABLE user5 (fname STRING, lname STRING, identity STRING, country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+--
+set hive.exec.dynamic.partition=true;       
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions = 1000;
+set hive.exec.max.dynamic.partitions.pernode=100;
+--
+LOAD DATA INPATH 'hive_shubhro/user_info3.txt' OVERWRITE INTO TABLE user5;
+--
+ALTER TABLE user5 ADD PARTITION (country = 'Nigeria',region = 'Pomorskie') LOCATION ' ';
+
+
+Other concepts abt partitions,
+1) To show all partitions of a table, we use SHOW PARTITIONS <tablename>;
+2) To fetch data from a particular partition, we use SELECT * FROM <tablename> WHERE <column on which table is partitioned> = <value>;
+	OR, to get all data from a particular partition, we use SELECT * FROM <tablename> WHERE partition = <partition name>; 
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+BUCKETING: <https://acadgild.com/blog/bucketing-in-hive/>
+In Hive Partition, each partition will be created as directory. But in Hive Buckets, each bucket will be created as file.
+
+Bucketing can also be done even without partitioning on Hive tables.
+
+At times, even after partitioning on a particular field or fields, the partitioned file size remains huge and we want to manage the partition results into different parts. 
+Hive provides Bucketing concept, which allows user to divide table data sets into more manageable parts called Buckets (or clusters) and and user can set the size of these buckets.
+
+The Bucketing concept is based on Hash function, which depends on the type of the bucketing column. 
+Records which are bucketed by the same column will always be saved in the same bucket.
+
+CLUSTERED BY clause is used to divide the table into buckets.
+
+STEPS for Bucketing involve:
+1) CREATE a MANAGED or EXTERNAL table. i.e. Table1
+2) LOAD data from external file into Table1.
+3) set the following properties as,
+		set hive.exec.dynamic.partition=true;       
+		set hive.exec.dynamic.partition.mode=nonstrict;
+		set hive.exec.max.dynamic.partitions = 1000;
+		set hive.exec.max.dynamic.partitions.pernode=100;
+		hive.enforce.bucketing = true   /*sets the number of reduce tasks to be equal to the number of buckets mentioned in the table definition*/
+									    /*automatically selects the clustered by column from table definition.*/
+4) CREATE A Bucket table.
+	create table bucket_table (schema definition) 
+	partitioned by (schema column name) 
+	clustered by (schema column name) into 4 buckets 
+	row format delimited 
+	fields terminated by  ',';
+	
+	example,
+	create table bucket_table (street string, zipcode int, state string, beds int, baths int, sq_feet int, flat_type string, price int) 
+	partitioned by (city string) 
+	clustered by (street) into 4 buckets 
+	row format delimited 
+	fields terminated by  ',';
+5) Insert data into the the bucket table.
+	insert into table bucket_table partition(field name) select <fields> from restate;
+	example,
+	insert into table bucket_table partition(city) select street, zipcode ,state, beds, baths, sq_feet,flat_type,price,cityname from restate;
+	
+	
+CREATE TABLE apartment_table1 (street STRING, city STRING, zip INT, state STRING, beds INT, baths INT, sq__ft INT, type STRING, price INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+--
+LOAD DATA INPATH 'hive_shubhro/real_state.csv' OVERWRITE INTO TABLE apartment_table1;
+--
+set hive.exec.dynamic.partition=true;       
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions = 1000;
+set hive.exec.max.dynamic.partitions.pernode=100;
+hive.enforce.bucketing = true
+--
+CREATE TABLE apartment_buck_table1 (street STRING, zip INT, state STRING, beds INT, baths INT, sq__ft INT, type STRING, price INT)
+PARTITIONED BY (city STRING)
+CLUSTERED BY (street) into 4 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+--
+INSERT INTO TABLE apartment_buck_table1 PARTITION(city) SELECT street, zipcode ,state, beds, baths, sq_feet, flat_type, price, cityname from apartment_table1;
+--
+select * from TABLE apartment_buck_table1 (BUCKET 0 OUT OF 4) where <>;
