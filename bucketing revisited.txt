@@ -1,0 +1,122 @@
+BUCKETING: <https://acadgild.com/blog/bucketing-in-hive/>,<https://stackoverflow.com/questions/19128940/what-is-the-difference-between-partitioning-and-bucketing-a-table-in-hive>
+In Hive Partition, each partition will be created as directory. But in Hive Buckets, each bucket will be created as file.
+
+Bucketing can also be done even without partitioning on Hive tables.
+
+At times, even after partitioning on a particular field or fields, the partitioned file size remains huge and we want to manage the partition results into different parts. 
+Hive provides Bucketing concept, which allows user to divide table data sets into more manageable parts called Buckets (or clusters) and and user can set the size of these buckets.
+
+The Bucketing concept is based on Hash function, which depends on the type of the bucketing column. 
+Records which are bucketed by the same column will always be saved in the same bucket.
+
+CLUSTERED BY clause is used to divide the table into buckets.
+
+STEPS for Bucketing involve:
+1) CREATE a MANAGED or EXTERNAL table. i.e. Table1
+2) LOAD data from external file into Table1.
+3) set the following properties as,
+		set hive.exec.dynamic.partition=true;       
+		set hive.exec.dynamic.partition.mode=nonstrict;
+		set hive.exec.max.dynamic.partitions = 1000;
+		set hive.exec.max.dynamic.partitions.pernode=100;
+		hive.enforce.bucketing = true   /*sets the number of reduce tasks to be equal to the number of buckets mentioned in the table definition*/
+									    /*automatically selects the clustered by column from table definition.*/
+4) CREATE A Bucket table.
+	create table bucket_table (schema definition) 
+	partitioned by (schema column name) 
+	clustered by (schema column name) into 4 buckets    
+	row format delimited 
+	fields terminated by  ',';
+	
+	example,
+	create table bucket_table (street string, zipcode int, state string, beds int, baths int, sq_feet int, flat_type string, price int) 
+	partitioned by (city string) 
+	clustered by (type) into 4 buckets    /* all rows having same value for type will form 1 bucket */
+	row format delimited 
+	fields terminated by  ',';
+5) Insert data into the the bucket table.
+	insert into table bucket_table partition(field name) select <fields> from restate;
+	example,
+	insert into table bucket_table partition(city) select street, zipcode ,state, beds, baths, sq_feet,flat_type,price,cityname from restate;
+	
+	
+CREATE TABLE apartment_table1 (street STRING, city STRING, zip INT, state STRING, beds INT, baths INT, sq__ft INT, type STRING, price INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+tblproperties ("skip.header.line.count"="1");
+--
+LOAD DATA INPATH 'hive_shubhro/real_state.csv' OVERWRITE INTO TABLE apartment_table1;
+--
+set hive.exec.dynamic.partition=true;       
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions = 1000;
+set hive.exec.max.dynamic.partitions.pernode=1000;
+set hive.enforce.bucketing = true;
+--
+CREATE TABLE apartment_buck_table1 (street STRING, zip INT, state STRING, beds INT, baths INT, sq__ft INT, type STRING, price INT)
+PARTITIONED BY (city STRING)
+CLUSTERED BY (type) into 4 BUCKETS    /* will create buckets for type fields. there are 4 type fields (Condo, Multi-Family, Residential, Unkown) */
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+--
+INSERT INTO TABLE apartment_buck_table1 PARTITION(city) SELECT * from apartment_table1;
+--
+select * from TABLE apartment_buck_table1 (BUCKET 0 OUT OF 4) where <>;
+
+
+
+[shubhro2705854012@ip-172-31-20-58 ~]$ hdfs dfs -ls /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/
+Found 39 items
+drwxrwxrwx   - shubhro2705854012 hadoop          0 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=ANTELOPE
+drwxrwxrwx   - shubhro2705854012 hadoop          0 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=AUBURN
+drwxrwxrwx   - shubhro2705854012 hadoop          0 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=CAMERON PARK
+drwxrwxrwx   - shubhro2705854012 hadoop          0 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=CARMICHAEL
+.......
+
+[shubhro2705854012@ip-172-31-20-58 ~]$ hdfs dfs -ls /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=ANTELOPE/
+Found 4 items
+-rwxrwxrwx   3 shubhro2705854012 hadoop       1762 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=ANTELOPE/000000_0
+-rwxrwxrwx   3 shubhro2705854012 hadoop         46 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=ANTELOPE/000001_0
+-rwxrwxrwx   3 shubhro2705854012 hadoop          0 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=ANTELOPE/000002_0
+-rwxrwxrwx   3 shubhro2705854012 hadoop          0 2017-12-29 12:46 /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=ANTELOPE/000003_0
+
+[shubhro2705854012@ip-172-31-20-58 ~]$ hdfs dfs -cat /apps/hive/warehouse/shubhro_library1.db/apartment_buck_table1/city=ANTELOPE/000000_0
+3828 BLACKFOOT WAY,95843,CA,3,2,1088,Residential,126640
+5708 RIDGEPOINT DR,95843,CA,2,2,1043,Residential,161250
+4844 CLYDEBANK WAY,95843,CA,3,2,1215,Residential,182716
+7895 CABER WAY,95843,CA,3,2,1362,Residential,194818
+7837 ABBINGTON WAY,95843,CA,4,2,1830,Residential,387731
+......
+
+----------------------------------------------------------------------------------
+Insert a single row into a table:
+INSERT INTO apartment_table1 VALUES('2111 NORCADE CIR','SACRAMENTO',95826,'CA',8,4,3612,'Multi-Family',20000);
+
+Insert multiple rows into a table at a time (can be done via comma separated VALUES):
+INSERT INTO apartment_table1 VALUES('2111 NORCADE CIR','SACRAMENTO',95826,'CA',8,4,3612,'Multi-Family',20000),
+('2931 LA ROSA RD','ELK GROVE',95800,'CA',1,1,3612,'Residential',10000);
+----------------------------------------------------------------------------------
+https://saurzcode.in/2015/01/hive-sort-order-distribute-cluster/
+
+"SORT BY" and "ORDER BY" : does the same activity of ordering the records in ASC (Default) or DESC format.
+However, SORT BY may use multiple reducers but ORDER BY uses a single reducer.
+
+"DISTRIBUTE BY" : 
+Hive uses the columns in Distribute By to distribute the rows among reducers. All rows with the same Distribute By columns will go to the same reducer.
+i.e. if there are four cities A,B,C and D, 
+	All A would go to 1 reducer. All B will go to 1 reducer THOUGH You have no guarantee that these are going to be different reducers.
+	
+The number of reducers to be used for a Hive job will be determined by this property hive.exec.reducers.bytes.per.reducer which is dependent on the input. 
+
+What is the use of DISTRIBUTE By then, One major use is with SORT BY. example
+SELECT * FROM apartment_table1 SORT BY city;
+VS
+SELECT * FROM apartment_table1 DISTRIBUTE BY city SORT BY CITY;
+
+In 1st case, Mapper will form Key Value pair (key being offset and NOT city) and send to REDUCERS, this may cause duplication of data.
+In 2nd case, Distribute by ensures that the data is split among the reducers based on the distribute by column so NO DUPLICATION. 
+
+"CLUSTER BY":
+is a combination of "DISTRIBUTE BY" and "SORT BY"
+--------------------------------------------------------------------------------------
+
