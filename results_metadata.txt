@@ -1,0 +1,17 @@
+This dataset consists of a single CSV file, Reviews.csv, and a corresponding SQLite table named Reviews in database.sqlite. The columns in the table are:
+
+Id
+ProductId - unique identifier for the product
+UserId - unqiue identifier for the user
+ProfileName
+HelpfulnessNumerator - number of users who found the review helpful
+HelpfulnessDenominator - number of users who indicated whether they found the review helpful
+Score - rating between 1 and 5
+Time - timestamp for the review
+Summary - brief summary of the review
+Text - text of the review
+See this SQLite query for a quick sample of the dataset.
+
+If you publish articles based on this dataset, please cite the following paper:
+
+J. McAuley and J. Leskovec. From amateurs to connoisseurs: modeling the evolution of user expertise through online reviews. WWW, 2013.
