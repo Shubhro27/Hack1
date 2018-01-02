@@ -1,0 +1,154 @@
+hdfs dfs -get 'sb_amazon_food_reviews/Reviews.csv'
+
+Id,ProductId, UserId,        ProfileName,                        HelpfulnessNumerator,HelpfulnessDenominator,Score,Time,      
+1, B001E4KFG0,A3SGXH7AUHU8GW,delmartian,                         1,                   1,                     5,    1303862400
+2, B00813GRG4,A1D87F6ZCVE5NK,dll pa,                             0,                   0,                     1,    1346976000
+3, B000LQOCH0,ABXLMWJIXXAIN, "Natalia Corres ""Natalia Corres""",1,                   1,                     4,    1219017600
+4, B000UA0QIQ,A395BORC6FGVXV,Karl,                               3,                   3,                     2,    1307923200
+5, B006K2ZZ7K,A1UQRSCLF8GW1T,"Michael D. Bigham ""M. Wassir""",  0,                   0,                     5,    1350777600
+
+http://hadooptutorial.info/hive-date-functions/
+
+This dataset consists of a single CSV file, Reviews.csv, and a corresponding SQLite table named Reviews in database.sqlite. The columns in the table are:
+•Id
+•ProductId - unique identifier for the product
+•UserId - unqiue identifier for the user
+•ProfileName
+•HelpfulnessNumerator - number of users who found the review helpful
+•HelpfulnessDenominator - number of users who indicated whether they found the review helpful
+•Score - rating between 1 and 5
+•Time - timestamp for the review
+•Summary - brief summary of the review
+•Text - text of the review
+
+SELECT FROM_UNIXTIME(UNIX_TIMESTAMP()); 
+
+SELECT FROM_UNIXTIME(1303862400);
+SELECT FROM_UNIXTIME(1346976000);
+
+
+create external table if not exists AdventureWorks2014.Department ( DepartmentID smallint , Name string , GroupName string, rate_code string, ModifiedDate timestamp )
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'      
+STORED AS TEXTFILE 
+LOCATION 'wasb:///ds/Department' 
+
+
+
+
+---------------------------------
+1. Which are the top 10 Product IDs that get reviewed the most?
+2. Which are the top 10 most favorably reviewed Product IDs?
+3. How may product reviews are generated on a daily, monthly and
+yearly basis?
+4. Product sales- festival mapping. By festival mapping we are trying to
+analyze the top 3 Product IDs that get reviewed the most for each of
+the major festivals in the USA.
+
+--------------------------------
+
+# STEP1 ##############################################################################
+CREATE DATABASE sb_amazon_sample_data;
+
+USE sb_amazon_sample_data;
+
+//Id INT,ProductId STRING STRING,UserId STRING,ProfileName STRING,HelpfulnessNumerator INT,HelpfulnessDenominator INT,Score INT,Time TIMESTAMP,Summary STRING, Text STRING)
+create EXTERNAL TABLE IF NOT EXISTS amazon_sample_table (Id INT, ProductId STRING, UserId STRING, ProfileName STRING, HelpfulnessNumerator INT, HelpfulnessDenominator INT,Score INT, Time TIMESTAMP, Summary STRING, Text STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'      
+STORED AS TEXTFILE
+tblproperties ("skip.header.line.count"="1");
+
+LOAD DATA LOCAL INPATH '/home/shubhro2705854012/proj3/Reviews_sample.csv' OVERWRITE INTO TABLE amazon_sample_table;
+
+DESCRIBE amazon_sample_table;
+
+SELECT ProfileName FROM amazon_sample_table;
+SELECT Text FROM amazon_sample_table LIMIT 10;
+######################################################################################
+# STEP2 ##############################################################################
+create EXTERNAL TABLE IF NOT EXISTS amazon_sample_table1 (Id INT, ProductId STRING, UserId STRING, HelpfulnessNumerator INT, HelpfulnessDenominator INT,Score INT, Time STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','     
+STORED AS TEXTFILE;
+
+INSERT OVERWRITE TABLE amazon_sample_table1 
+SELECT CAST(Id as INT),ProductId,UserId,CAST(HelpfulnessNumerator AS INT),CAST(HelpfulnessDenominator AS INT),CAST(Score AS INT),FROM_UNIXTIME(CAST(Time AS BIGINT)) FROM amazon_sample_table; 
+
+######################################################################################
+# STEP3 ##############################################################################
+1. Which are the top 10 Product IDs that get reviewed the most? 
+
+SELECT ProductId,count(*) as review_count FROM amazon_sample_table1 WHERE ProductId IS NOT NULL GROUP BY ProductId ORDER BY review_count DESC LIMIT 10;
+
+2. Which are the top 10 most favorably reviewed Product IDs?
+
+SELECT ProductId,count(*) as score_count FROM amazon_sample_table1 
+WHERE ProductId IS NOT NULL
+AND Score = 5
+GROUP BY ProductId 
+ORDER BY score_count DESC
+LIMIT 10;
+
+3. How may product reviews are generated on a daily, monthly and yearly basis?
+
+#select FROM_UNIXTIME(UNIX_TIMESTAMP(Time,'yyyy-MM-dd hh:mm:ss'),'yyyy-MM-dd') from amazon_sample_table1;
+
+CREATE TABLE IF NOT EXISTS daily_reviews_data (completeTime STRING, num_of_reviews INT)
+ROW FORMAT DELIMITED;
+
+INSERT OVERWRITE daily_reviews_data
+SELECT Time, count(*) as daily_rep FROM amazon_sample_table1 
+WHERE Time IS NOT NULL
+GROUP BY Time;
+
+CREATE TABLE IF NOT EXISTS yearly_reviews_data (yearTime STRING, num_of_reviews INT)
+ROW FORMAT DELIMITED;
+
+INSERT OVERWRITE yearly_reviews_data
+SELECT YEAR(Time), count(*) as daily_rep FROM amazon_sample_table1 
+WHERE Time IS NOT NULL
+GROUP BY YEAR(Time);
+
+CREATE TABLE IF NOT EXISTS monthly_reviews_data (monthTime STRING, num_of_reviews INT)
+ROW FORMAT DELIMITED;
+
+INSERT OVERWRITE monthly_reviews_data
+SELECT date_format(Time,'yyyyMM'), COUNT(*) FROM amazon_sample_table1 
+WHERE Time IS NOT NULL
+GROUP BY date_format(Time,'yyyyMM');
+
+4. Product sales- festival mapping. By festival mapping we are trying to
+analyze the top 3 Product IDs that get reviewed the most for each of
+the major festivals in the USA.
+
+#SELECT ProductId, Time, from_unixtime(unix_timestamp(Time,'yyyy-MM-dd hh:mm:ss'),'MM-dd') as the_date FROM amazon_sample_table1;
+
+CREATE TABLE IF NOT EXISTS american_holidays (holiday_name STRING, holiday_date STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ':';
+
+LOAD DATA LOCAL INPATH '/home/shubhro2705854012/proj3/holidays_sample.txt' OVERWRITE INTO TABLE american_holidays;
+
+CREATE TABLE IF NOT EXISTS festival_reviews (ProductId STRING,date_yr STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+
+INSERT OVERWRITE TABLE festival_reviews
+SELECT Id,Time FROM amazon_sample_table1 AST JOIN american_holidays AH
+ON (from_unixtime(unix_timestamp(AST.Time,'yyyy-MM-dd hh:mm:ss'),'MM-dd') = AH.holiday_date);
+
+SELECT ProductId, count(*) as review_count FROM festival_reviews 
+WHERE ProductId IS NOT NULL
+GROUP BY ProductId
+ORDER BY review_count DESC
+LIMIT 3;
+
+
+---------------------------------------------------------
+Errors:
+hive (sb_amazon_sample_data)> INSERT OVERWRITE TABLE amazon_sample_table1 > SELECT CAST(Id as INT),ProductId,UserId,CAST(HelpfulnessNumerator AS INT),CAST(HelpfulnessDenominator AS INT),CAST(Score AS INT),
+FROM_UNIXTIME(Time) FROM amazon_sample_table;
+FAILED: SemanticException [Error 10014]: Line 2:129 Wrong arguments 'Time': 
+No matching method for class org.apache.hadoop.hive.ql.udf.UDFFromUnixTime with (string). 
+Possible choices: _FUNC_(bigint)  _FUNC_(bigint, string)  _FUNC_(int)  _FUNC_(int, string)  
+
+
+hive (sb_amazon_sample_data)> SELECT Time, count(*) as daily_rep FROM amazon_sample_table1 GROUP BY YEAR(Time);FAILED: 
+SemanticException [Error 10025]: Line 1:7 Expression not in GROUP BY key 'Time'
