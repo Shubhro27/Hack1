@@ -1,0 +1,119 @@
+https://cloudxlab.com/
+
+Movies case study: 
+ Highest rating per year
+ longest movie duration
+ oldest movie
+ newest movie
+ movie with the highest rating
+ how to get distinct movies for high rating?
+ 
+SrNo,MovieName,YrOfRelease,Rating,Duration 
+1,The Nightmare Before Christmas,1993,3.9,4568
+2,The Mummy,1932,3.5,4388
+3,Orphans of the Storm,1921,3.2,9062
+4,The Object of Beauty,1991,2.8,6150
+5,Night Tide,1963,2.8,5126
+6,One Magic Christmas,1985,3.8,5333
+7,Muriel's Wedding,1994,3.5,6323
+8,Mother's Boys,1994,3.4,5733
+9,Nosferatu: Original Version,1929,3.5,5651
+
+/home/shubhro2705854012/pigFiles
+---------------------------------------------------------
+Highest rating per year:
+mv_data = LOAD 'pig_movies_data.csv' USING PigStorage(',') AS (SrNo:int,MovieName:chararray,YrOfRelease:int,Rating:double,Duration:int);
+
+year_rating = GROUP mv_data BY YrOfRelease;
+year_rating_max = FOREACH year_rating GENERATE group as Year,MAX(mv_data.Rating) as max_yr_Rating;
+
+#mv_rating = GROUP mv_data BY MovieName;
+#mv_rating_max = FOREACH mv_rating GENERATE group as Movie,MAX(mv_data.Rating) as max_mv_Rating;
+
+year_rating_max_title = JOIN year_rating_max BY (Year,max_yr_Rating),mv_data BY (YrOfRelease,Rating);
+--------------------------------------------------------
+longest movie duration:
+mv_data = LOAD 'pig_movies_data.csv' USING PigStorage(',') AS (SrNo:int,MovieName:chararray,YrOfRelease:int,Rating:double,Duration:int);
+mv_duration = GROUP mv_data BY MovieName;
+mv_duration_list = FOREACH mv_duration GENERATE group as Movie,MAX(mv_data.Duration) as max_mv_Duration;
+mv_duration_sort = ORDER mv_duration_list BY max_mv_Duration DESC;
+mv_duration_MAX = LIMIT mv_duration_sort 1;
+
+(Example 8 Hour 23.976,28813)(Example 8 Hour 23.976 Remote Content,28813)(The Best of Youth,22024)(Heaven's Story,16736)(Dr. Mabuse: The Gambler,16422)(Heaven's Gate,13143)(Mohabbatein,12966)
+
+--------------------------------------------------------
+oldest movie:
+mv_data = LOAD 'pig_movies_data.csv' USING PigStorage(',') AS (SrNo:int,MovieName:chararray,YrOfRelease:int,Rating:double,Duration:int);
+mv_list = GROUP mv_data BY MovieName;
+mv_year_list = FOREACH mv_list GENERATE group as Movie,FLATTEN(mv_data.YrOfRelease) as movie_rel_year:int;
+mv_year_sort = ORDER mv_year_list BY movie_rel_year;
+oldest_mv = LIMIT mv_year_sort 1;
+
+(Fantômas III: The Murderous Corpse,1913)
+--------------------------------------------------------
+newest movie:
+
+mv_year_sort_DESC = ORDER mv_year_list BY movie_rel_year DESC;
+newest_mv = LIMIT mv_year_sort_DESC 1;
+
+(The Square (Trailer),2014)
+--------------------------------------------------------
+movie with the highest rating:
+mv_data = LOAD 'pig_movies_data.csv' USING PigStorage(',') AS (SrNo:int,MovieName:chararray,YrOfRelease:int,Rating:double,Duration:int);
+mv_data_filter = FILTER mv_data BY Rating > 4.0;
+mv_data_list = GROUP mv_data_filter ALL;
+mv_data_rate = FOREACH mv_data_list GENERATE FLATTEN(mv_data_filter.MovieName) as Movie1,FLATTEN(mv_data_filter.Rating) as Rating1;
+mv_data_rate_high = ORDER mv_data_rate BY Rating1 DESC;
+mv_data_rate_highest = LIMIT mv_data_rate_high 1;
+
+(Henning Mankell's Wallander,4.5)
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Apache Pig Scrips:
+[shubhro2705854012@ip-172-31-20-58 pigScripts]$ cat pig_movie_rating.pig
+--loads data into mv_data relation
+mv_data = LOAD '/home/shubhro2705854012/pigFiles/pig_movies_data.csv' USING PigStorage(',') AS (SrNo:int,MovieName:chararray,YrOfRelease:int,Rating:double,Duration:int);
+--groups the data by year of release
+year_rating = GROUP mv_data BY YrOfRelease;
+--in order to determine the highest rating for a year.
+year_rating_max = FOREACH year_rating GENERATE group as Year,MAX(mv_data.Rating) as max_yr_Rating;
+--join the movie, year and rating
+year_rating_max_title = JOIN year_rating_max BY (Year,max_yr_Rating),mv_data BY (YrOfRelease,Rating);
+--DUMP data
+DUMP year_rating_max_title;
+
+In order to run a pig script
+pig -x local pig_movie_rating.pig
+
+To run from grunt shell: exec pig_movie_rating.pig  -- if u r running from where the script resides.
+
+/home/shubhro2705854012/pigScripts
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+running PIG on HDFS:
+
+the file is present in hdfs://ip-172-31-53-48.ec2.internal:8020/user/shubhro2705854012/pig_movies
+
+oldest movie:
+mv_data = LOAD 'hdfs://ip-172-31-53-48.ec2.internal:8020/user/shubhro2705854012/pig_movies/movies_data.csv' USING PigStorage(',') AS (SrNo:int,MovieName:chararray,YrOfRelease:int,Rating:double,Duration:int);
+
+mv_list = GROUP mv_data BY MovieName;
+mv_year_list = FOREACH mv_list GENERATE group as Movie,FLATTEN(mv_data.YrOfRelease) as movie_rel_year:int;
+mv_year_sort = ORDER mv_year_list BY movie_rel_year;
+oldest_mv = LIMIT mv_year_sort 1;
+
+o/p:
+(Fantômas III: The Murderous Corpse,1913)
+
+
+
+--------
+movie with the highest rating:
+mv_data = LOAD 'hdfs://ip-172-31-53-48.ec2.internal:8020/user/shubhro2705854012/pig_movies/movies_data.csv' USING PigStorage(',') AS (SrNo:int,MovieName:chararray,YrOfRelease:int,Rating:double,Duration:int);
+mv_data_filter = FILTER mv_data BY Rating > 4.0;
+mv_data_list = GROUP mv_data_filter ALL;
+mv_data_rate = FOREACH mv_data_list GENERATE FLATTEN(mv_data_filter.MovieName) as Movie1,FLATTEN(mv_data_filter.Rating) as Rating1;
+mv_data_rate_high = ORDER mv_data_rate BY Rating1 DESC;
+STORE mv_data_rate_high INTO 'hdfs://ip-172-31-53-48.ec2.internal:8020/user/shubhro2705854012/pig_movie-r1';
