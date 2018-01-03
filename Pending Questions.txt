@@ -1,0 +1,6 @@
+cover this too:
+1) DAG in details
+2) Piggy bank
+3) how to determine Like '%' or starts with or ends with. REGEX
+4) what does this warning mean
+	Encountered Warning IMPLICIT_CAST_TO_DOUBLE 16 time(s).
