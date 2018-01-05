@@ -1,0 +1,22 @@
+1. Programming with Scala-I 
+2. Programming with Scala-II 
+3. Introduction to Apache Spark architecture 
+4. RDD, transformations and actions 
+5. Spark Programming 
+6. Spark SQL 
+7. Spark Streaming – I 
+8. Spark Streaming – II 
+9. Machine Learning with Spark MLlib 
+10. Live Practice session 
+
+--------------------------------------------------------------------
+https://www.tutorialspoint.com/scala/ for scala overview, set up
+
+https://www.analyticsvidhya.com/blog/2017/01/scala/    - try this once and check some videos
+
+Scala for Spark:
+https://acadgild.com/blog/introduction-spark-rdd-basic-operations-rdd/
+https://acadgild.com/blog/spark-rdds-scala/
+
+
+
