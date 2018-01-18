@@ -1,3 +1,17 @@
+Other: http://bigdata-madesimple.com/11-interesting-big-data-case-studies-in-telecom/
+
+--------------------------------------------------------------------
+https://www.tutorialspoint.com/scala/ for scala overview, set up
+
+https://www.analyticsvidhya.com/blog/2017/01/scala/    - try this once and check some videos
+
+https://www.scala-exercises.org/scala_tutorial/standard_library
+
+Scala for Spark:
+https://acadgild.com/blog/introduction-spark-rdd-basic-operations-rdd/
+https://acadgild.com/blog/spark-rdds-scala/
+
+----------------------------------------------------------------------------------
 Scala Language is a functional programming language which supports both OOPs and functional programming style.
 
 What is functional programming style,
@@ -44,7 +58,7 @@ val y = List(10,20,30)
 25::y //output List(25,10,20,30) i.e. it will prepend
 y::40 //invalid... i.e. appending is invalid. Appending can be done by other methods
 
-val y = 40::y //error. y is immutable
+y = 40::y //error. y is immutable
 val z = 40::y //valied List(40,10,20,30)
 
 Note: Var will allow the operation
@@ -54,8 +68,8 @@ a = 40::a //Valid i.e. List(40,10,20,30)
 //merging of 2 collections,
 val x = List (1,3,5,7,9,10,15,20,30,40)
 val y = List(10,20,30)
-x++y will merge the 2 lists and y values will be appended to x
-x.union(y) will also merge
+val z = x++y will merge the 2 lists and y values will be appended to x
+val y = x.union(y) will also merge
 
 y++List(70) //will append 70
 y++70 //is invalid
@@ -519,7 +533,7 @@ val r = add(10,20)  //o/p will be 30
 val r = { val x = 20
 		  val y = 30
 		  val z = add(x,y)
-		  (x,y,z}
+		  (x,y,z)}
 		  
 o/p: (20,30,50)
 
@@ -537,3 +551,208 @@ val s = l.sum   // 10
 val r = l.reduce ((x,y) => x + y)
 val ma = l.reduce ((x,y) => Math.max(x,y)) //4
 val mi = l.reduce ((x,y) => Math.min(x,y)) //1
+
+---------------------------------------------------------------------
+Collections in Scala:
+a) Lists: similar to arrays but the length is not defined and can be changed.
+val fruits : List[String] = List("apples", "oranges", "pears")
+val nums: List[Int] = List(1, 2, 3, 4)
+val empty: List[Nothing] = List() //empty list
+
+All lists can be defined using two fundamental building blocks, a tail Nil and cons(::)
+example,
+val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
+val empty = Nil
+val nums = 1 :: (2 :: (3 :: (4 :: Nil)))
+
+b) Sets: by default sets are immutable. To make it mutable we will have to use scala.collection.mutable.Set class explicitely
+var s : Set[Int] = Set()  // Empty set of integer type
+var s : Set[Int] = Set(1,3,5,7) // Set of integer type
+or
+var s = Set(1,3,5,7)
+
+to concatenate sets, use either ++ operator or Set.++() method 
+      val fruit1 = Set("apples", "oranges", "pears")
+      val fruit2 = Set("mangoes", "banana")
+      
+      var fruit = fruit1 ++ fruit2   // use two or more sets with ++ as operator
+	  fruit = fruit1.++(fruit2) // use two sets with ++ as method
+	  
+to check common elements in 2 sets
+      val num1 = Set(5,6,9,20,30,45)
+      val num2 = Set(50,60,9,20,35,55)
+
+      println( "num1.&(num2) : " + num1.&(num2) )     
+      println( "num1.intersect(num2) : " + num1.intersect(num2) ) //Set(20,9)
+	  
+c) Maps: Maps are also called Hash tables. By default maps are immutable, we import scala.collection.mutable.Map class explicitly to make it mutable.
+
+// Empty hash table whose keys are strings and values are integers:
+var A:Map[Char,Int] = Map()
+
+// A map with keys and values.
+val colors = Map("red" -> "#FF0000", "azure" -> "#F0FFFF")
+
+	val colors = Map("red" -> "#FF0000", "azure" -> "#F0FFFF", "peru" -> "#CD853F")
+	val nums: Map[Int, Int] = Map()
+
+	println( "Keys in colors : " + colors.keys )
+	println( "Values in colors : " + colors.values )
+	println( "Check if colors is empty : " + colors.isEmpty )
+	println( "Check if nums is empty : " + nums.isEmpty )
+
+
+//concatenating map,
+      val colors1 = Map("red" -> "#FF0000", "azure" -> "#F0FFFF", "peru" -> "#CD853F")
+      val colors2 = Map("blue" -> "#0033FF", "yellow" -> "#FFFF00", "red" -> "#FF0000")
+
+      // use two or more Maps with ++ as operator
+      var colors = colors1 ++ colors2
+      println( "colors1 ++ colors2 : " + colors )
+
+      // use two maps with ++ as method
+      colors = colors1.++(colors2)
+      println( "colors1.++(colors2)) : " + colors )
+
+d) tuple: 
+	  val t = (4,3,2,1)
+      val sum = t._1 + t._2 + t._3 + t._4
+      println( "Sum of elements: "  + sum )
+	  
+e) Option:
+	Scala Option[ T ] is a container for zero or one element of a given type. An Option[T] can be either Some[T] or None object (represents a missing value)
+	example,
+	the get method of Scala's Map produces Some(value) if a value corresponding to a given key has been found, or None if the given key is not defined in the Map
+	
+	NOTE: this is used as a substitute to NULL
+	
+	val capitals = Map("France" -> "Paris", "Japan" -> "Tokyo")
+	capitals.get( "France" )  //output - Some(Paris)
+	capitals.get( "India" )   //output - None
+--	
+	further,
+      val capitals = Map("France" -> "Paris", "Japan" -> "Tokyo")
+      
+      println("show(capitals.get( \"Japan\")) : " + show(capitals.get( "Japan")) )
+      println("show(capitals.get( \"India\")) : " + show(capitals.get( "India")) )
+   }
+   
+   def show(x: Option[String]) = x match {
+      case Some(s) => s
+      case None => "?"
+	}
+--	
+	val a:Option[Int] = Some(5)
+	val b:Option[Int] = None 
+
+	println("a.isEmpty: " + a.isEmpty )
+	println("b.isEmpty: " + b.isEmpty )
+
+	o/p: false; true
+--
+----------------------------------------------------------------	
+Spark RDD Operations in Scala 
+----------------------------------------------------------------
+Two ways to create RDD’s in spark using Scala:
+
+a) Methods to Create RDD: 
+	is via SparkContext’s textFile method. 
+	This method takes a URI for the file (either a local path on the machine or a hdfs://, s3n://, etc URI) and reads it as a collection of lines. 
+
+	val new_rdd = sc.textFile("hdfs://...../data.csv)
+
+	o/p will be that it will create an Array of rows, example 
+	Array ("...............",".................." ........)
+
+b) parallelizing a collection of Objects (a list or a set):
+	calling SparkContext’s parallelize method on an existing collection
+	val data = List("Hadoop","Spark","Scala","Pig","Hive")
+	val parallelize_rdd = sc.parallelize(data)
+	parallelize_rdd.collect
+
+	o/p: Array(Hadoop,Spark,Scala,Pig,Hive)
+	
+RDD’s perform two types of operations. Transformations and actions.
+
+a) Transformations:
+	All transformations in Spark are lazy. They do not compute their results right away. 
+	Instead, they just remember the transformations applied to some base data set (e.g. a file). 
+	The transformations are only computed when an action requires a result that needs to be returned to the driver program.
+	
+	1) Map: Map will take each row as input and return an RDD for the row.
+		val map_test = textFile.map ( line => line.split("\t"))
+		o/p: No output
+		map_test.collect  //output: Array (Array(...),Array(...),.,.,.,.,.,.)
+		val map_test1 = map_test.map ( line => (line(1),line(2)))
+		map_test1.collect //output: Array ((element1,element2).,.,.,.,.,.,.,.,.,.)
+		
+	2) flatMap: <discussed above>
+	
+	3) Filter: 
+		val fil = map_test.filter(x => x.contains("India"))
+		
+	4) ReduceByKey: takes a pair of key and value pairs and combines all the values for each unique key.
+		map_test2 = map_test.map( line => (line(2),line(9).toInt ))
+		map_red = map_test2.ReduceByKey(_+_).collect
+		
+b) Actions:
+	Actions return final results of RDD computations
+	
+	1) collect: return all the elements in the RDD. Explained above
+	
+	2) count: return the number of elements in the RDD
+	
+	3) countByValue: count the number of occurrences of the elements in the RDD
+		example, we have taken a pair of Country and Sport. By performing countByValue action we have got the count of each country in a particular sport.
+		
+	4) Reduce: explained above
+	
+	5) Take: same as LIMIT, provides the first n number of elements as take(n)
+
+-----------------------------------------------------------------------------
+Two more transformations in spark to maintain the number of partitions that your RDD : coalesce() and repartition()
+
+Consider a situation, 
+you have initially created an RDD and it has N partitions and on that RDD you have applied filter transformation, 
+spark applies transformation on the partitions of RDD so if in case the data inside a partition is completely filtered out then also spark will maintain the 
+number of partitions as the same  as it has while creating the RDD initially.
+
+narrow transformations(Transformations where shuffling is not required).
+
+Both coalesce() and repartition() are used to modify the number of partitions in an RDD
+
+a) coalesce(): Coalesce avoids full shuffle.
+				i.e. If you go from 1000 partitions to 100 partitions, there will not be a shuffle, 
+				instead, each of the 100 new partitions will claim 10 of the current partitions and this does not require a shuffle
+				
+	example,
+	val data = sc.parallelize ( 1 to 4 )
+	data.numOfPartitions  // 4
+	val data_filter = data.filter ( x => ( x % 2 ) == 0)  //will return only 2,4
+	data_filter.numOfPartitions  // still 4
+	val filter_par = data_filter.coalesce(2)
+	filter_par.numOfPartitions // now 2
+	
+				
+b) repartition(): Repartition performs a coalesce with a shuffle.
+					Repartition will result in the specified number of Partitions with data distributed using a hash-partitioner. This is used to increase number of partitions
+					
+	example, (note: if numOfPartitions do not work, use partitions.size and getNumPartitions() )
+	val data = sc.parallelize ( 1 to 4 )  //creates Array(1, 2, 3, 4)
+	data.numOfPartitions  // 4
+	val data_index = data.zipWithIndex  //  ((1,1),(2,2),(3,3),(4,4))
+	data_index.numOfPartitions //still 4
+	val data_repar = data_index.repartition(6)
+	data_repar.numOfPartitions  //now 6
+	
+	**** zipWithIndex and zip
+	List("a", "b", "c").zipWithIndex   // Output is List((a,0), (b,1), (c,2))
+	List("a", "b", "c") zip (Stream from 1) // List((a,1), (b,2), (c,3))
+					
+	so, zipWithIndex Returns: A new list containing pairs consisting of all elements of this list paired with their index. Indices start at 0.
+		zip Returns: A new list containing pairs consisting of all elements of this list paired with their index as per the Stream value provided	
+
+
+	
+	
+	
