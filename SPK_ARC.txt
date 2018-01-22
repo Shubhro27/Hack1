@@ -1,0 +1,71 @@
+SPARK Architechture:
+
+																					   |---------> Worker Node1 (contains Executer) 	
+DRIVER (contains SPARK Context) -----> Cluster Manager (can be YARN, MESOS, AWS) ------|---------> Worker Node2 (contains Executer) 	
+																					   |---------> Worker Node3 (contains Executer)
+
+SPARK architecture is based on 2 abstractions:
+a) RDD (Resilient Distributed Datasets): a spark Dataset stored in worker nodes' memory/RAM and split into partitions.
+b) DAG (Directed Acyclic Graph): a sequence of computations performed on data where each node is an RDD partition and edge is a transformation on top of data. 
+
+Apache Spark follows a master/slave architecture with two main daemons and a cluster manager –
+i. Master Daemon – (Master/Driver Process) : there is a single master where driver program runs
+ii.Worker Daemon –(Slave Process) : there can be a number of workers (which can be scaled up) where executor program runs
+
+Components of a SPARK Architecture:
+a) Drivers: Runs on Master node
+			entry point of the Spark Shell (Scala, Python, and R) and spark context. 
+			Spark Driver contains various components – DAGScheduler, TaskScheduler, BackendScheduler and BlockManager 
+			responsible for the translation of spark user code into actual spark jobs executed on the cluster.
+			Drivers are responsible for,
+			1) schedules job execution and interacts with cluster manager
+			2) stores meta data on RDDs and their partitions
+			3) converts User application into execution units (called TASKS) which are then executed on executors (1 task per executer).
+			4) translates the RDD’s into the execution graph and splits the graph into multiple stages.
+			
+b) Executor: resides on worker nodes and are responsible for execution of TASKS.
+			 Executors perform,
+			 1) all the data processing.
+			 2) Reads from and Writes data to external sources.
+			 3) Executor stores the computation results data in-memory, cache or on hard disk drives.
+			 4) Interacts with the storage systems.
+																			   
+c) Cluster manager: this is external service which acquires resources on the spark cluster and allocating them to a spark job.	
+					3 major cluster managers are: YARN, MESOS, spark cluster manager
+					
+					
+What happens when a Spark Job is submitted?
+1) the driver implicitly converts the code containing transformations and actions into a logical directed acyclic graph (DAG). 
+2) the driver program also performs certain optimizations like pipelining transformations and then it converts the logical DAG into physical execution plan with set of stages.
+3) Driver, creates small physical execution units (i.e. tasks) while creating physical execution plan.
+4) These tasks created in STEP-3 are sent to cluster manager (YARN)
+
+5) The cluster manager then launches executors on the worker nodes on behalf of the driver.
+6) The driver sends tasks to the cluster manager based on data placement
+7) Executors start executing the various tasks assigned by the driver program. 
+   At any point of time when the spark application is running, the driver program will monitor the set of executors that run.
+
+8) When driver programs main () method exits, it will terminate all the executors and release the resources from the cluster manager. 
+			
+
+-----------
+
+SPARK Ecosystem will look like this:
+
+Spark SQL, Spark Streaming, Spark GraphX, MLLib <-> Spark Core (comprised of language support API's like Python, Scala, R, Java 8)	<-> Cluster manager (YARN, MESOS, Spark cluster) <-> HDFS, NoSQL DB (HBASE, MongoDB, Neo4J etc), RDBMS etc file systems or DB
+
+SPARK Core ( uses RDD ) is responsible for,
+1) basic I/O functionalities.
+2) Scheduling and monitoring the jobs on spark clusters .
+3) Task dispatching .
+4) Networking with different storage systems .
+5) fault recovery.
+6) efficient memory management.
+
+
+SPARK SQL, streaming, GraphX, MlLib: Libraries on top of Apache Spark.
+
+Spark Partitions : https://qubole.zendesk.com/hc/en-us/articles/217111026-Reference-Relationship-between-Partitions-Tasks-Cores
+
+Spark partitioning methods: hash partitioning and range partitioning: https://acadgild.com/blog/partitioning-in-spark/
+																	  https://www.edureka.co/blog/demystifying-partitioning-in-spark
