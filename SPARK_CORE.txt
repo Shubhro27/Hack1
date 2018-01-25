@@ -1,0 +1,773 @@
+Map-reduce disadvantages:
+1) MR always follows fixed data pipeline. i.e. we cannot run reducer independently, every time we run reducer, the logi for mapper has to be preceded.
+	i.e. the transformations made in the previous process cannot be used for a new process.
+	
+2) Not Flexible/limited parallel process. i.e. HDFS divides data into blocks ex, if a file is residing in 10 blocks,
+	when a MR is initiated, there will be 10 mapper instances (one each block), but this cannot be changes (As it happens internally)
+	(in spark ,data is divided into partitions and we can control the number of partitions. i.e. if we declare 20 partitions
+	as there are 10 blocks, the total number of partitions will be 200 i.e. 10 * 20).
+
+3) map reduce is bad for iterative algorithms. (in advanced analytics, 90% of algos are iterative).
+
+Spark Advantages:
+1) Transformations can be reused.
+2) flexible control over parallel process (check 2nd point above).
+3) Supports iterative algorithms.
+
+SPARK is 100 times faster than MR when run in Memory (i.e. RAM)
+SPARK is 10 times faster than MR when run in HDD.
+
+SPARK can run on HADOOP, MESOS, AWS clusters.
+
+Tez vs Spark: (both support DAG)
+Spark is DAG + In Memory computing BUT Tez is DAG thus SPARK is faster as data cycles between processor and Memory/RAM
+but In TEX, data cycle between processor <-> RAM <-> HDD
+
+
+SAP Hana vs SPark (both support in memory computation)
+Hana runs on server which is non-distributed but SPARK runs on distributed cluster.
+so if we want to load 100 GB data in HANA Server (having 10 GB), it will not allow
+but spark can load 100 GB by storing 10 GB data on each cluster machine (10 GB RAM) and process in parallel.
+
+Pig vs Spark ()
+
+
+NOTE:Hadoop Data is divided into blocks, Spark data is divided into partitions.
+
+-----
+
+SPARK components
+
+SPARK GraphX, Spark Streaming (micro batch),MLlib (library for Machine learning),SPARK SQL (SQL context and Hive context)
+^
+|
+SPARK Core (has DAG)
+^
+|
+Hadoop, Mesos, AWS cluster
+
+big data applications include,
+a) online/realtime applications
+	1) Transactional: i.e. recorded into RDBMS traditionally but now with so many transactions, these are handled with NoSQl DB.
+	2) streaming: i.e. logging or collecting data (accomplished with flume, Kafka, Storm,  Trident).
+b) Micro/mini/small Batching applications (Spark Streaming) i.e. realtime data fetching (like: in last 5 mins how many fraud attempts happned in different places)
+	streaming is not good for live analytics (i.e. 1000 of transactions hitting at a time), but it is good for micro-analytics (i.e. near real time)
+	i.e. why SS is used with KAFKA (which is best for live analytics)
+c) Batch applications via Hadoop
+
+RDD (rescielent distributed datasets) i.e. spark data objects.
+
+RDD is subdivided into partitions which are distributed across different worker nodes' RAMs of spark/hadoop cluster.
+Any transitions can be executed on all partitions is performed in parallel.
+
+we can perform 2 types of operations over RDD
+a Transformations
+	1 operation over each element
+	2 aggregated transformations
+	3 filters
+	example, map, flatmap, reduceByKey, groupByKey, filter, groupByKey.
+	
+b actions i.e. triggers a DAG and actually show result
+	count, collect, take, saveAsTextFile etc
+	
+RDDs are not executed (loaded into RAM and computed) when they are declared, but when an action is performed. i.e. lazy Evaluation
+3 ways to declare (i.e. NOT executed) RDDs
+a) when u paralellize your local objects (i.e.resides in client machine)
+	ex,
+	val x = List(10,20,30,40,50)  //creates a local object i.e it is in client machine
+	val y = sc.parallelize(x)     // distributes local object into SPARK CLUSTER i.e. it is a RDD. y has just one partition
+	val z = sc.parallelize(x,2)   // Z is a RDD and has 2 partitions.
+	
+	
+b) when u perform transformation or filter on RDD, result set will be a RDD
+	val a = List(10,20,30,40,50)  //local object
+	val b = a.filter(x => x > 30) // still a local object as we performed filter over a which is local object
+	
+	val m = List(10,20,30,40,50,60) //local object
+	val r1 = sc.parallelize(m)      // creates a RDD
+	val r2 = r1.filter( x => x > 30) // r2 is also a RDD
+	val r3 = r1.map( x = x + 100 )   // r3 is also a RDD
+
+c) when u read data from file using spark context (i.e. sc) i.e. reading data from scala will not create RDD, it has to be using spark context.
+	val data = sc.textFile("/user/....../comments.txt")  //creates a RDD. Has 1 partition for each unique block
+	val data = sc.textFile("/user/....../comments.txt",3) //each unique block is divided into 3 paritions distributed into RAM of different slaves.
+	
+	
+RDDs are executed when an action is triggered
+val x = List(10,20,30,40,50,60)      //x  is local
+val r1 = sc.parallelize(x)			//R1 is root RDD or Base RDD.Flow execution starts from this when action is triggered.
+val r2 = r1.map(x => x + 100)
+val r3 = r2.map(x => x * x)
+val r4 = r3.filter ( x => x > 10000) // r1 thru r4 are RDDs, but these are still not stored in RAM as these are only declared
+									 // r1 thru r4 are not yet distributed into SPARK cluster
+									 //i.e data flow is created wiith sequence of RDDS
+									 
+r4.count							 //RDD will be executed with this action. i.e. data flow created with RDDs will be executed
+									 //RDDs will be loaded to RAM and completed.
+									 //action will be triggered from ROOT RDD.
+									 
+
+*** Partitions are created on the nodes where data is loaded, replicas are spared from partitioning.
+
+STEPS followed, (this is all coordinated by SPARK CORE)
+S-1: r1 being root RDD, no computation is required, once data is loaded into RAM, it waits for R2
+S-2: once R2 is initiated in RAM, it reads data from R2 and loads into RAM and once computation is complete, R1 is removed and it waits for R3
+S-3: r3 is initiated in RAM, it reads from R2 and once computation is complete, r2 is removed from RAM and r3 waits for r4
+S-4: r4 is initiated in RAM, it reads from R3 and once computation is complete, r3 is removed from RAM
+S-5: Action will be performed on R4 RDD. Once results are collected, R4 will be deleted from RAM.
+S-6: RAM is empty. If the process has to be re-run, we will have to follow the above steps again.
+
+------
+RDD Reusability
+consider an example where the data flow is 
+a) R1 -> R2 -> R3 -> R4
+b) R1 -> R2 -> R3 -> R5
+c) R1 -> R2 -> R3 -> R6 -> R7
+
+i.e. all R's are RDDs and R1 thru R3 are being used again and again for all flows
+so we can keep R1 and R3 into persist mode i.e. they will be retained in the RAM even after 
+next RDD of flow is ready (i.e. R4, R5, ..) and flow execution is complete.
+
+NOTE: when RDD is 1st time loaded into RAM and computed, it will be persisted/cached. 
+	  Explicit persists is done when flow is executed i.e action is performed.
+	  After action, if we try to persist a RDD, it will not be done. When action is performed, DAG looks for caching requests.
+
+a rdd can be cached or persisted via,
+<RDD Name>.persist or <RDD Name>.cache  //Persist comes with other options.
+recap, a RDD will be persisted only when an action is called (i.e. when data is loaded and computed)
+
+NOTE: once we exit the spark shell, the persisted RDD's are also deleted from memory.
+
+caching paradigms:
+ex-1,												ex-2,
+val R1 = sc.textfile(----)							val R1 = sc.textfile(----)
+val R2 = R1.----()									val R2 = R1.----()
+val R3 = R2.----()									val R3 = R2.----()
+R3.persist											val R4 = R3.---()
+val R4 = R3.---()									val R5 = R3.---()
+val R5 = R3.---()									R3.persist
+R4.count											R4.count
+R5.count											R5.count
+
+whenever a action is triggered, only then R3 will be persisted. So there is no difference between ex-1 and ex-2.
+
+Consider a scenario,
+val R1 = sc.textfile(----)	
+val R2 = R1.----()			
+val R3 = R2.----()			
+val R4 = R3.---()			
+val R5 = R3.---()			
+R4.count    //during flow execution, no RDD is persisted as no RDD has been declared as persist.					
+R5.count					
+R3.persist // R3 is just declared as persist but R3 is not persisted in cluster as action has already been triggered
+
+if now,
+R4.count  //now R3 will be persisted as action is now triggered.
+
+
+How fault tolerence is applied during flow execution,
+Case-1: R1 -> R2 -> R3 -> R4
+		R4.count , if during computation of R3, one of the partitions on which R3 reside is down,
+		all R3 partitions will be deallocated (i.e. removed) from current slaves and reallocated to other slaves
+		and then again R3 is computed i.e. execution starts from R2.
+		
+		i.e. during flow execution, if any partition of current RDD is down, all partitions will be deallocated
+		and reallocated in other working slaves and then the data will be read from previous RDD.
+		
+Case-2: R1 -> R2 -> R3 -> R4
+		R4.count, if during R3 computation, R2 goes down, then computation will again starts from R1.
+		
+		i.e. In flow execution, during current RDD process if previous RDD is down, entire flow will be re-executed.
+		
+Case-3: R1 -> R2 -> R3 -> R3 is declated as persist -> R4 -> R5
+		R5.count, if R4 is down, the processing re-starts from R3 (i.e. immediate available source)
+		
+		i.e. during current RDD process, if previous RDD is down, 
+		flow execution will be re-started from immediate available source (i.e persisted RDD).
+		if no RDD is persisted, flow restarts from beginning.
+		
+		
+Consider a scenario,
+R1 -> R2 -> R3 -> ........... -> R97 -> R98 -> R99 -> R100 
+
+i.e. 100 RDDs and this flow needs to run on 1st of every month (i.e. montly job)
+In such scenario, we will not want to persist anything as we do not want to reuse.
+
+however, lets say, in 1st execution (R100.count)
+1) during R97 execution, R96 goes down, so the flow will again start from R1
+2) in the 2nd run, let's assume during R98 execution, R97 goes down, so the flow will again start from R1
+
+to handle these situations, as a temporary solution, if we wo intermediate persist like,
+R5.persist, R10.persist, ......, R95.persist
+
+now, if during R97, if R96 goes down, flow restarts from R96 taking data from R95.
+let's assume, no R100.count completed successfully, and we do not want the persisted RDD's to uncache for 2nd run next month
+
+i.e to unpersist or uncache we use <RDD name>. unpersist() i.e. example, R95.unpersist()
+
+Note: before unpersisting, SPARK core checks if any flow requiring R95 is running and if it does SPARK core waits for 
+flow to complete before unpersisting (i.e. removing it from RAM).
+
+------------------------------------------------------------------------------
+SPARK PROGRAMMING
+------------------------------------------------------------------------------
+JOIN:
+//consider a List of tuples
+val R1 = List((11,10000),(11,20000),(12,30000),(12,40000),(13,5000))
+val R2 = List((11,"Hyd"),(12,"Del"),(13,"Hyd"))
+
+val rdd1 = sc.parallelize(R1)
+val rdd2 = sc.parallelize(R2)
+val join_RDD = rdd1.join(rdd2)  //internal join
+join_RDD.collect.foreach(println)
+
+o/p: if we have not explicitely specified the key, S Core assumes 1st element as Key
+(13,(5000,Hyd))
+(11,(10000,Hyd))
+(11,(20000,Hyd))
+(12,(30000,Del))
+(12,(40000,Del))
+
+//to do city based aggregation,
+val citySalPair = join_RDD.map { x => 
+				  val city = x._2._2
+				  val sal = x._2._1
+				  (city,sal)
+				  }
+				  
+citySalPair.collect.foreach(println)
+
+o/p:
+(Hyd,5000)
+(Hyd,10000)
+(Hyd,20000)
+(Del,30000)
+(Del,40000)
+
+val result = citySalPair.reduceByKey(_+_)
+
+result.collect.foreach(println)
+o/p:
+(Hyd,35000)
+(Del,70000)
+----
+
+//consider a scenario where one object is not in key value pair
+val e1 = List((11,30000,10000),(11,40000,20000),(12,50000,30000),(13,60000,20000),(12,80000,30000))
+val ee = sc.parallelize(e1)  //create RDD for local object
+
+val R2 = List((11,"Hyd"),(12,"Del"),(13,"Hyd"))
+val rdd2 = sc.parallelize(R2)
+
+val join2 = ee.join(RDD2) //this will error : Join is not a member of RDD(Int,Int,Int)
+
+so NOTE: joins can be applied only on KEY_VALUE PAIRS.
+
+val e3 = ee.map { x => 
+			val dno = x._1
+			val sal = x._2
+			val bonus = x._3
+			(dno,(sal,bonus))
+		}
+
+e3.collect.foreach(println)
+
+o/p:
+(11,(30000,10000))
+(11,(40000,20000))
+(12,(50000,30000))
+(13,(60000,20000))
+(12,(80000,30000))
+
+val join3 = e3.join(rdd2)
+
+o/p:
+(11,(30000,10000),Hyd))
+(11,(40000,20000),Hyd))
+(12,(50000,30000),Del))
+(13,(60000,20000),Del))
+(12,(80000,30000),Del))
+
+val pair = j3.map { x =>
+			val sal = x._2._1._1
+			val bonus = x._2._1._2
+			val total = sal + bonus 
+			val city = x._2._2
+			(city,total)
+			}
+			
+o/p will be a collection of tuple
+
+val res2 = pair.reduceByKey(_+_)
+
+-----------
+reading files and creating RDD:
+
+consider 2 files emp and dept
+
+emp:
+101,aaa,70000,m,12
+102,bbb,90000,f,12
+103,ccc,10000,m,11
+104,ddd,20000,f,13
+105,eee,90000,f,14
+106,fff,40000,m,15
+
+dept:
+11,marketing,hyd
+12,HR,del
+13,finance,hyd
+14,admin,del
+15,accounts,hyd
+.
+.
+
+we need the o/p as : 105,eee,40000,m,accounts,hyd i.e. join the data and write to HDFS
+--
+hadoop dfs -mkdir Sparks				 //create a directory in HDFS
+hadoop dfs -copyFromLocal emp Sparks	 // copy file emp to HDFS
+hadoop dfs -copyFromLocal dept Sparks	 //copy file dept to HDFS
+
+--
+val rdd_emp = sc.textFile("emp file")    //loads file to SPARK cluster as RDD
+val rdd_dept = sc.textFile("dept file")	 //loads file to SPARK cluster as RDD
+
+--
+rdd_emp.collect.foreach(println)  //data will be available as string
+o/p:
+101,aaa,70000,m,12
+102,bbb,90000,f,12
+
+rdd_dept.collect.foreach(println)
+o/p:
+11,marketing,hyd
+12,HR,del
+.
+.
+--
+In order to join the RDDs should be in key-value pairs
+
+val rdd_emp_v1 = rdd_emp.map{ x =>
+				val w = x.split(",")
+				val dno = w(4).toInt
+				val id = w(0)
+				val name = w(1)
+				val sal = w(2),toInt
+				val sex = w(3)
+				val info = id + "," + name + "," + sal + "," + sex
+				(dno,info)
+				}
+				
+val rdd_dept_v1 = rdd_dept.map { x =>
+				val w = x.split(",")
+				val dno = w(0).toInt
+				val info = w(1) + "," + w(2)
+				(dno,info)
+				}
+				
+val rdd_join_emp_dept = rdd_emp_v1.join(rdd_dept_v1)
+(12,(101,aaa,70000,m,HR,del))      //altough it seems to be 1 string, it has 2 parts (101,aaa,70000,m),(HR,del)
+(11,(103,ccc,10000,m,marketing,hyd))
+.
+.
+.
+
+val res1 = rdd_join_emp_dept.map{ x => 
+					val einfo = x._2_.1
+					val dinfo = x._2_.2
+					val info = einfo + "," + dinfo
+					info
+					}
+					
+o/p:
+101,aaa,70000,m,HR,del
+103,ccc,10000,m,marketing,hyd
+.
+.
+
+--
+store it in HDFS
+
+res1.saveAsTextFile("HDFS location")  //give path + file name (by which the data will be stored)
+
+//if we want to aggregate i.e. total salary by city
+
+val ednosal = rdd_emp.map { x =>
+				val w = x.split(",")
+				val dno = w(4)
+				val sal = w(2).toInt
+				(dno,sal)
+				}
+				
+val dnocity = rdd_dept.map { x =>
+				val w = x.split(",")
+				val dno = w(0)
+				val city = w(2)
+				(dno,city)
+				}
+				
+val edjoin = ednosal.join(dnocity)
+(14,(90000,del))
+(15,(90000,hyd))
+.
+.
+.
+
+val citysal = edjoin.map { x =>
+				val city = x._2_._2
+				val sal = x._2._1
+				(city,sal)
+				}
+				
+o/p:
+(del,90000)
+(hyd,90000)
+
+val res4 = citysal.reduceByKey(_+_)
+
+-----------
+how to create and view number of partitions
+example,
+val list1 = List(10,20,30,40,50,60,70,80)
+val rdd_list1 = sc.parallelize(list1)  
+rdd_list1.partition.size  //o/p is 1 which is default number of partitions
+
+val rdd2_list1 = sc.parallelize(list1,3)
+rdd2_list1.partition.size //o/p is 3
+
+val data = sc.textFile("filename",2)
+data.partition.size   //o/p is 2
+
+NOTE: the partition size value is NOT = the argument given in spark context.
+
+f1 = B1 B2 B3 (i.e. file has 3 blocks and 9 replicas)
+when we say val data = sc.textFile(f1) , it creates 3 partitions
+i.e. BY DEFAULT, no of file blocks (original) = no of partitions created
+ 
+val data2 = sc.textFile(f1,2) , it creates 6 partitions i.e. 3 blocks and 2 partition on each file block
+
+Partitions are created in RAM, it may be on same cluster machine or different cluster machines depending on RAM available.
+
+consider a scenario,
+if we have a single core machine and we create 2 partitions, there is no advantage as P1 will be processed before P2
+but if we have multi core processors, each core can work on each partition in parallel
+
+Industry standard for slave machines is minimum 64 core i.e. 64 parallel tasks can be initiated.
+-----------
+word count demo via spark programming:
+
+S1 - val data = sc.textFile("file path + filename")
+S2 - val arr = data.map ( x => x.split(" ") )
+S3 - val words = arr.flatMap(x => x)   //all the arrays in arr will be flattened
+
+shortcut for S2 and S3 is
+val words = data.flatMap( x => x.split(" "))   //same result as S3.
+
+S4 - val pair = words.map( x => (x,1))   // Array((I,1), (spark,1),.........)
+
+S5 - val result = pair.reduceByKey((a,b)=> a + b)  // word count output
+
+shortcut for S5,
+val result = pair.reduceByKey(_+_)  
+
+S6 - To get word with highest word count, we can do
+val max_cnt = pair.reduceByKey(Math.max(_,_))   //for min : Math.min(_,_)
+
+#word count in a singleline
+val data = sc.textFile("file path + filename")
+val wc = data.flatMap ( x => x.split(" ").map(x => (x,1)).reduceByKey(_+_)
+
+However, this is not recommended, as the intermediate RDDs (created in long notation) cannot be reused if required.
+
+#another way of word count
+val wc= data.map { x =>
+			val arr = x.split(" ")
+			val p = arr.map (w => (w,1))
+			p
+			}   //o/p will be Array(Array[string,Int])
+			
+val wc= data.map { x =>
+			val arr = x.split(" ")
+			val p = arr.map (w => (w,1))
+			p
+			}.flatMap(x => x)
+			
+val cnt = wc.reduceByKey(_+_)  //give the count.
+
+#another way
+val wc1 = data.flatMap {x =>
+				val arr = x.split(" ")
+				val p = arr.map (w => (w,1))
+				p
+			}.reduceByKey(_+_)
+
+
+
+# let's consider a senario where the words are separated by multiple spaces 
+spark			Spark 						Spark
+hadoop	spark 	Hadoop HADOOP
+Hadoop						HADOOP
+
+develop a function to neutralize the spaces
+def rmSpace (x: String) : String = {
+	val line = x.trim()    //to remove unnecessary space before and after the string
+	val w = line.split(" ")
+	val words = w.filter ( x => x!= " ").map (x => x.toLowerCase)
+	words.mkString(" ")   // as words is an Array
+}
+
+val lines = sc.textFile ("file path + file name")
+val data = lines.map (x => rmSpace(x))
+val arr = data.flatMap {x =>
+				val arr = x.split(" ")
+				val p = arr.map (w => (w,1))
+				p
+			}.reduceByKey(_+_)
+
+-----------
+grouping on multiple columns:
+example,
+emp file,
+101,aaa,70000,m,12
+102,bbb,90000,f,12
+103,ccc,10000,m,11
+104,ddd,20000,f,13
+105,eee,90000,f,14
+106,fff,40000,m,15
+
+what to accomplish: select dno, sex, sum(sal) from emp group by sex;
+
+val data = sc.textFile(" file ")
+val pair = data.map { x => 
+			val arr = x.split(",")
+			dno = arr(4)
+			sex = arr(3)
+			sal = arr(2)
+			val myKey = (dno,sex)
+			(myKey,sal)
+			}
+			
+((12,m),70000)
+((12,f),90000)
+.
+.
+.
+i.e. now we have a key,value pair where key is a tuple.
+
+val result = pair.reduceByKey((a,b) => a + b) OR val result = pair.reduceByKey(_+_)
+
+----
+collect action command collects the data of RDD from all the partitions into client
+
+NOTE: when data is loaded into client, there can be scenarios, where collect operation fails
+example: data for RDD is stored in 4 partitions and each partition holds 10 GB
+when collect is triggered, it loads the data into client machine (which has only 20 GB memory), the operation will fail.
+
+in such case when collect fails, we can check data as,
+data.take(3)  //will load the 1st 3 rows.
+data.skip(3)  //skips 1st 3 recs.
+
+
+------
+Save results to HDFS
+
+<RDD>.saveAsTextFile ("complete HDFS path + filename")
+
+Note:
+val loc_list = List(10,20,30,40,50,60,70,90,100)
+val rdd_list = sc.parallelize(loc_list)
+rdd_list.saveAsTextFile("HDFS PATH/FILE1") //o/p can be seen in FILE1/part-00000
+
+now,
+val rdd_list2 = sc.parallelize(loc_list,3)
+rdd_list.saveAsTextFile("HDFS PATH/FILE2") //o/p will be stored in part-00000, part-00001, part-00002 i.e. 1 file for each partition  
+
+if we want to create one file for the 3 partitions above,
+val rdd_list2 = sc.parallelize(loc_list,3)
+sc.parallelize(rdd_list2.collect).saveAsTextFile("...../FILE3")   //sc.parallelize(rdd_list2.collect) will create is RDD
+																  //o/p will be stored in part-00000
+
+-------
+to convert a tuple into String
+val res_str = res_tuple.map (x => x._1 + "\t" + x._2)  //converts () to tab delimited string ex (hyd,2000) -> (hyd	2000)
+
+NOTE: In SPARK, we cannot convert Tuples directly to List....tuples will have to be converted to string and then added to list1
+
+val data = sc.textFile(" file ")
+val pair = data.map { x => 
+			val arr = x.split(",")
+			dno = arr(4)
+			sex = arr(3)
+			sal = arr(2)
+			val myKey = (dno,sex)
+			(myKey,sal)
+			}
+			
+val res3 = pair.reduceByKey(_+_)
+			
+((12,m),70000)
+((12,f),90000)
+
+to convert this data to 
+12	m	70000
+12	f	90000
+
+val r4 = res4.map(x => x._1._1 + "\t" + x._1._2 + "\t" + x._2)
+o/p:
+12	m	70000
+12	f	90000
+
+-----------------------------------------------------
+aggregations on multiple columns using groupByKey:
+
+in case of previous aggregations (reduceByKey), we could only achieve one aggregation...in order to do multiple aggregations
+we use groupByKey.
+
+why reduceByKey is better than groupByKey?
+
+emp:
+101,aaa,70000,m,12
+102,bbb,90000,f,12
+103,ccc,10000,m,11
+104,ddd,20000,f,13
+105,eee,90000,f,14
+106,fff,40000,m,15
+
+dept:
+11,marketing,hyd
+12,HR,del
+13,finance,hyd
+14,admin,del
+15,accounts,hyd
+
+val data = sc.textFile("emp file")
+val arr = data.map (x => x.split(","))
+val pair1 = arr.map( x => (x(3),x(2).toInt)) // Array ((m,70000),(f,90000),......)
+val grp = pair.groupByKey()
+
+o/p: i.e. grp.collect
+Array((f,CompactBuffer(90000,20000,90000)),(m,CompactBuffer(70000,10000,40000)))
+
+val res = grp.map { x => 
+			val sex = x._1
+			val cb = x._2
+			val total = cb.sum
+			val count = cb.size
+			val avg = total/count
+			val max = cb.max
+			val min = cb.min
+			val r = sex + "," + total + "," + count + "," + avg + "," + max + "," + min
+			r}
+ 
+res.collect.foreach(println)
+
+--
+val pair2 = arr.map( x => ((x(4),x(3)),x(2)))  // Array (((11,m),50000),((11,f),10000))
+val grp2 = pair2.groupByKey() // Array (((11,m),CompactBuffer(50000)),((11,f),CompactBuffer(50000,60000)),.....)
+val res2 = grp2.map { x => 
+			val k = x._1
+			val dno = k._1
+			val sex = k._2
+			val cb = x._2
+			val total = cb.sum
+			val count = cb.size
+			val avg = total/count
+			val max = cb.max
+			val min = cb.min
+			(dno,sex,total,count,avg,max,min) 
+			}
+
+--			
+//select sum(sal) from emp
+
+val salary = arr.map ( x => x(2).toInt )
+val tot = salary.sum
+OR
+val tot = salary.reduce(_+_)
+
+//select sum(sal),avg(sal),count(*)....
+val salary = arr.map ( x => x(2).toInt )
+val tot = salary.sum
+val cnt = salary.count
+val avg = (tot/cnt).toInt
+val max = salary.max
+val min = salary.min
+
+better way is :
+val tot = salary.reduce(_+_)
+val cnt = salary.count
+val avg = (tot/cnt).toInt
+val max = salary.reduce( Math.max(_+_))
+val min = salary.min( Math.min(_+_))
+
+val res = (tot,cnt,avg,max,min)
+val res2 = List(tot,cnt,avg,max,min).mkString("\t")
+
+why is 2nd approach the better way,
+consider an example,
+val lst = sc.parallelize(List(10,20,30,40,50,20,30,40,40,10),2)
+this creates a RDD having 2 partitions,
+P1 = List (10,20,30,40,50)
+P2 = List (20,30,40,40,10)
+
+lst.sum //will load the entire list to client machine where the sum operation will take place.
+		// incase of bigger datasets, this becomes a problem if clinet machine's ram cannot take the data.
+		//also, due to this approach, this does not support parallel processing
+		
+lst.reduce(_+_) //operation will be executed at cluster machines separately i.e. separate for P1 and P2
+				//P1 result will be 150 , P2 result will be 140 => will be collected into any one slave of spark 
+				//cluster which has ram and aggregated  to give final result i.e. List(150,140) = 290
+				//290 will now be loaded to client.
+		
+
+--------------
+Spark transformations:
+
+1) val res = data.map { x =>
+			 val w = x.trim.split(",")
+			 val id = w(0)
+			 val name = w(1).toLowerCase
+			 val fc = name.slice(0,1).toUpperCase
+			 val rc = name.slice(1,name.size)
+			 val sal = w(2).toInt
+			 val grade = if (sal > 70000) "A" else
+							if (sal >50000) "B" else
+								if (sal > 30000) "C"
+			 val dno = w(4).toInt
+			 val dname = dno match {
+				case 11 => "Marketing"
+				case 12 => "HR"
+				case other => "Others"}
+			var sex = w(3).toLowerCase
+			sex = if (sex == "f") "Female" else "male"
+			List (id,fc+rc,w(2),grade,sex,dname).mkString("\t")
+			}
+2) filter operation
+	//select sum(sal) from emp where sex = "m"
+	
+	def isMale(x:String) : Boolean = {
+		val w = x.split(",")
+		val sex = w(3).toLowerCase
+		sex == "m"
+	}
+	
+	val males = data.filter( x => isMale(x))
+	val sales = males.map (x => x.split(",")(2).toInt)
+	val res = sales.reduce(_+_) //sum of the salaries of males
+	
+	val fems = data.filter ( x => !isMale(x))
+	val sales_fems = males.map (x => x.split(",")(2).toInt)
+	val res = sales_fems.reduce(_+_) //sum of the salaries of females
+	val max_sal = sales_fems.reduce(Math.max(_,_))  //max salary of female group
+	
+	NOTE: all scala functions CANNOT BE applied on RDD. 
+	ex, 
+	reduce is available in scala and RDD, but reduceByKey is available only for RDD
+	count is for RDD and size for scala,
+	but withinmap and flatMap, we can apply all scala functions.
+	
+	
+
+
+			
+			
