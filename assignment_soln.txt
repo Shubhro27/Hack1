@@ -1,0 +1,77 @@
+val sentence = "This is a new attempt. Spark, Hadoop are not just file systems but note: This is just scribble"
+val sentence = Array("This is a new attempt. Spark, Hadoop are not just file systems but note: This is just scribble","but why do we say Apache_pig is not as good as Apache_hive - well that is a mystery","also I have asked 10 times no 11 times whay scala")
+
+
+val s_1 = sentence.map(x => x.split(" "))
+
+val s_2 = sentence.map(x => x.split("\\W"))
+
+val s_3 = sentence.map(x => x.split("[\\W|_|^0-9]|\\s"))
+
+-------------------------------------------------------------
+Fileds in data set are: (comma separated)
+id
+age
+gender
+profession
+zipcode
+
+--
+EXERCISE 1: Load the data from file “userdata.txt” into HDFS.
+
+hdfs dfs -mkdir sb_sparkCore_assgmnt_ds
+ load the file to this directory via Hue
+ 
+val rdd_user_data1 = sc.textFile("sb_sparkCore_assgmnt_ds/attachment_userdata.txt")
+
+------------
+EXERCISE 2: Return the RDD as a set of tuples.
+
+val rdd_user_data2 = rdd_user_data1.map { x =>
+						val arr = x.split(",")
+						(arr(0),arr(1).toInt,arr(2),arr(3),arr(4).toInt)
+					}
+					
+o/p: Array[(String, Int, String, String, Int)] = Array((1,24,M,technician,85711), (2,53,F,other,94043),...)
+------------
+EXERCISE 3: Find the number of unique professions in the data file.
+
+val rdd_user_data3 = rdd_user_data1.map { x =>
+					 val arr = x.split(",")
+					 val prof = arr(3)
+					 prof}
+					 
+val rdd_distinct_prof = rdd_user_data3.distinct
+
+retired
+healthcare
+administrator
+student
+doctor
+writer
+engineer
+homemaker
+educator
+artist
+marketing
+librarian
+technician
+scientist
+none
+executive
+other
+programmer
+lawyer
+entertainment
+salesman
+
+count is 21.
+------------
+EXERCISE 4: How many different users belong to unique profession.
+
+
+
+------------
+EXERCISE 5: How many different users belong to unique zip code.
+------------
+EXERCISE 6: Find how many users are male and female.
