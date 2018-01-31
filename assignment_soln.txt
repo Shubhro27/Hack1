@@ -1,15 +1,32 @@
-val sentence = "This is a new attempt. Spark, Hadoop are not just file systems but note: This is just scribble"
+/user/shubhro2705854012/wordCount/Corporate_Stories.txt
+
+val rdd_WordCount = sc.textFile("wordCount/Corporate_Stories.txt")
+rdd_WordCount.take(10)
+val rdd_WC_splitting = rdd_WordCount.map ( x => x.split(" "))
+rdd_WC_splitting.take(10)
+val rdd_WC_mapping = rdd_WC_splitting.flatMap( x => x )
+rdd_WC_mapping.take(10)
+val rdd_WC_map_tuples = rdd_WC_mapping.map ( x => (x,1))
+val rdd_WC_count = rdd_WC_map_tuples.reduceByKey (_+_)
+val rdd_WC_count_sort = rdd_WC_count.sortBy ( x => x._2,false)
+rdd_WC_count_sort.collect
+
+-------------------
 val sentence = Array("This is a new attempt. Spark, Hadoop are not just file systems but note: This is just scribble","but why do we say Apache_pig is not as good as Apache_hive - well that is a mystery","also I have asked 10 times no 11 times whay scala")
 
+--val s_1 = sentence.map(x => x.split(" "))
+--val s_2 = sentence.map(x => x.split("\\W"))
+val s_3 = sentence.flatMap(x => x.split("[\\W|_|^0-9]"))  //this will split based on space, number and "_"
+val s_3_filter = s_3.filter ( x => x != "" )
+val s_3_mp = s_3_filter.map ( x => (x,1) )
+val rdd_s_3_mp = sc.parallelize(s_3_mp)
+val rdd_s_3_count = rdd_s_3_mp.reduceByKey(_+_)
 
-val s_1 = sentence.map(x => x.split(" "))
-
-val s_2 = sentence.map(x => x.split("\\W"))
-
-val s_3 = sentence.map(x => x.split("[\\W|_|^0-9]|\\s"))
+o/p:
+res3: Array[(String, Int)] = Array((are,1), (hive,1), (scribble,1), (have,1), (why,1), (new,1), (just,2), (asked,1), (file,1), (systems,1), (Spark,1), (a,2), (attempt,1), (no,1), (I,1), (good,1), (but,2), (whay,1), (Hadoop,1), (scala,1), (is,4), (note,1), (times,2), (Apache,2), (we,1), (This,2), (as,2), (pig,1), (well,1), (not,2), (mystery,1), (that,1), (say,1), (do,1), (also,1))
 
 -------------------------------------------------------------
-Fileds in data set are: (comma separated)
+Fields in data set are: (comma separated)
 id
 age
 gender
