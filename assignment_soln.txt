@@ -69,9 +69,71 @@ count is 21.
 ------------
 EXERCISE 4: How many different users belong to unique profession.
 
+val rdd_user_data4 = rdd_user_data1.map { x => 
+					 val arr = x.split(",")
+					 val dept = arr(3)
+					 (dept,1)
+					}
+					
+val rdd_prof_count = rdd_user_data4.reduceByKey(_+_)
 
+rdd_prof_count.foreach(println)
+
+(marketing,26)
+(librarian,51)
+(technician,27)
+(scientist,31)
+(none,9)
+(executive,32)
+(other,105)
+(programmer,66)
+(lawyer,12)
+(entertainment,18)
+(salesman,12)
+(retired,14)
+(healthcare,16)
+(administrator,79)
+(student,196)
+(doctor,7)
+(writer,45)
+(engineer,67)
+(homemaker,7)
+(educator,95)
+(artist,28)
 
 ------------
 EXERCISE 5: How many different users belong to unique zip code.
+
+val rdd_user_data5 = rdd_user_data1.map { x => 
+					 val arr = x.split(",")
+					 val zipcode = arr(4)
+					 (zipcode,1)
+					}
+
+val rdd_uniq_zip = rdd_user_data5.reduceByKey(_+_)
+
+
 ------------
 EXERCISE 6: Find how many users are male and female.
+
+val rdd_user_data6 = rdd_user_data1.filter { x => 
+					 val arr = x.split(",")
+					 arr(2) == "M"
+					 }
+					 
+rdd_user_data6.count //670
+
+val rdd_user_data7 = rdd_user_data1.filter { x => 
+					 val arr = x.split(",")
+					 arr(2) == "F"
+					 }
+					 
+rdd_user_data7.count //273
+
+val rdd_user_data8 = rdd_user_data1.map{ x => 
+					 val arr = x.split(",")
+					 val gender = arr(2)
+					 (gender,1)
+				}
+				
+val rdd_gender_count = rdd_user_data8.reduceByKey(_+_)

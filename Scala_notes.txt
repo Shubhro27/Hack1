@@ -1,0 +1,758 @@
+Other: http://bigdata-madesimple.com/11-interesting-big-data-case-studies-in-telecom/
+
+--------------------------------------------------------------------
+https://www.tutorialspoint.com/scala/ for scala overview, set up
+
+https://www.analyticsvidhya.com/blog/2017/01/scala/    - try this once and check some videos
+
+https://www.scala-exercises.org/scala_tutorial/standard_library
+
+Scala for Spark:
+https://acadgild.com/blog/introduction-spark-rdd-basic-operations-rdd/
+https://acadgild.com/blog/spark-rdds-scala/
+
+----------------------------------------------------------------------------------
+Scala Language is a functional programming language which supports both OOPs and functional programming style.
+
+What is functional programming style,
+- functions as 1st class citizens. i.e passing one function as an argument to another function.
+	this enhances modularity.
+	SPARK , u can use user defined function to a SPARK function.
+	
+- Immutability: DS is not editable.
+	in SPARK, u define data as RDD.
+	
+NOTE: Scala is a compiled language.It uses the same byte code as Java, so it can be run on any JVM.
+
+Scala is dynamically inferred statically typed language:
+a) i.e. u do not have to mention data type of a variable, it is dynamically assigned (or inferred).
+b) u can define 2 types of variables: var (mutable) and val (immutable)
+	i.e. once the data type is inferred, the datatype will remain same throughout the program.
+	
+Source code of Spark is Scala that is why the preference is scala.
+
+SCALA shell is called REPL - (Read-evaluate-print-loop).
+
+In Scala everything is an object i.e. variable, function etc are created as objects.
+
+difference between array and list (both are collections of homogeneous items),
+array has a fixed size collection while list is dynamic in size.
+
+example of array,
+val names = ("A", "B","C")
+names(0)  //o/p - A. Note Scala uses () and NOT []
+names(names.size - 1)
+
+example of list
+val lst = (10,20,30)
+lst(1)   // output will be 20
+
+slicing of list,
+val x = List (1,3,5,7,9,10,15,20,30,40)
+x.size //10
+x.slice(3,6) // List(7,9,10) i.e. this will exclude 6th index
+x.slice(5, x.size) 
+
+//add elements to collection,
+val y = List(10,20,30)
+25::y //output List(25,10,20,30) i.e. it will prepend
+y::40 //invalid... i.e. appending is invalid. Appending can be done by other methods
+
+y = 40::y //error. y is immutable
+val z = 40::y //valied List(40,10,20,30)
+
+Note: Var will allow the operation
+var a = List(10,20,30)
+a = 40::a //Valid i.e. List(40,10,20,30)
+
+//merging of 2 collections,
+val x = List (1,3,5,7,9,10,15,20,30,40)
+val y = List(10,20,30)
+val z = x++y will merge the 2 lists and y values will be appended to x
+val y = x.union(y) will also merge
+
+y++List(70) //will append 70
+y++70 //is invalid
+
+Tuple: collection of immutable heterogeneous items. Tuples are used to maintain record structure
+val t = ("ravi", 26, (rani,25,hyd,bt), List[bt,mt,phd],"IBM", "Se")
+
+to access tuple elements,
+t(0) //will error with "does not take parameters"
+t._1 // will access 1st element. Similarly t._2,t._3
+
+Map collection:
+val capitals = Map("Andra" -> "Amravati" , "Telangana" -> "Hyderabad")
+TO access map elements,
+capitals ("Andra") // Output is Amravati
+capitals ("Karnataka") // fail
+
+capitals+= Map("Karnataka" -> "Bangalore") //fail coz capitals is immutable
+
+var capitals = ("Andra" -> "Amravati" , "Telangana" -> "Hyderabad")
+capitals+= ("Karnataka" -> "Bangalore", "Tamil Nadu" -> "Chennai") //will be added fine.
+
+------------------------------------------
+Transformations in Scala: i.e. operation on each element is called Transformations
+1) map()
+2) flatMap()
+3) filter()
+
+map:
+val x = List(10,20,30,40,50,60)
+val y = x.map(v => v + 100)  //each element will be added with 100.
+val z = y.map(v => v > 140)	// List(false,false,false,false,true,true).
+
+val name = List("Ravi", "rani", "vani", "veni", "venu")
+val str = name.map(v => v.toUpperCase)  //all the converted into upper case
+str.foreach(println)
+o/p:
+RAVI
+RANI
+VANI
+VENI
+VENU
+
+Shortcuts for map expression
+val x = List(10,20,30,40,50,60)
+val y = x.map(_+100)
+val z = y.map(_>140)
+
+val name = List("Ravi", "rani", "vani", "veni", "venu")
+val str = name.map(_.toUpperCase)
+
+multiple/complex expressions,
+val sals = List(10000,20000,30000,40000,10000,50000)
+to get the net salary: tax ->10 % and HRA -> 20%
+
+val nets = sals.map{ x => 
+		val tax = x * 10/100
+		val hra = x * 20/100	
+		val net = x + tax + hra
+		}
+		
+	o/p: List[Unit] = List((),(),(),(),(),()) //reaso is that only assignment to net is done.
+
+val nets = sals.map{ x => 
+		val tax = x * 10/100
+		val hra = x * 20/100	
+		val net = x + tax + hra
+		net
+		}
+		
+other example,
+val name = List("Ravi", "rani", "vani", "veni", "venu")
+val names = name.map { x => 
+			val w = x.trim
+			val fc = w.substring(0,1)
+			val fupp = fc.toUpperCase
+			val rc = w.subtring(1).toLowerCase   //will take till end of string
+			fupp + rc
+		}
+		
+	o/p : List(Ravi, Rani,Vani,Veni,Venu)
+	
+slicing:
+
+val x = List(10,20,30,40,50,60)
+x.slice(2,5)  //30,40,50
+x.slice(0,3)  //10,20,30
+x.take(3)     //10,20,30 - similar to LIMIT
+x.slice(2,x.size) //30,40,50,60
+
+other example,
+val name = List("Ravi", "rani", "vani", "veni", "venu")
+val names = name.map { x => 
+			val w = x.trim
+			val fc = w.slice(0,1)
+			val fupp = fc.toUpperCase
+			val rc = w.slice(1,fupp.size).toLowerCase
+			fupp + rc
+		}
+
+	o/p : List(Ravi, Rani,Vani,Veni,Venu)
+	
+flatmap:
+val l = List(List(1,2,3),List(3,4),List(1,3,5,6),List(1,2,3))
+//how many elements in each list
+val r = l.map (x => x.size)  //o/p: List(3,2,4,3)
+var rsum = l.map( x => x.sum) //o/p: List(6,7,15,6)
+
+var tsum = rsum.sum   //34
+
+val l2 = l.flatMap(x => x) //(1,2,3,3,4,1,3,5,6,1,2,3)
+val l3 = l.flatMap(x => x).sum //34
+
+when to use map and when to use flatmap? when every element is imp, use flatmaps. When only specific elements, use map
+
+flatmap example (every element) i.e. word count
+val lines = List("I love hadoop","I love spark","I love spark and hadoop","spark is great")
+val words = lines.map(x => x.split(" ")) //List(Array(I,love,hadoop),Array(I,love,spark),Array(I,love,spark,and,hadoop)....)
+val words1 = lines.flatmap(x => x.split(" ")) //List(I,love,hadoop,I,love,spark.........)
+val pair = words1.map(x => (x,1)) //List((I,1),(love,1),(hadoop,1)...........)
+
+map example (specific example) i.e. //required, select gender, sum(sal) from recs group by gender
+val recs = List("101,amar,40000,m,11","102,amala,50000,f,12","103,giri,60000,m,11","101,girija,90000,f,13")
+val arr = recs.map(x => x.split(",")) //list of arrays
+val myResult = arr.map(x => (x(3),x(2).toInt)) //List((m,40000),(f,50000).......)
+
+filter: i.e. records which statisfy a boolean condition
+val l = List(List(1,2,3),List(3,4),List(1,3,5,6),List(1,2,3))
+//which lists have more than 2 elements
+val r = l.filter( x => x.size > 2) //List(List(1,2,3),List(1,3,5,6),List(1,2,3))
+
+val recs = List("101,amar,40000,m,11","102,amala,50000,f,12","103,giri,60000,m,11","101,girija,90000,f,13")
+//filter only male records
+val males = recs.filter(x => x.contains("m")) //all records which have one "m" will be selected, SO INCORRECT
+val males = recs.filter{
+			val gender = x.split(",")(3).toLowerCase
+			gender == "m"
+			} 
+			
+			//o/p will have all records for male gender
+			
+			
+conditional transformations:
+example of if statement:
+val a = 100
+val b = 230
+val greater = if (a>b) a else b
+o/p: 230
+
+
+val lst = List(10000,30000,90000,20000,60000,80000)
+//find salaries above avg salary and others below avg salary
+lst.sum   //gives sum
+lst.size //gives size of list
+
+val avg = sum/size
+
+val res = lst.map( x=> if (x > avg) "above" else "below")
+o/p: (below,below,above,below,above,above)
+
+//nested ifs
+val a = 100
+val b = 230
+val c = 150
+
+val bigger = if(a>b) {if (a>c) a else b} else { if(b>c) b else c} //o/p: 230
+
+example,
+val deptnos = (11,12,13,11,11,11,12,13,12,12,13,14,15,11)
+val dnames = deptnos.map{x => 
+				if (x = 11) "marketing" else
+				{if (x = 12) "Hr" else
+				{if (x =13) "Finance" else
+				"other"}
+				}
+				}
+o/p : List (marketing, Hr,.........)
+
+match is same as case statement
+val gen = (gender = "m") match {
+			case true=> "Male"
+			case false => "Female"
+		} 
+		
+
+other way,
+gender = "m"
+val res = gender match {
+			case "m" => "male"
+			case "f" => "Female"
+			case other => "Unknown"
+		}
+
+
+example,
+val lst = List(10000,30000,90000,20000,60000,80000)
+using nested if,
+val res1 = lst.map { x => 
+			var grade = " "
+			if (x > 70000) {grade = "A"}
+			else
+			{ if (x >=50000) {grade = "B"}
+			else
+			{ if (x >=30000) {grade = "C"}
+			else { grade = "D"}
+			}}grade}
+			
+	o/p: List(D,C,A,D,B,A)
+	
+using match (case ladder)
+val res2 = lst.map { x => 
+			var grade = " "
+				grade = (x>70000) match{
+					case true => {grade = 'A'}
+					case false => {
+						(x > 40000) match{
+							case true => {grade = 'B'}
+							case false => {grade = 'C}
+						}
+					}
+				}grade
+			}
+			
+	o/p: C,C,A,C,B,A
+	
+we can use if within match,as, (Which is easier)
+val res2 = lst.map { x => 
+				(x>70000) match{
+					case true => "A"
+					case false => if (x>40000) "B" else "C"
+				}
+			}
+			
+conditional transformation in records
+val recs = List("101,Amar,40000,m,11","102,aMalA,80000,F,12","103,ManI,10000,m,13","104,Giri,90000,m,14","105,SuResh,60000,m,12")
+
+Trans: name in camelcase,Salary (generate tax,hra, net), based on net classify into A,B,C grades,"m/M = Male,f/F = Female
+		dept : 11 - marketing, 12 - Hr, 13 -Finance, remaining - others
+		
+val trans = recs.map { x => 
+				val w = x.split(",")
+				val id = w(0)
+				val name = w(1).trim()
+				val sal = w(2).toInt
+				var sex = w(3)
+				val dno = w(4)
+				
+				val fc = name.slice(0,1).toUpperCase
+				val rc = name.slice(1,name.size).toLowerCase
+				val newName = fc + rc
+				
+				sex = if (sex.toUpperCase == 'M') "Male" else "Female"
+				val tax = sal *10/100
+				val hra = sal * 20/100
+				val net = sal - tax + hra
+				
+				var grade = " "
+				if (sal >= 70000) { grade = "A" }
+				else {if (sal >= 50000) {grade = "B"} 
+					else {if (sal >= 30000) {grade = "C"} 
+				else {grade = "D"}}}
+				
+				val dname = dno match {
+					case 11 => "marketing"
+					case 12 => "Hr"
+					case 13 => "Finance"
+					case other => "Others"
+					}
+					
+				val newList = List (id,newName,sal.toString,hra.toString,tax.toString,net.toString,grade,sex,dno.toString,dname)
+				newList.mkString(",")
+			}
+			
+		trans.foreach(println)
+		
+	to convert a list to string, use mkString
+	example, List(10,20,30).mkString("\t") //10	20	30
+
+Transforming records into key-value pair:
+In spark, in order to do any aggregations (like group, sum), we need to transform the input into key value pairs(should be a tuple)
+
+example,
+emp = Array((101,aaaa,30000,m,11),(102,bbbb,50000,f,12),(103,hhhh,60000,m,11),(104,qqqq,80000,f,11))
+val pair = emp.map { x =>
+			val w = x.split(",")
+			val sex = w(3)
+			val sal = w2.toInt
+			val t = (sex,sal)
+			t}
+			
+	o/p: Array ((m,30000),(f,50000),....)
+
+//select dno, sal 
+val pair2 = emp.map { x =>
+			val w = x.split(",")
+			val dno = w(4)
+			val sal = w2.toInt
+			val t = (dno,sal)
+			t}
+
+//select dno,sex,sal => ((dno,sex),salary) as key can be composite but not 2 separate values
+val pair3 = emp.map { x =>
+			val w = x.split(",")
+			val dno = w(4)
+			val sex = w(3)
+			val sal = w2.toInt
+			val mykey = (dno,sex)
+			val t = (mykey,salary)
+			t}
+			
+	o/p: Array((11,m),30000 ......)
+	
+Making records into structures:
+a) tuple
+b) case classes
+
+val emp = Array((101,aaaa,30000,m,11),(102,bbbb,50000,f,12),(103,hhhh,60000,m,11),(104,qqqq,80000,f,11))
+
+val recs = emp.map { x => 
+			val w = x.split(",")
+			val id = w(0).toInt
+			val dno = w(4)
+			val sex = w(3)
+			val sal = w2.toInt
+			val name = w(1)
+			(id,name,sal,sex,dno)
+			}
+			
+if we do a recs.foreach(println), it will return all the values as tuples i.e. within ()
+
+if input is tuple, to convert it into key,value pairs
+var pair4 = recs.map( x => (x._4,x._3.toInt) )
+
+to sum all the salaries,
+val sals = recs.map ( x => x._3).sum
+
+use filters:
+val testdata = "    I      love     Spark   "
+val text = testdata.trim()   // "I    Love    Spark"
+val w = text.split(" ")
+val words = w.filter (x => x ! = " ")  //Array("I","Love","Spark")
+val newLine = words.mkString("")  //ILoveSpark
+val newLine = words.mkString(" ") //I Love Spark
+
+case class:
+Problem with tuples is that tuples usually do not have schema, we need to remember positions to access element.
+case class is used to do this,
+
+case classes are used in spark SQL to convert RDD to SQL
+
+example,
+case class Samp (a:Int, b:Int, c:Int)
+val s1 = Samp(10,20,30)  //a = 10,b = 20, c = 30
+val s2 = Samp (1,2,3)
+val s3 = Samp (100,200,300)
+s1.a = 10, s1.b = 20 ....  
+
+val s = List (s1,s2,s3) // List (samp(10,20,30),samp(1,2,3),samp(100,200,300) )
+val r = s.map (x => s1.a + s1.b + s1.c)  //List (60,60,60)
+val r = s.map (x => x.a + x.b + x.c)   //List (60,6,600)
+
+
+val emp = Array((101,aaaa,30000,m,11),(102,bbbb,50000,f,12),(103,hhhh,60000,m,11),(104,qqqq,80000,f,11))
+
+case class Emp (id:Int, name:String, sal:Int, sex:String, dname: String) 
+
+val res = emp.map { x => 
+			val w = x.split(",")
+			val id = w(0).toInt
+			val name = w(1)
+			val sal = w(2).toInt
+			val sex = w(3)
+			val dno = w(4).toInt
+			
+			val dname = dno.Match {
+			case 11 => "Marketing"
+			case 12 => "hr"
+			case 13 => "Finance"
+			case other => "Other"}
+			
+			val rec = emp(id,name, sal,sec,dname)
+			rec
+		}
+		
+	o/p: each element will be a emp object
+	res.foreach(println)
+	Emp(101,aaaa,30000,m,Marketing)
+	Emp(102,bbbb,50000,f,12)
+	...
+	
+to make key value pair from res,
+val pair5 = res.map( x => (x.dname,x.sal))
+
+How to create functions:
+def f : String = "Hello" or def f = "Hello"
+
+to access this, use "f"  //o/p : Hello
+
+use function for emp,
+val emp = Array((101,aaaa,30000,m,11),(102,bbbb,50000,f,12),(103,hhhh,60000,m,11),(104,qqqq,80000,f,11))
+
+case class Emp (id:Int, name:String, sal:Int, sex:String, dname: String, grade:String)
+
+def firstUpper (x:String) : String {
+	val word = x.trim()
+	val fc = word.slice(0,1).toUpperCase
+	val rc = word.slice(1,word.size).toLowerCase
+	val name = fc + rc
+	return name
+}
+
+def gender (x:String) : String {
+	if ( x.toUpperCase == "M" ) "male" else "Female"
+}
+
+def grade (x:Int) : String {
+	if ( x >= 70000 ) "A";
+	else if ( x > 50000 ) "B";
+	else if ( x > 30000 ) "C"
+}
+
+def dept (x:Int) : String {
+	val dname = x.match {
+		case 11 => "Marketing"
+		case 12 => "HR"
+		case 13 => "Finance"
+		case other => "Others"}
+		
+	dname
+}
+
+def toEmp (line: String) : Emp {
+	val w = line.split(",")
+	val name = firstUpper(w(1))
+	val sal = w(2).toInt
+	val sex = gender(w(3))
+	val dno = w(4).toInt
+	val dname = dept(dno)
+	val grade = grade(sal) //will error, variable and function name are same.
+	
+	val e = Emp(id,name,....... ) 
+	e
+}
+
+val emp_new = emp.map (x => toEmp(x))
+
+--------------------------------------------
+difference between (|| and |), (&& and &):
+|, & - is lazy i.e. if 1st condition is true, it will not check other conditions
+||,&& - is active i.e. it will check all the conditions irrspective if it has determined the and result.
+
+getClass() is used to determine the data type.
+example,
+sal = 10000
+sal.getClass //o/p is Int.
+
+Blocking technique: 
+to create a tuple, example:
+def add (x:Int,y:Int) = x + y
+val r = add(10,20)  //o/p will be 30
+val r = { val x = 20
+		  val y = 30
+		  val z = add(x,y)
+		  (x,y,z)}
+		  
+o/p: (20,30,50)
+
+Match (or case) with OR operator:
+val dayname = "Mon"
+
+val dayname = dayno.Match {
+				case "mon"|"tue"|"wed"|"thu"|"fri" => "Working"
+				case other => "Holiday"
+			  }
+			  
+cumilative processing: is done via reduce keyword:
+val l = List (1,2,3,4)
+val s = l.sum   // 10
+val r = l.reduce ((x,y) => x + y)
+val ma = l.reduce ((x,y) => Math.max(x,y)) //4
+val mi = l.reduce ((x,y) => Math.min(x,y)) //1
+
+---------------------------------------------------------------------
+Collections in Scala:
+a) Lists: similar to arrays but the length is not defined and can be changed.
+val fruits : List[String] = List("apples", "oranges", "pears")
+val nums: List[Int] = List(1, 2, 3, 4)
+val empty: List[Nothing] = List() //empty list
+
+All lists can be defined using two fundamental building blocks, a tail Nil and cons(::)
+example,
+val fruit = "apples" :: ("oranges" :: ("pears" :: Nil))
+val empty = Nil
+val nums = 1 :: (2 :: (3 :: (4 :: Nil)))
+
+b) Sets: by default sets are immutable. To make it mutable we will have to use scala.collection.mutable.Set class explicitely
+var s : Set[Int] = Set()  // Empty set of integer type
+var s : Set[Int] = Set(1,3,5,7) // Set of integer type
+or
+var s = Set(1,3,5,7)
+
+to concatenate sets, use either ++ operator or Set.++() method 
+      val fruit1 = Set("apples", "oranges", "pears")
+      val fruit2 = Set("mangoes", "banana")
+      
+      var fruit = fruit1 ++ fruit2   // use two or more sets with ++ as operator
+	  fruit = fruit1.++(fruit2) // use two sets with ++ as method
+	  
+to check common elements in 2 sets
+      val num1 = Set(5,6,9,20,30,45)
+      val num2 = Set(50,60,9,20,35,55)
+
+      println( "num1.&(num2) : " + num1.&(num2) )     
+      println( "num1.intersect(num2) : " + num1.intersect(num2) ) //Set(20,9)
+	  
+c) Maps: Maps are also called Hash tables. By default maps are immutable, we import scala.collection.mutable.Map class explicitly to make it mutable.
+
+// Empty hash table whose keys are strings and values are integers:
+var A:Map[Char,Int] = Map()
+
+// A map with keys and values.
+val colors = Map("red" -> "#FF0000", "azure" -> "#F0FFFF")
+
+	val colors = Map("red" -> "#FF0000", "azure" -> "#F0FFFF", "peru" -> "#CD853F")
+	val nums: Map[Int, Int] = Map()
+
+	println( "Keys in colors : " + colors.keys )
+	println( "Values in colors : " + colors.values )
+	println( "Check if colors is empty : " + colors.isEmpty )
+	println( "Check if nums is empty : " + nums.isEmpty )
+
+
+//concatenating map,
+      val colors1 = Map("red" -> "#FF0000", "azure" -> "#F0FFFF", "peru" -> "#CD853F")
+      val colors2 = Map("blue" -> "#0033FF", "yellow" -> "#FFFF00", "red" -> "#FF0000")
+
+      // use two or more Maps with ++ as operator
+      var colors = colors1 ++ colors2
+      println( "colors1 ++ colors2 : " + colors )
+
+      // use two maps with ++ as method
+      colors = colors1.++(colors2)
+      println( "colors1.++(colors2)) : " + colors )
+
+d) tuple: 
+	  val t = (4,3,2,1)
+      val sum = t._1 + t._2 + t._3 + t._4
+      println( "Sum of elements: "  + sum )
+	  
+e) Option:
+	Scala Option[ T ] is a container for zero or one element of a given type. An Option[T] can be either Some[T] or None object (represents a missing value)
+	example,
+	the get method of Scala's Map produces Some(value) if a value corresponding to a given key has been found, or None if the given key is not defined in the Map
+	
+	NOTE: this is used as a substitute to NULL
+	
+	val capitals = Map("France" -> "Paris", "Japan" -> "Tokyo")
+	capitals.get( "France" )  //output - Some(Paris)
+	capitals.get( "India" )   //output - None
+--	
+	further,
+      val capitals = Map("France" -> "Paris", "Japan" -> "Tokyo")
+      
+      println("show(capitals.get( \"Japan\")) : " + show(capitals.get( "Japan")) )
+      println("show(capitals.get( \"India\")) : " + show(capitals.get( "India")) )
+   }
+   
+   def show(x: Option[String]) = x match {
+      case Some(s) => s
+      case None => "?"
+	}
+--	
+	val a:Option[Int] = Some(5)
+	val b:Option[Int] = None 
+
+	println("a.isEmpty: " + a.isEmpty )
+	println("b.isEmpty: " + b.isEmpty )
+
+	o/p: false; true
+--
+----------------------------------------------------------------	
+Spark RDD Operations in Scala 
+----------------------------------------------------------------
+Two ways to create RDD’s in spark using Scala:
+
+a) Methods to Create RDD: 
+	is via SparkContext’s textFile method. 
+	This method takes a URI for the file (either a local path on the machine or a hdfs://, s3n://, etc URI) and reads it as a collection of lines. 
+
+	val new_rdd = sc.textFile("hdfs://...../data.csv)
+
+	o/p will be that it will create an Array of rows, example 
+	Array ("...............",".................." ........)
+
+b) parallelizing a collection of Objects (a list or a set):
+	calling SparkContext’s parallelize method on an existing collection
+	val data = List("Hadoop","Spark","Scala","Pig","Hive")
+	val parallelize_rdd = sc.parallelize(data)
+	parallelize_rdd.collect
+
+	o/p: Array(Hadoop,Spark,Scala,Pig,Hive)
+	
+RDD’s perform two types of operations. Transformations and actions.
+
+a) Transformations:
+	All transformations in Spark are lazy. They do not compute their results right away. 
+	Instead, they just remember the transformations applied to some base data set (e.g. a file). 
+	The transformations are only computed when an action requires a result that needs to be returned to the driver program.
+	
+	1) Map: Map will take each row as input and return an RDD for the row.
+		val map_test = textFile.map ( line => line.split("\t"))
+		o/p: No output
+		map_test.collect  //output: Array (Array(...),Array(...),.,.,.,.,.,.)
+		val map_test1 = map_test.map ( line => (line(1),line(2)))
+		map_test1.collect //output: Array ((element1,element2).,.,.,.,.,.,.,.,.,.)
+		
+	2) flatMap: <discussed above>
+	
+	3) Filter: 
+		val fil = map_test.filter(x => x.contains("India"))
+		
+	4) ReduceByKey: takes a pair of key and value pairs and combines all the values for each unique key.
+		map_test2 = map_test.map( line => (line(2),line(9).toInt ))
+		map_red = map_test2.ReduceByKey(_+_).collect
+		
+b) Actions:
+	Actions return final results of RDD computations
+	
+	1) collect: return all the elements in the RDD. Explained above
+	
+	2) count: return the number of elements in the RDD
+	
+	3) countByValue: count the number of occurrences of the elements in the RDD
+		example, we have taken a pair of Country and Sport. By performing countByValue action we have got the count of each country in a particular sport.
+		
+	4) Reduce: explained above
+	
+	5) Take: same as LIMIT, provides the first n number of elements as take(n)
+
+-----------------------------------------------------------------------------
+Two more transformations in spark to maintain the number of partitions that your RDD : coalesce() and repartition()
+
+Consider a situation, 
+you have initially created an RDD and it has N partitions and on that RDD you have applied filter transformation, 
+spark applies transformation on the partitions of RDD so if in case the data inside a partition is completely filtered out then also spark will maintain the 
+number of partitions as the same  as it has while creating the RDD initially.
+
+narrow transformations(Transformations where shuffling is not required).
+
+Both coalesce() and repartition() are used to modify the number of partitions in an RDD
+
+a) coalesce(): Coalesce avoids full shuffle.
+				i.e. If you go from 1000 partitions to 100 partitions, there will not be a shuffle, 
+				instead, each of the 100 new partitions will claim 10 of the current partitions and this does not require a shuffle
+				
+	example,
+	val data = sc.parallelize ( 1 to 4 )
+	data.numOfPartitions  // 4
+	val data_filter = data.filter ( x => ( x % 2 ) == 0)  //will return only 2,4
+	data_filter.numOfPartitions  // still 4
+	val filter_par = data_filter.coalesce(2)
+	filter_par.numOfPartitions // now 2
+	
+				
+b) repartition(): Repartition performs a coalesce with a shuffle.
+					Repartition will result in the specified number of Partitions with data distributed using a hash-partitioner. This is used to increase number of partitions
+					
+	example, (note: if numOfPartitions do not work, use partitions.size and getNumPartitions() )
+	val data = sc.parallelize ( 1 to 4 )  //creates Array(1, 2, 3, 4)
+	data.numOfPartitions  // 4
+	val data_index = data.zipWithIndex  //  ((1,1),(2,2),(3,3),(4,4))
+	data_index.numOfPartitions //still 4
+	val data_repar = data_index.repartition(6)
+	data_repar.numOfPartitions  //now 6
+	
+	**** zipWithIndex and zip
+	List("a", "b", "c").zipWithIndex   // Output is List((a,0), (b,1), (c,2))
+	List("a", "b", "c") zip (Stream from 1) // List((a,1), (b,2), (c,3))
+					
+	so, zipWithIndex Returns: A new list containing pairs consisting of all elements of this list paired with their index. Indices start at 0.
+		zip Returns: A new list containing pairs consisting of all elements of this list paired with their index as per the Stream value provided	
+
+
+	
+	
+	
