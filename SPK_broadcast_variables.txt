@@ -1,0 +1,30 @@
+Broadcast variables:
+if we have a spark cluster and 3 machines in the cluster
+m1 = have some block of data of file1
+m2 = have some block of data of file1
+m3 = have some block of data of file1
+driver = working on a separate machine m5
+ 
+when we create RDD, data will be in RAM of each machine i.e. m1,m2,m3
+
+if we want to do lookUp table or join,
+all the data will be brought to one machine, the join will be performed and sent to driver 
+i.e it will consume a lot of n/w bandwidth.
+
+other way to do it is via a broadcast variable
+i.e. we can create a Broadcast variable in driver and 
+ask driver to read data (in m1,m2,m3) and create a hashMap which will have reference of data on each cluster machines,
+the BV can be sent to all cluster machines where executer runs.
+This will save bandwidth as we do not have to shuffle the data across cluster
+
+NOTE: BV resides in driver and is pushed from driver to executer machines.
+
+However, files being used for broadcast variables is preferred to be <= 64 mb coz larger files will degrade the performance.
+
+BV features,
+1) Broadcast variables are designed to be shared throughout a cluster and, 
+	at the same time have to be able to fit in memory on one machine.
+	
+2) broadcast variables are immutable, so they cannot be changed later on (in case take a look at accumulators).
+
+http://www.sparktutorials.net/spark-broadcast-variables---what-are-they-and-how-do-i-use-them
