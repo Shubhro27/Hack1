@@ -1,4 +1,4 @@
-Broadcast variables:
+Broadcast variables: <http://www.sparktutorials.net/spark-broadcast-variables---what-are-they-and-how-do-i-use-them>
 if we have a spark cluster and 3 machines in the cluster
 m1 = have some block of data of file1
 m2 = have some block of data of file1
@@ -27,4 +27,72 @@ BV features,
 	
 2) broadcast variables are immutable, so they cannot be changed later on (in case take a look at accumulators).
 
-http://www.sparktutorials.net/spark-broadcast-variables---what-are-they-and-how-do-i-use-them
+
+Thus broadcast variables are: 
+• Immutable
+• Distributed to the cluster
+• Fit in memory
+
+broadcast variables are a great case for "static look up tables". i.e. small tables that might have some metadata about one of your tables
+
+example,
+checkin table might look like this: (consider, the data is huge) 
+| UserId | Neighborhood | 
+|---------+--------------| 
+| 234 | 1 | 
+| 567 | 2 | 
+| 234 | 3 | 
+| 532 | 2 |
+.
+.
+.
+
+neighborhoods table would look like: 
+| NeighborhoodId | Name | 
+|----------------+----------------| 
+| 1 | Mission | 
+| 2 | SOMA | 
+| 3 | Sunset | 
+| 4 | Haight Ashbury |
+
+So performing a standard join is going to take forever due to shuffle. Instead, neighborhood table is going to be really quite small, 
+the smarter thing to do is to ship around that small table to each node in the cluster.
+
+
+how to create a broadcast table,
+val hoods = Seq((1, "Mission"), (2, "SOMA"), (3, "Sunset"), (4, "Haight Ashbury"))
+val checkins = Seq((234, 1),(567, 2), (234, 3), (532, 2), (234, 4))
+val hoodsRdd = sc.parallelize(hoods)
+val checkRdd = sc.parallelize(checkins)
+
+val broadcastedHoods = sc.broadcast(hoodsRdd.collectAsMap()) //Map(2 -> SOMA, 4 -> Haight Ashbury, 1 -> Mission, 3 -> Sunset) will be broadcasted
+
+val checkinsWithHoods = checkRdd.mapPartitions({row =>
+ row.map(x => (x._1, x._2, broadcastedHoods.value.getOrElse(x._2, -1)))
+}, preservesPartitioning = true)
+
+o/p: Array((234,1,Mission), (567,2,SOMA), (234,3,Sunset), (532,2,SOMA), (234,4,Haight Ashbury))
+
+---------------------------------------------------
+Scala getOrElse method: is applicable only on maps
+
+example 1,
+val m = Map("foo" -> Array(1, 2, 3))
+def myDefault = {
+  println("called-default")
+  Array(4, 5, 6)
+}
+val a1 = m.getOrElse("foo", myDefault)  // myDefault not called
+val a2 = m.getOrElse("bar", myDefault)  // myDefault called
+val a3 = m.getOrElse("baz", myDefault)  // myDefault called
+a2 == a3  // false!!
+
+example 2,
+val hoods = Seq((1, "Mission"), (2, "SOMA"), (3, "Sunset"), (4, "Haight Ashbury"))
+val checkins = Seq((234, 1),(567, 2), (234, 3), (532, 2), (234, 4),(100,5))
+val hoodsRdd = sc.parallelize(hoods)
+val checkRdd = sc.parallelize(checkins)
+val checkinsWithHoods = checkRdd.map(x => (x._1, x._2, broadcastedHoods.value.getOrElse(x._2, -1))
+
+o/p: Array((234,1,Mission), (567,2,SOMA), (234,3,Sunset), (532,2,SOMA), (234,4,Haight Ashbury),(100,5,-1))
+
