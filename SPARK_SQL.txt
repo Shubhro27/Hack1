@@ -1,0 +1,428 @@
+sreeram hive json blog on google.
+
+-------
+SPARK SQL is not DB. SS is a library to process spark data objects using SQL statements (i.e follows mySQL based sql syntax).
+
+SPARK in general has 4 context,
+Spark context
+sparkstreaming context
+Spark SQL provides 2 types of context,
+SQL context : i.e. using this context we can process spark objects using select statements.
+Hive context: i.e. using this context,we can integrate spark with hive 
+					i.e. we can access hive env from spark and use HQL queries.
+
+From Spark 1.6 onwards, SQL context is by default available in spark shell.
+However, if creating a program, we will have to,
+a) import org.apache.spark.sql.SqlContext
+b) val sqc = new SqlContext(sc)
+
+
+post a,b, steps (in details) to work with SQL context,
+1) load data into RDD, example,
+	filename -> file1
+	sample data ->  100,200,300
+					300,400,400
+					.
+					.
+	val data = sc.textFile ("file1")
+
+2) provide schema to RDD i.e. create case class, example,
+	case class Rec(a:Int,b:Int,c:Int)
+
+3) create a function to convert file record into case object, i.e. following function will provide schema to the RDD,
+	def makeRec(line: String) = {
+				val w = line.split(",")
+				val a = w(0).toInt
+				val b = w(1).toInt
+				val c = w(2).toInt
+				val r = Rec(a,b,c)
+				}
+			
+4) transform each record into case object,
+	val recs = data.map ( x => makeRec(x) )
+
+5) convert rdd into data frame,
+	val df = recs.toDF    //there are 2 new data abstractions set with spark 1.3 onwards i.e data frame and data set.
+
+6) create a table instance for the data frame,
+	df.registerTempTable("samp")
+				
+7) apply the sql statement on temp table,
+	val r1 = sqc.sql( " select a+b+c as tot from samp ")  //r1 is a data frame i.e. NOT a table.
+
+o/p:
+600
+900
+
+NOTE: when SQL statement will be applied to temp table, the returned object will be a data frame.
+	  TO apply sql statement on result set, we need to register as temp table
+	  i.e. r1.registerTempTable("samp1")	  
+----
+Why access Hive from Spark?
+Hive standalone reside on map-reducse framework i.e. hive queries will be converted to map-reduce job.
+In Hive context, we can use the in memory processing power of spark and DAG with persistant features and is free from map-reduce.
+
+Spark SQL limitation: is available only for structured text. i.e. if data is unstructured, we need to process the data with
+spark core using RDD API's and spark MLlib
+
+to create a hive context,
+a) copy hive-site.xml to /user/spark/conf. If this is not done, spark will not know hive meta-store location.
+b) import org.apache.spark.sql.hive.HiveContext
+c) val hc = new HiveContext(sc)
+
+post a,b,c steps (in details) to work with hive context, 
+	hc.sql (" create database mydb")  //creates DB
+	hc.sql (" use mydb")			  //sets the DB as default
+	hc.sql (" create table result1 (dno int, tot int)")  //create table within mydb database
+	hc.sql ("insert into table result1 select * from <some other table>") //query using HQL
+	
+-------
+combination of SQL and Hive context,
+
+val r1 = sqc.sql ("<some query>")
+val r2 = hc.sql ("<some query")
+
+r1.registerTempTable("res1")
+r2.registerTempTable("res2")	
+
+we can apply joins, unions or combine the data into any format.
+
+-------
+working with JSON using SQLContext,
+
+example,
+json -  
+	{"name":"ravi","age":20,"sex":"Male"}
+	{"name":"vani","city":"Hyd,"sex":"Male"}
+
+val jdf = sqc.read.json("<file path>")
+
+the data frame created will be like, 
+name age city sex
+ravi 20  null Male
+vani null hyd female
+
+consider another json1:
+	{"name":"ravi","age":25}
+	{"name":"Rani","city":"Hyd"}
+	{"name":"Mani","age":24,"city":"Del"}
+
+using Hive:
+use mySpark
+create table raw (line string)
+load data local inpath 'json1' into table raw;
+create table info (name String,age Int,city String);
+select get_json_object (line,'$.name'),get_json_object (line,'$.age'),get_json_object (line,'$.city') from raw;
+
+o/p:
+ravi	25	NULL
+Rani	NULL	Hyd
+Mani	24	Del
+
+other way in Hive json,
+select x.* from raw lateral view json_tuple(line,'name','age','city') x as n,a,c;
+
+
+using Spark hive context:
+val df = sqc.read.json("HDFS location")
+df.show
+
+o/p:
+ravi	25	NULL
+Rani	NULL	Hyd
+Mani	24	Del
+
+
+
+
+
+--------
+working with XML using SQLContext,
+1) third party library example databricks jar file, will be kept in spark lib directory
+2) integrate spark with hive using hiveContext and apply xml parsers like xpath(), xpath_string(), xpark_int()..etc.
+
+example,xml1
+<rec><name>Ravi</name><age>25</age></rec>
+<rec><name>Rani</name><sex>f</sex></rec>
+<rec><name>Giri</name><age>35</age><sex>f</sex></rec>
+
+hc.sql("create table raw(line string)")
+hc.sql("load data local inpath 'xml1' into table raw")
+hc.sql ("create table info (name string, age int, sex string, city string)
+		row format delimited fields terminated by ','")
+hc.sql("load data inpath xml1 into table raw")
+hc.sql ("insert overwrite table info
+		select xpath_string(line,rec/name),
+		xpath_int(line,rec/age),
+		xpath_string(line,rec/sex)
+		from raw").show()  //all null entries for age will be retained as ZERO
+
+hc.sql("create table results(name string,age int,sex string) row format delimited fields terminated by ','")
+hc.sql ("insert overwrite table results
+		select xpath_string(line,rec/name),
+		xpath_int(line,rec/age),
+		xpath_string(line,rec/sex)
+		from raw")
+
+hc.sql ("select * from results").show()
+--------------------
+to convert RDDs into dataframes implicitely, we import (import sqlContext.implicits._)
+In spark shell, it is available.
+
+import sqlContext.implicits._
+
+then, val df = <RDD>.toDF //will convert the RDD to data frame.NOTE, the RDD should have schema.
+df.show() //similar to collect.
+df.printSchema //show the schema of the data frame.
+
+--------------------
+working on files,
+
+emp:
+101,aaa,70000,m,12
+102,bbb,90000,f,12
+103,ccc,10000,m,11
+104,ddd,20000,f,13
+105,eee,90000,f,14
+106,fff,40000,m,15
+107,iiii,60000,m,13
+108,jjj,90000,f,15
+
+val raw = sc.textFile("emp")
+
+case class info(id:Int,name:String,sal:Int,sex:String,dno:Int)
+
+def toInfo (x:String) = {
+val w = x.split(",")
+val id = w(0).toInt
+val name = w(1)
+val sal = w(2).toInt
+val sex = w(3)
+val dno = w(4).toInt
+val inf = info(id,name,sal,sex,dno)
+inf
+}
+
+val infos = raw.map ( x => toInfo(x))
+
+val dfInfo = infos.toDF //converts to dataframe
+
+dfInfo.registerTempTable("dfInfo")
+
+sqc.sql(" select * from dfInfo where sex = 'm' ").show()
+sqc.sql(" select sex,sum(sal) as tot from dfInfo group by sex ").show()
+
+
+emp2:
+201,zzzz,14,m,20000
+202,yyyy,12,f,10000
+203,xxxx,12,m,20000
+204,uuuu,11,f,40000
+
+val raw2 = sc.textFile("emp2")
+
+val infos2 = raw2.map { x =>
+	val w = x.split(",")
+	info(w(0).toInt, w(1),w(4).toInt,w(3),w(2).toInt)
+}
+
+val dfinfo2 = infos2.toDF
+
+dfInfo2.registerTempTable("dfInfo2")
+
+val df = sqc.sql("select * from dfInfo union all select * from dfInfo2")  //will have all the info from emp and emp2
+
+df.registerTempTable("df")
+
+sqc.sql("select sex,sum(sal) as tot from df group by sex ").show()
+
+the optimized way to copy data between partitions will be carried by capitalist optimizer.
+
+-------------------------------
+accessing Hive tables using Spark SQL:
+
+in cloudera VM - 
+
+ls usr/lib/spark/conf and check for hive-site.xml (if not copy from hive directory /etc/hive/conf.dist/hive-site.xml)
+
+import org.apache.spark.sql.hive.HiveContext
+
+val hc = new HiveContext(sc)
+
+hc.sql("create database mySpark")  //Database will be created in Hive. this will return a dataframe.
+								   //you can check in hive shell via show databases
+								   
+hc.sql ("use mySpark")
+
+hc.sql(" create table samp(id int, name string, sal int, sex string,dno int) rowformat delimited....")
+
+hc.sql ("load data local inpath 'emp' into table samp")
+
+hc.sql(" select * from samp").show()   //the data created is in the form of dataframe
+
+-----------------------------
+nested JSONs,
+
+in Hive,
+create table jraw (line string);
+load data local inpath 'json2' into table jraw;
+create table raw2(name string, age int, wife string, city string);
+insert into table raw2 select x.* from jraw lateral view json_tuple(line,'name','age','wife','city') x as n,a,w,c
+select * from raw2
+
+o/p:
+Ravi 25 {"name":"Rani","age":24,"city":"Hyd"}	del
+Kiran	30	{"name":"Veni","qual":"btech","city":"Hyd"} Hyd	
+
+select name, get_json_object(wife,'$.name),get_json_object(wife,'$.age),get_json_object(wife,'$.qual),get_json_object(wife,'$.city)
+city from raw2;
+
+//will make data completely structured
+
+in Spark SQL,
+ val spouse = sqc.read.json("HDFS location")
+ 
+this automatically does the structuring in the form dataframe
+
+spouse.show()
+
+o/p:
+25 del	Ravi	[24,hyd,Rani,null]
+30 hyd	Kiran	[null,hyd,Veni,btech]
+
+Note: if we do a spouse.collect, it gives,
+Array([25,del,Ravi,[24,hyd,Rani,null]],[30,hyd,kiran,[null,hyd,Veni,btech]])
+
+couples.collect ( x => x(3)) //will give the nested JSON
+
+
+-----------------------
+Spark Dataframes and datasets
+
+there are 3 types of data objects:
+a) RDD
+b) dataframe 
+c) dataset
+
+RDD						Dataframes			dataSets
+RDD API available		not available		available
+DF API not aval			available			not available
+DS API not avail		not available		available
+no default optmz		catalyst optimizer	catalyst optimizer + tungsten optimizer
+fast					faster than RDD		faster than RDD and dataframes
+use in memory computing use in memory c		uses CPU caches along with in memory computing
+											(L1,L2,L3 caching i.e. different layers of caches)
+											caching is even faster than in memory computing
+											
+import sqlContext.implicits._
+case class sample(a:Int,b:Int)
+val rdd = sc.parallelize(List(Sample(10,20),Sample(1,2),Sample(5,6),Sample(100,200),Sample(1000,2000))
+val df = rdd.toDF
+df.select("a").show()  //creates a dataframe and prints it
+
+o/p
+10
+1
+5
+100
+1000
+
+df.select ("a","b").show() //entire data into tabular format.
+df.select ("a","b"+100).show() //ERRORS. i.e. operations not allowed on columns using this command.
+df.select (df("a"),df("b")+100).show() //VALID. will add 100 to all b column elements.
+df.select (df("a"),df("b")+1000).show() //will add 1000 on the result of previous statement.
+df.filter (df("a") >= 100).show() //will filter
+df.groupBy("age").count().show()  //VALID.
+
+emp:
+101,aaa,70000,m,12
+102,bbb,90000,f,12
+103,ccc,10000,m,11
+104,ddd,20000,f,13
+105,eee,90000,f,14
+106,fff,40000,m,15
+107,iiii,60000,m,13
+108,jjj,90000,f,15
+
+val data = sc.textFile("emp")
+case class info(id:Int,name:String,sal:Int,sex:String,dno:Int)
+
+val emp = data.map { x => 
+val w = x.split(",")
+val id = w(0).toInt
+val name = w(1)
+val sal = w(2).toInt
+val sex = w(3)
+val dno = w(4).toInt
+val inf = info(id,name,sal,sex,dno)
+inf
+}
+
+
+val empdf = emp.toDF //converts to dataframe
+
+empdf.groupBy(empdf("sex")).count.show()  //i.e. select sex,count(*) from emp group by sex;
+empdf.groupBy(empdf("sex")).agg(sum("sal")).show() //i.e. sum of sal i.e. for each gender what is sum salary.
+empdf.groupBy(empdf("sex")).agg(sum("sal"),max("sal")).show()
+
+o/p:
+sex		sum(sal)	max(sal)
+
+empdf.groupBy(empdf("dno"),empdf("sex")).agg(sum("sal"),max("sal")).show()
+
+o/p:
+dno	sex		sum(sal)	max(sal)
+
+
+working with data sets:
+example1,
+val ds = Seq(1,2,3).toDS()  //creates dataset i.e. org.apache.spark.sql.Dataset[Int]
+ds.map( x => x +10 )        //all RDD functions can be applied to DS with the advantage of increased speed.
+
+example2,
+case class Person(name:String, age:Long)
+val ds = Seq(Person("Andy",32),Person("Murray",42)).toDS()
+ds.collect  //Array(Person(Andy,32),Person(Murray,42))
+
+example3,
+sampjson (in HDFS)
+{"name":"Hari","age":30}
+{"name":"Lata","age":25}
+{"name":"Mani","age":23}
+
+
+val info1 = sqc.read.json("sampjson")   //sqc is sql context created above. o/p will be a dataframe
+case class Person(name:String, age:Long)
+val info2 = sqc.read.json("sampjson").as[Person]  //info2 will be created as a datasets. RDD API can be applied to this DS
+
+word count example RDD vs DS,
+
+val lines = sqlContext.read.text("<file name>")
+val words = lines.flatMap(_.split(" ")).filter(_! = "")
+
+val counts = words.groupBy(._toLowerCase).map( w => w._1,w._2.size)   //i.e. RDD functions
+
+val counts = words.groupBy(._toLowerCase).count()   //i.e. dataset style of grouping aggregation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
