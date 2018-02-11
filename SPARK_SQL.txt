@@ -10,7 +10,45 @@ Spark SQL provides 2 types of context,
 SQL context : i.e. using this context we can process spark objects using select statements.
 Hive context: i.e. using this context,we can integrate spark with hive 
 					i.e. we can access hive env from spark and use HQL queries.
+					
+----------------------------------------------------------------------------
+creating Dataframe from Sequence:
+This can be tried with 2 options,
+a) directly setting up schema in toDF functions.
+	//example:
+	 val list = sc.parallelize(1 to 10)
+	 val df1 = list.map(i => (i,i*2)).toDF("single","double")
+	 df1.show
 
+b) creating a schema using case class, mapping data to the case class and then applying toDF() with no parameters,
+	//example:
+	 val list1 = sc.parallelize(1 to 10)
+	 case class form1(single:Int,double:Int)
+	 val list1_map = list1.map { x =>
+	 val sing = x
+	 val doub = x * 2
+	 form1(sing,doub)
+	 }
+	 val df2 = list1_map.toDF()
+	 df2.show()
+	 
+//example 2:
+	val a = List(("ironman",3),("kabali",2),("bhahubali",5))
+	val rating = a.toDF("movie","rating")
+
+	rating.show
+	rating.printSchema
+
+//example 3:
+	import org.apache.spark.sql.DataFrame
+
+	val df = Seq(("Yoda","Obi-Wan Kenobi"),("Anakin Skywalker", "Sheev Palpatine"),("Luke Skywalker","Han Solo, Leia Skywalker"),("Leia Skywalker","Obi-Wan Kenobi"),
+	("Sheev Palpatine",  "Anakin Skywalker"),("Han Solo","Leia Skywalker, Luke kywalker, Obi-Wan Kenobi, Chewbacca"),("Obi-Wan Kenobi","Yoda, Qui-Gon Jinn"),
+	("R2-D2","C-3PO"),("C-3PO","R2-D2"),("Darth Maul","Sheev Palpatine"),("Chewbacca","Han Solo"),("Lando Calrissian", "Han Solo"), ("Jabba","Boba Fett")).toDF("name", "friends")
+
+	df.show
+	
+--------
 From Spark 1.6 onwards, SQL context is by default available in spark shell.
 However, if creating a program, we will have to,
 a) import org.apache.spark.sql.SqlContext
@@ -57,7 +95,130 @@ o/p:
 NOTE: when SQL statement will be applied to temp table, the returned object will be a data frame.
 	  TO apply sql statement on result set, we need to register as temp table
 	  i.e. r1.registerTempTable("samp1")	  
-----
+	  
+-----
+working on files,example - 2
+
+emp:
+101,aaa,70000,m,12
+102,bbb,90000,f,12
+103,ccc,10000,m,11
+104,ddd,20000,f,13
+105,eee,90000,f,14
+106,fff,40000,m,15
+107,iiii,60000,m,13
+108,jjj,90000,f,15
+
+val raw = sc.textFile("emp")
+
+case class info(id:Int,name:String,sal:Int,sex:String,dno:Int)
+
+def toInfo (x:String) = {
+val w = x.split(",")
+val id = w(0).toInt
+val name = w(1)
+val sal = w(2).toInt
+val sex = w(3)
+val dno = w(4).toInt
+val inf = info(id,name,sal,sex,dno)
+inf
+}
+
+val infos = raw.map ( x => toInfo(x))
+
+val dfInfo = infos.toDF //converts to dataframe
+
+dfInfo.registerTempTable("dfInfo")
+
+sqc.sql(" select * from dfInfo where sex = 'm' ").show()
+sqc.sql(" select sex,sum(sal) as tot from dfInfo group by sex ").show()
+
+
+emp2:
+201,zzzz,14,m,20000
+202,yyyy,12,f,10000
+203,xxxx,12,m,20000
+204,uuuu,11,f,40000
+
+val raw2 = sc.textFile("emp2")
+
+val infos2 = raw2.map { x =>
+	val w = x.split(",")
+	info(w(0).toInt, w(1),w(4).toInt,w(3),w(2).toInt)
+}
+
+val dfinfo2 = infos2.toDF
+
+dfInfo2.registerTempTable("dfInfo2")
+
+val df = sqc.sql("select * from dfInfo union all select * from dfInfo2")  //will have all the info from emp and emp2
+
+df.registerTempTable("df")
+
+sqc.sql("select sex,sum(sal) as tot from df group by sex ").show()
+
+the optimized way to copy data between partitions will be carried by capitalist optimizer.
+
+---------
+3 ways to work with .csv file
+a) creating dataframe using case class.
+	//example,
+		val yahoo_stocks=sc.textFile("/user/cloudera/datasets/yahoo_stocks.csv")
+		val header =yahoo_stocks.first
+		val data =yahoo_stocks.filter(_ != header)
+		case class YahooStockPrice(date:String, open:Float, high:Float, low:Float, close:Float, volume:Integer,adjClose:Float)
+		val stockprice=data.map(_.split(",")).map(row =>YahooStockPrice(row(0), row(1).trim.toFloat, row(2).trim.toFloat, row(3).trim.toFloat, row(4).trim.toFloat, row(5).trim.toInt, row(6).trim.toFloat)).toDF()
+
+		stockprice.show()
+		stockprice.printSchema
+		stockprice.registerTempTable("yahoo_stocks_temp") 
+		
+b) create dataframe using struct
+	//example,
+		import org.apache.spark.sql.{SQLContext,Row}
+		import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+
+		val schema = StructType(Array(StructField("name",StringType,true),StructField("age",IntegerType,true)))
+		val data = sc.parallelize( Seq("john","Adom","Smith")).map(x => (x,20+x.length))
+		val rowRDD = data.map(x => Row(x._1,x._2))
+		val df = sqlContext.createDataFrame(rowRDD,schema)
+		df.registerTempTable("people")
+		sqlContext.sql("select * from people").show
+		
+	//example2,
+		import org.apache.spark.sql.{SQLContext,Row}
+		import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType, FloatType}
+
+		val data = sc.textFile ("sb_sparkSQL_ds/yahoo_stocks.csv")
+		val header = data.first
+		val yh_file = data.filter ( x => x != header )
+		val yh_dump = yh_file.map { x => 
+		val arr = x.split(",")
+		(arr(0),arr(1).trim.toFloat,arr(2).trim.toFloat,arr(3).trim.toFloat,arr(4).trim.toFloat,arr(5).trim.toInt,arr(6).trim.toFloat)
+		}
+		val yh_data = yh_dump.map ( x => Row(x._1,x._2,x._3,x._4,x._5,x._6,x._7))
+		val schema = StructType(Array(StructField("Date",StringType,true),StructField("Open",FloatType,true),StructField("High",FloatType,true),StructField("Low",FloatType,true),StructField("Close",FloatType,true),StructField("Volume",IntegerType,true),StructField("Adj_Close",FloatType,true)))
+		val df = sqlContext.createDataFrame(yh_data,schema)
+		df.registerTempTable("yahoo_tab")
+		sqlContext.sql("select * from yahoo_tab LIMIT 5").show
+		
+c) Using databricks package.
+	//example,
+		//restart your spark shell using this arguments 
+		spark-shell --packages com.databricks:spark-csv_2.10:1.5.0
+		 
+		val characters_df = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferSchema", "true").option("delimiter", ",").load("sb_sparkSQL_ds/StarWars.csv")
+		characters_df.show
+		 
+		//dealing with null and empty values
+		val filterdata = characters_df.filter(characters_df("haircolor") !== "")
+		val changedata = characters_df.filter(characters_df("haircolor") === null || characters_df("haircolor") === "").withColumn("haircolor",lit("some color"))
+		filterdata.unionAll(changedata).show
+
+more examples/details in:
+https://github.com/databricks/spark-csv
+https://community.hortonworks.com/articles/114045/specify-schema-for-csv-files-with-no-header-and-pe.html
+-------------------------------------------------------
 Why access Hive from Spark?
 Hive standalone reside on map-reducse framework i.e. hive queries will be converted to map-reduce job.
 In Hive context, we can use the in memory processing power of spark and DAG with persistant features and is free from map-reduce.
@@ -176,67 +337,7 @@ df.show() //similar to collect.
 df.printSchema //show the schema of the data frame.
 
 --------------------
-working on files,
 
-emp:
-101,aaa,70000,m,12
-102,bbb,90000,f,12
-103,ccc,10000,m,11
-104,ddd,20000,f,13
-105,eee,90000,f,14
-106,fff,40000,m,15
-107,iiii,60000,m,13
-108,jjj,90000,f,15
-
-val raw = sc.textFile("emp")
-
-case class info(id:Int,name:String,sal:Int,sex:String,dno:Int)
-
-def toInfo (x:String) = {
-val w = x.split(",")
-val id = w(0).toInt
-val name = w(1)
-val sal = w(2).toInt
-val sex = w(3)
-val dno = w(4).toInt
-val inf = info(id,name,sal,sex,dno)
-inf
-}
-
-val infos = raw.map ( x => toInfo(x))
-
-val dfInfo = infos.toDF //converts to dataframe
-
-dfInfo.registerTempTable("dfInfo")
-
-sqc.sql(" select * from dfInfo where sex = 'm' ").show()
-sqc.sql(" select sex,sum(sal) as tot from dfInfo group by sex ").show()
-
-
-emp2:
-201,zzzz,14,m,20000
-202,yyyy,12,f,10000
-203,xxxx,12,m,20000
-204,uuuu,11,f,40000
-
-val raw2 = sc.textFile("emp2")
-
-val infos2 = raw2.map { x =>
-	val w = x.split(",")
-	info(w(0).toInt, w(1),w(4).toInt,w(3),w(2).toInt)
-}
-
-val dfinfo2 = infos2.toDF
-
-dfInfo2.registerTempTable("dfInfo2")
-
-val df = sqc.sql("select * from dfInfo union all select * from dfInfo2")  //will have all the info from emp and emp2
-
-df.registerTempTable("df")
-
-sqc.sql("select sex,sum(sal) as tot from df group by sex ").show()
-
-the optimized way to copy data between partitions will be carried by capitalist optimizer.
 
 -------------------------------
 accessing Hive tables using Spark SQL:

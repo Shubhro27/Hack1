@@ -1,0 +1,75 @@
+//Ebay using StructType and data bricks package
+
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+
+val schema = StructType(Array(StructField("auctionid", StringType, false),StructField("bid", StringType, false),StructField("bidder", StringType, false),StructField("bidderrate", StringType, false),StructField("openbid", StringType, false),StructField("price", StringType, false),StructField("item", StringType, false),StructField("daystolive", StringType, false)))
+
+
+val ebay_df = sqlContext.read.format("com.databricks.spark.csv").option("header", "false").option("inferSchema", "true").option("delimiter", ",").schema(schema).load("/user/cloudera/datasets/ebay.csv")
+
+ebay_df.show
+ebay_df.registerTempTable("ebay")
+
+//1.How many auctions were held?
+sqlContext.sql("select count(distinct(auctionid)) from ebay").show
+
+//2.How many bids per item?
+
+sqlContext.sql("select auctionid,item,count(*) from ebay group by auctionid,item").show
+
+//3. What's the min number of bids per item? what's the average? what's the max?
+sqlContext.sql("select min(a.count) as min ,max(a.count) as max ,avg(a.count)as avg from (select auctionid,item,count(*) as count from ebay group by auctionid,item ) as a ").show
+
+//4.Get the auctions with closing price > 100
+sqlContext.sql("select * from ebay where cast(price as int)>100").show
+
+-----------------------------------------------------------------------------------------------------------
+using case class,
+
+auctionid - String
+itemId - String
+bid - String
+bidder - String
+bidderrate - String
+openbid - String
+Price - String
+item - String
+daystolive - String
+
+auctionid,  itemId, Bid,      bidder,        bidderrate, openbid, Price, item, daystolive    6
+8213034705, 95,     2.927373, jake7870,      0,          95,      117.5, xbox, 3
+8213034705, 115,    2.943484, davidbresler2, 1,          95,      117.5, xbox, 3
+
+val ebay__dump = sc.textFile ("sb_sparkSQL_ds/ebay.csv")
+case class ebay_schema ( auctionid:String, itemId:String, bid:String, bidder:String, bidderrate:String, openbid:String, Price:Float, item:String, daystolive:String )
+
+val ebay_data = ebay__dump.map { x =>
+val arr = x.split (",")
+ebay_schema (arr(0).trim,arr(1).trim,arr(2).trim,arr(3).trim,arr(4).trim,arr(5).trim,arr(6).trim.toFloat,arr(7).trim,arr(8).trim)
+}
+
+val ebay_df = ebay_data.toDF
+
+ebay_df.registerTempTable("ebay_table")
+
+
+//1.How many auctions were held?
+sqlContext.sql ("select count(distinct(auctionid)) from ebay_table").show    //Ans: 627
+
+//2.How many bids per item?
+sqlContext.sql("select auctionid,item,count(*) from ebay group by auctionid,item").show
+
+//3. What's the min number of bids per item? what's the average? what's the max?
+val ebay_cnt_df = sqlContext.sql("select auctionid,item,count(*) as bid_cnt from ebay_table group by auctionid,item")
+ebay_cnt_df.registerTempTable("ebay_cnt_table")
+
+sqlContext.sql("select max(bid_cnt) as max_bd, min(bid_cnt) as min_bd, avg(bid_cnt) as avg_bid from ebay_cnt_table").show
+
++------+------+------------------+
+|max_bd|min_bd|           avg_bid|
++------+------+------------------+
+|    75|     1|16.992025518341308|
++------+------+------------------+
+
+//4.Get the auctions with closing price > 100
+sqlContext.sql("select * from ebay_table where Price > 100")
