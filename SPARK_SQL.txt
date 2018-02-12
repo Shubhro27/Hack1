@@ -294,12 +294,56 @@ Rani	NULL	Hyd
 Mani	24	Del
 
 
+examples,
 
+//example 1 simple json
+val persons = sqlContext.read.json("/user/cloudera/datasets/persons.json")
+persons.registerTempTable("persons")
+sqlContext.sql("select * from persons").show
 
+//example2 nested JSON
+val employees_df = sqlContext.read.json("/user/cloudera/datasets/employee.json")
+employees_df.registerTempTable("employees")
+sqlContext.sql("select id,name,salary,address.city,address.country from employees").show
+
+//example3 JSOn joins,
+val store_loc_dump = sqlContext.read.json("sb_sparkSQL_ds/store_locations.json")   //create a DataFrame
+val us_states_dump = sqlContext.read.json("sb_sparkSQL_ds/us_states.json")
+
+//store_loc_dump: org.apache.spark.sql.DataFrame = [city: string, state: string, zip_code: string]
+//us_states_dump: org.apache.spark.sql.DataFrame = [census_division: string, census_region: string, name: string, state: string]
+
+store_loc_dump.registerTempTable("us_store")
+us_states_dump.registerTempTable("us_states")
+
+sqlContext.sql("select sl.city,sl.state,sl.zip_code,us.census_division,us.census_region,us.name from us_store sl JOIN us_states us ON sl.state = us.state")
 
 --------
 working with XML using SQLContext,
-1) third party library example databricks jar file, will be kept in spark lib directory
+1) third party library example databricks jar file, will be kept in spark lib directory i.e.
+//dealing xml files
+
+//to read xml files you need to restart your spark-shell with the below given arguments
+spark-shell --packages com.databricks:spark-xml_2.10:0.4.1
+
+val employees_df = sqlContext.read.format("com.databricks.spark.xml").option("inferSchema", "true").option("rootTag","employees").option("rowTag","employee").load("/user/cloudera/datasets/employees.xml")
+
+employees_df.registerTempTable("employee_tab")
+
+sqlContext.sql("select emp_no, emp_name, address.city, address.country, address.pincode, salary, dept_no from employee_tab").show
+
+OR
+
+val emp_dataNormal = employees_df.select("emp_no","emp_name","address.city","address.country","address.pincode","salary","dept_no").show
+
+o/p:
++------+--------+-----+-------+-------+------+-------+
+|emp_no|emp_name| city|country|pincode|salary|dept_no|
++------+--------+-----+-------+-------+------+-------+
+|    10|     jon|Paris| London| 200010| 15000|      2|
+|    11|    Adom|Texas|America| 200040| 25000|      5|
++------+--------+-----+-------+-------+------+-------+
+
 2) integrate spark with hive using hiveContext and apply xml parsers like xpath(), xpath_string(), xpark_int()..etc.
 
 example,xml1
@@ -505,7 +549,11 @@ val counts = words.groupBy(._toLowerCase).map( w => w._1,w._2.size)   //i.e. RDD
 
 val counts = words.groupBy(._toLowerCase).count()   //i.e. dataset style of grouping aggregation.
 
-
+-----------------------
+//dealing parquet files
+val baby_names_df = sqlContext.read.parquet("/user/cloudera/datasets/baby_names.parquet")
+baby_names_df.show
+baby_names_df.write.json("/user/cloudera/parquet-to-json")
 
 
 
