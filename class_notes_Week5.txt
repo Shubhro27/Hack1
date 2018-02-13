@@ -1,0 +1,232 @@
+ORC format: optimized row column format. If u create a hive table, we can store data in ORC format.
+it is a file format provides a highly effiient way to store hive data.
+Helps with analytical column, as analytical queries are column format.
+
+OLAP is not exposed to public, it is data warehousing.
+OLTP is RDBMS format.
+
+Parquet format: similar to ORC. column level compression format.
+Big data can be stored in Parquet format. You cannot open a Parquet file with text editor.
+
+extension will be .parquet.
+
+val df = sqlContext.read.parquet("HFDS data location")
+
+df.show()
+df.count()  //to see the total number of rows in the DF
+
+***language integrated queries: i.e. we can use scala on top of data frame.
+
+val df1 = df.select("firstName","year")
+val df1 = df.select("firstName").distinct.count
+
+//find 5 most popular names in 1880
+(df.filter(df("year") === "1880").filter(df("gender") === "F").orderBy(df("Total").desc,df("firstName")).select("FirstName").limit(5).show
+
+u can also alias df. with $
+
+SPARKSQL is better than Spark Core.....Spark core 1.3 and before, there is no optimizer.
+SparkSQL will use a catalyst optimizer to run the SQL query.
+
+@mukesh- please refer the below link, it will help u in getting more info on spark sql                                        https://spark.apache.org/docs/1.5.2/sql-programming-guide.html
+
+SQL and language integrated queries is same as both use catalyst optimizer.
+
+from Priyabrata Mohanty to All Participants:
+Raghu in my company in different projects, they use Spark but also they use ETL tool like Abinitio and HIVE QL.. I dont know why do they do that if we can use SPARK SQL. I m not a ETL guy so I donno
+
+An. real use case is, if u run ETL jobs, SPARLSQL is faster...reason to use Hive, is they are not using interactive datasets.
+
+Partitions and bucketing is not supported in SparkSQL.
+
+XML: root tag and row tag, then only u can read in Spark SQL
+
+
+-----------------
+from Deviprasad Shetty to All Participants:
+In our hadoop project we have LZ(Loading Zone),Landing Zone,SZ(Staging Zone)
+RZ(Reporting Zone).
+how this will be in SPARK?
+
+An. Zone concept is connected to a data lake architecture(ex, EDL)
+	for loading, we use Kafka, Spark we use in last stage when visualizing the data
+	
+-----------------
+Reading MySQL tables into SparkSQL
+
+from UpX Academy to All Participants:
+@parag- there is no difference in execution in cloudx lab and cloudera vm. Commands remain same for both the platforms. The only difference will be path u mentioned while reading the input and storing the output as cloudx lab has /home/your_username, /user/your_username as the linux and HDFS paths respectively 
+
+Spark context is local to your program. i.e. on SC cannot be used across programs
+
+It is important that you stop the sparkContext else it will keep consuming resource. SC can be stopped by sc.stop.
+
+does this apply for SQLContext too? if u stop Sc context, oit internally kills SQLContext, HiveContext and streaming context.
+
+---
+TO set properties for using MySQL to SparkSQL  - in Screenshots
+
+
+-----------------
+Hive connectivity
+
+SaveMode: if u r writind data to Hive/JDBC, we use SaveMode i.e. allow to save data via
+append
+replace
+if not exists
+
+Without Save mode, you cannot store data in Hive
+
+Thrift server*****: thrift is a protocol used to accept JDBC connection. i.e. u have to connect to Thrift server
+					to access Hive tables.
+					
+@SP: Thrift is an RPC framework for building cross-platform services. Its stack consists of 4 layers: Server, Transport, Protocol, and Processor
+
+ORC stands for Optimized Row columnar format
+from Ram to All Participants:
+Optimized Row Columnar (ORC) file format provides a highly efficient way to store Hive data
+from UpX Academy to All Participants:
+@SP - thrift server is an improved version of hive server and supports multi-client authentication. It is used as remote procedure call(RPC)
+
+from Sukanta to All Participants:
+@subhro - copying hive-site.xml is kind of mandatory  - because - If HiveContext does not find a hive-site.xml file in the classpath, it creates the metastore_db and
+warehouse directories in the current directory. Therefore, you could end up with multiple copies of these
+directories if you launch a Spark SQL application from different directories. To avoid this, it is recommended
+to add hive-site.xml file to Spark’s conf directory if you use HiveContext. But I am not sure if this will allow us to bypass thrive
+from Narein R S to All Participants:
+upx/raghu even in hive there is no procedures like in sql ...which means its only for gettin output 
+from UpX Academy to All Participants:
+anil- data is already uploaded on lms under class material section, please have a look
+from Vasu to All Participants:
+Raghu, how we can use SPARK for OLTP reporting?
+
+-----------------------------------------------------
+DAY2
+-----------------------------------------------------
+Kafka: distributed publish-subscribe (producers pulish and consumers subscribe to get data) messaging system
+Kafka is fast, scalable (cluster can be expanded), durable (replication within Kafka)
+
+Kafka originated in Linkedin. Implemented in Scala (and some Java)
+
+data pipeline is connection from client (machine running application) to source (of data).
+
+if multiple clients are fetching data from source using 1 connection each,
+it is waste of network bandwitth as each application has to maintain its own connection
+
+kafka will be installed as a separate distributed cluster.
+
+Producers (Source System i.e. producing data ex, social sites like twitter) -> 
+Kafka (brokers,machine who can hold data in kafka) -> consumers (data warehouse, real time monitoring, hadoop ex, client/application)
+
+Hi Raghu, in conventional MQ, we usually face issues like stalls...does Kafka also have the same issues?
+Yes...ideally it should not happen.
+
+Kafka is usually used as real time processing engine i.e. streaming data analysis (no storage to process data)
+
+NOTE:Kafka is not a developers tool.
+
+Kafka core concepts (see screenshot)
+
+Topic (is abstraction of data) refers to queue. In Kafka, u have to create topic and it is used to transfer data between producers
+and consumer.
+
+communications between client and servers happen via TCP protocol.
+
+Zookeeper (open source apache clusterto maintain metadata ) is used to store metadata of a Kafka cluster.
+
+We can set the length and expiration of a topic.
+
+NEVER use Kafka for permanent storage.
+
+In Kafka, we cannot read from/write to from Replicas. This is unlike Hadoop.
+
+from Shreesha kumar to All Participants:
+Does kafka use in memory technology or disk to store data? Yes it stores in disk, but can be configured to use memory.
+
+In ideal condition, no of brokers  = no of nodes.
+
+Size of a topic is unlimited, retention is decided upon. We do not permmanently store to Kafka.
+
+In cloudx lab, Kafka is pre-installed. In cloudera VM, it is not installed.
+
+(In chat)nano is an editor like vi
+
+---------
+from UpX Academy to All Participants:
+@all- how to use kafka in cloudx lab
+from UpX Academy to All Participants:
+https://youtu.be/DiBwxzM9aAo?t=3
+from UpX Academy to All Participants:
+@all- spark streaming hands on
+from UpX Academy to All Participants:
+https://youtu.be/QTpDi1_yuVQ
+
+--------
+@panduranga- yes, I mean in each producer command, consumer command u can specify only single topic name. If u want to work with some topic, u need to different producer or consumer to it
+
+-------
+Spark Streaming:
+
+Analyzing data at rest or Historical data analysis : analytics on stored data
+Streaming data analytsis: analytics on streams of moving/realtime data. No intention to store data
+
+Hi Raghu, what is the difference between streaming data and micro batch data?
+On web, it usually mentions using spark streaming for micro batch data analytics.
+
+Apache Storm, flink also used for real time streaming.
+
+Producer data is not stored when we are doing streaming data analysis.
+
+Drawbacks of streaming is one receiver, so if machine running receiver crashes, we will miss data.
+
+This is where kafka helps (check screenshots)
+
+Receiver is not controlled by YARN, only the driver is known to YARN. So if receiver goes down, the application fails.
+
+do we write different interface program to get data from different producer and configure in kafka ?
+no programming in Kafka, we only need to create a topic.
+
+so we have 2 clusters here one for kafka  and other for spark which sits on top of mayve HDFS? Yes
+
+offset pointer is maintained in reciever? NO, it is maintained in zoo keeper.
+
+from varun to All Participants:
+I have seen architecture where we pull raw data using kafka into HDFS cluster and then using spark streaming and 
+saprk sql we do cleansing and then use that data for analytics. Is this a typical use case
+
+Dstreams are abstractions i.e. a cooolection of RDDs that belong to a certain timeperiod.
+We write logic on DStream which is applied on all RDDs
+
+Define Receiver (which accpts data at time internals) -> forms DStream (collection of RDDs)
+-> the logic Spark Stream will apply to all RDDs
+
+can we use spark sql on the Dstreams? in Spark 1.6, it is not possible, but in Spark 2 there is structured streaming
+to do this.
+
+Batch interval (1min): when u want to stream ur data. u will get 1 sec work data
+Slide interval (2min) and window interval (3min): every 2 secs u will process data, for WI, every 3 secs u will process data.
+check screenshots
+
+where do we define this intervals? when setting up the program. By default we only look into batch interval
+
+available in https://1drv.ms/u/s!AtV-5jVwECQxg907t9Crlfd7UVU03A
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

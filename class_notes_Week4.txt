@@ -1,0 +1,221 @@
+from srinivmas k to All Participants:
+How do we understand the web application is developed using Spark? is there any tips?
+from UpX Academy to All Participants:
+@srinivas- we dont use spark for web application, for proceesing purpose we can use it. Like for predictions, Spark MLlib can be used
+
+
+from Mukesh to All Participants:
+if any rows has incorrect data..like age as 'aa' ..what will happen??
+
+Small explaination to check after the class about ReduceByKey https://www.youtube.com/watch?v=cGffGYBbtbk
+
+-----
+How to find the average number for each group: (fakefriends data set provided by Raghu),
+
+def parseLine (line: String) = {
+val fields = line.split(",")
+val age = fields(2).toInt
+val numFriends = fields(3).toInt
+(age,numFriends)
+}
+
+val lines = sc.textFile("...../fakefriends.csv")
+val rdd = lines.map( parseLine )  //data will be key,value pairs
+val totalsByAge = rdd.mapValues ( x => (x,1)).reduceByKey( (x,y) => (x._1 + y._1,x._2 + y._2)) 
+
+mapValues -> transformation to create nested key-value pair, only change values, 
+not the key i.e. convert value to (key,(value,1))
+i.e. if pair is (40,405),(40,200) => (40,(405,1)),(40,(200,1))... where 40 is key and 405 is key and 1 is value.
+i.e. the value is again a (key, value) pair.
+
+reduceByKey -> will keep the keys together
+(40,(405,1),(200,1),.....)  // 40 is key and the rest is set of values for key as 40
+
+(x,y) => (x._1 + y._1,x._2 + y._2)) ->
+
+x = 405,1 => x._1 = 405 , x._2 = 1
+y = 200,1 => y._1 = 200 , y._2 = 1
+
+i.e. (x._1 + y._1,x._2 + y._2)) = (405+200, 1+1)
+
+val averageByage = totalsByAge.mapValues( x => x._1/x._2) //i.e. total number of friends by number of people.
+
+---
+
+broadcast variables:
+ if we have a spark cluster and 3 machines in the cluster
+ M1 = have some block of data of file1
+ m2 = have some block of data of file1
+ m3 = have some block of data of file1
+ driver = working on a separate machine m5
+ 
+when we create RDD, data will be in RAM of each machine i.e. m1,m2,m3
+
+if we want to do lookUp table,
+
+in the driver machine also we have some data, we can create a Broadcast variable in driver and 
+ask driver to read this data and create a hashMap which will have refernce of each data on machines
+
+i.e. save bandwidth as we do not have to shuffle the data. i.e. the BV can be sent to all cluster machines where executer runs
+
+otherwise, for any join, all the data will be brought to one machine i.e lot of n/w bandwidth.
+
+forsquare is like just dial i.e. local business delaing info
+
+******check for lookup tables and hashmap.
+
+file being used for broadcast variables should be <= 64 mb.larger files will degrade the performance.
+
+** BV resides in driver and is pushed from driver to executer machines.
+
+from vijay  to All Participants:
+It will give a null even though records exist in 2 machine  when it comes to left join
+from Panduranga Rao Mylavarapu to All Participants:
+But if want to use huge data then we can not use BV and we must got RDD again
+from Amit to All Participants:
+no need to replicate.
+
+example, from dataset, we want to find out most popular movies,
+i.e. movie watched or rated by most number of people.
+
+read data, extract only the movieID and convert it to (movieID,1) and do a count.
+
+import scala.io.Source //for codec
+import java.nio.charset.CodingErrorAction 
+import scala.io.Codec
+
+def loadMovieNames() : Map[Int,String] = {
+						implicit val codec = Codec("UTF-8")
+						codec.onMalformedInput(CodingErrorAction.REPLACE)
+						codec.onUnmappableCharacter(CodingErrorAction.REPLACE)
+						val movieNames: Map[Int,String] = map()
+						val Lines = Source.fromFile("<location of data>").getLines()
+						for (line <- Lines)
+						.....} /see the screenshot
+
+var nameDict = sc.broadcast(loadMovieNames)
+
+TO BE CONTINUED.....
+
+---------------
+from data set, find max temp
+
+import scala.math.max
+
+def pareLine (line:String) = {
+val fields = line.split(",")
+val stationID = fields(0)
+val entryType = fields(2)
+val temperature = fields(3).toFloat * 0.1f * (9.0f / 5.0f) + 32,0f
+(stationID,entryType,temperature)
+}
+
+val lines = sc.textFile("<file location>")
+val parsedLines = lines.map(pareLine)
+val maxTemps = parsedLines.filter(x => x._2 == "TMAX")
+val stationTemp = maxTemps.map ( x => (x._1,x._3.toFloat)
+val maxTempsByStation = stationTemps.reduceByKey((x,y) => max(x,y))
+
+---------------------
+
+caching:
+<rdd>.cache()
+or <rdd>.persist()  //default will be store it in RAM for both, with persist, we have more options in screenshots.
+					//cache, we cannot pass any arguments. Only persist can accept arguments.
+to remove caching,
+<rdd>.unpersist()
+
+---------------------
+https://1drv.ms/u/s!AtV-5jVwECQxg90JoShRoq-zklSz0A
+
+what is : and we have accumulators too ? - https://www.edureka.co/blog/spark-accumulators-explained
+
+----------------------------------------------------------
+DAY-2
+----------------------------------------------------------
+assignment: sort this output.
+
+everytym we have to use BV for final output ? Thw question shd be do we need BV for final output.
+
+SparkSQL:
+is a module for structured data processing i.e. used to represent data in a row, column format.
+
+is Spark SQL is like same as RDBMS? NO, it can read data from RDBMS.
+
+
+Core Spark 					sparkSQL
+spark context				SQL Context (invoke spark SQL lib), Hive context( spark SQL can connect to Hive tables using this context)
+RDD							data frame (an API or abstraction similar to RDD in a row-column structure)
+							in spark SQL, u will have to create data frame for any processing.
+							***datasets are not available before spark 1.6
+transformation or action	1. use SQL Language  OR 2. use HiveQL language OR 3.language integrated query.
+
+
+
+how can I create a dataframe?
+DF is distributed collection of data organized into named column format (i.e. table structure)
+it is a collection of row object (i.e. rows are treated as objects)
+
+
+whay read RDBMS into Spark SQL? Spark SQL can connect with many stores to get data, it has a built in optimizer 
+(catalyst optimizer which creates logical, physical plan and process)
+
+similar to RDD ,dataframes also  resides in memory ? YES
+df is also lazily evaluated? YES
+
+sqlContext (already available in spark shell)
+
+val r = sc.parallelize(1 to 10)
+val r1 = r.map (x => (x, x* x))  //r1 is a RDD
+val df = r1.toDF("single","squared") //toDF creates a dataframe from any collection.
+df.show    //shows in tabular format
+
+check screenshot for 1 more example, show will only show top 20 rows.
+
+also check df.printSchema
+
+seq - > type of collection.
+
+Query data using SQL:
+1) register DF as temporary table . df.registerTempTable("starwars") //DF does not understand SQL,to run SQL queries this command is done
+2) sqlContext.sql ("select * from starwars where friends = 'Hans Solo'").show
+
+*****to store the results, we will have to store it in RDBMS or Hive.
+
+from Manoj to All Participants:
+What is escape character in Spark ?? What to do if " is part of query ??
+
+SPARKSQL can be accessed from other ETL and BI tools.
+
+what is data lake? (may be ETL)
+
+how to read data from file and create a DF and apply a schema
+
+1) read file to RDD with sc.textFile
+2) strip the header record using "first command".
+3) use a case-class i.e. a static class i.e will hold static definition to create a schema
+
+check screenshots
+
+also there is structType.
+
+external package: spark-CSV package
+
+by default int is not-nullable and string is nullable. We can though explicitely set up.
+
+
+from UpX Academy to All Participants:
+@priyabrata- u can use BI tools for data analytics but when it comes to big data, 
+BI tools cant handle that much huge amount of data. 
+Here Spark comes into picture to process the big data with great processing power which best suits for analytics 
+---
+how to handle JSON data:
+
+yelp.com/dataset
+
+from Sharma to All Participants:
+yes for reporting in pagination format   ...what does that mean?
+
+
+
+
