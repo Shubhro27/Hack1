@@ -173,14 +173,18 @@ a) creating dataframe using case class.
 		stockprice.printSchema
 		stockprice.registerTempTable("yahoo_stocks_temp") 
 		
-b) create dataframe using struct
-	//example,
+b) create dataframe using struct i.e. inferring a schema manually
+	//example, (general example and not a .csv file)
 		import org.apache.spark.sql.{SQLContext,Row}
 		import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
 		val schema = StructType(Array(StructField("name",StringType,true),StructField("age",IntegerType,true)))
 		val data = sc.parallelize( Seq("john","Adom","Smith")).map(x => (x,20+x.length))
 		val rowRDD = data.map(x => Row(x._1,x._2))
+		//if you are not in spark shell,
+		val sqlContext = new SQLContext(new SparkContext("local","Dataframe")
+		import sqlContext.implicits._
+		//
 		val df = sqlContext.createDataFrame(rowRDD,schema)
 		df.registerTempTable("people")
 		sqlContext.sql("select * from people").show
@@ -202,7 +206,7 @@ b) create dataframe using struct
 		df.registerTempTable("yahoo_tab")
 		sqlContext.sql("select * from yahoo_tab LIMIT 5").show
 		
-c) Using databricks package.
+c) Using databricks package. This is a 3rd party API (i.e. spark-csv API)
 	//example,
 		//restart your spark shell using this arguments 
 		spark-shell --packages com.databricks:spark-csv_2.10:1.5.0
@@ -256,12 +260,14 @@ json -
 	{"name":"ravi","age":20,"sex":"Male"}
 	{"name":"vani","city":"Hyd,"sex":"Male"}
 
-val jdf = sqc.read.json("<file path>")
+val jdf = sqc.read.json("<file path>")    //or sqc.jsonFile("<file path>")
 
 the data frame created will be like, 
 name age city sex
 ravi 20  null Male
 vani null hyd female
+
+Saving a json format: DF.write.format("json").save("file:/path")
 
 consider another json1:
 	{"name":"ravi","age":25}
@@ -554,6 +560,35 @@ val counts = words.groupBy(._toLowerCase).count()   //i.e. dataset style of grou
 val baby_names_df = sqlContext.read.parquet("/user/cloudera/datasets/baby_names.parquet")
 baby_names_df.show
 baby_names_df.write.json("/user/cloudera/parquet-to-json")
+
+----------------------
+
+Format and Write modes for dataframes:
+a) orc format: this works with HiveContext only. The DF is saved as orc format.
+b) Parquet format: DF is saved in Parquet format.
+c) Json format: DF is saved in json format. 
+d) Text format: This works only when DF has single column data. DF is saved in text format.
+e) avro and csv format: we will need to provide external jars but DF can be stored in avro and csv format.
+
+*** write can be done via write.format method. example, <DF>.write.format("json").save("file:/path")
+
+Save modes for data frames:
+for this we will have to import org.apache.spark.sql.SaveMode
+
+a) SaveMode.Append: if data/table already exists, contents of DF will be appended.
+b) SaveMode.Overwrite: if data/table already exists, it will be overwritten by contents of DF.
+c) SaveMode.Ignore: This is similar to "CREATE TABLE IF NOT EXISTS" in SQL. i.e.
+					if data/table already exists, it will not change the contents of existing data.
+					
+Save options:
+a) Jdbc(url String,table String, prop Properties): to save DF to external databases.
+		We will have to provide driver jar, connection properties (username, password, connection URL, table name)
+b) Save(path String): Save DF in provided location.
+c) SaveAsTable(table String): default save is as Hive table and DF will be saved to /hadoop/hive/<> i.e. hive location.
+
+
+
+
 
 
 

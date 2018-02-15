@@ -1,0 +1,689 @@
+Tutorials:
+https://hortonworks.com/blog/hive-cheat-sheet-for-sql-users/
+https://www.tutorialspoint.com/hive/
+http://blog.cloudera.com/blog/2012/12/how-to-use-a-serde-in-apache-hive/
+https://www.dezyre.com/hadoop-tutorial/apache-hive-tutorial-tables
+
+--------------------------------------------------------------------------
+copy files to local:
+
+hdfs dfs -get hive_shubhro/customer_information.txt
+hdfs dfs -get hive_shubhro/customer_transactions.txt
+
+hdfs dfs -ls hive_shubhro
+
+WHAT is HIVE and WHAT is HIVE QL (Query Language):
+HIVE is Data Warehouse Infrastructure for Hadoop where data (huge) is stored as TABLES, PARTITIONS, BUCKETS and overlay on a MAP-REDUCE FRAMEWORK and stores data in HDFS 
+Hive Organization will look like,
+Command line, JDBC/ODBC, Web Interface -> Thrift Server -> Driver (Compiler, Optimizer, Executor) -> (Task Tracker, Name Node) -> Data Node
+
+Hive QL is a query language which can be used create and manage table partitions, evaluate functions, Download the contents of a table to a local directory 
+or result of queries to HDFS directory and other basic SQL like functions.
+
+-------------------------------------------------------------------------
+#####################################################################################
+login to HIVE, create database and use the data base to create tables within the DB.
+#####################################################################################
+[shubhro2705854012@ip-172-31-20-58 hiveFiles]$ hive
+WARNING: Use "yarn jar" to launch YARN applications.Logging initialized using configuration in file:/etc/hive/2.3.4.0-3485/0/hive-log4j.properties
+hive (default)> create database customer_retail; 
+OK
+Time taken: 1.117 seconds
+
+NOTE: in cloudx lab, the DB will be created in /apps/hive/warehouse/, in cloudera it will be created in /hive/warehouse
+
+hive (default)> use customer_retail;   //any tables created from now on will be created under this database. Tables are by Default placed into "default" Database.
+OK
+Time taken: 1.105 seconds
+
+###########################################################
+creating a table within customer_retail database
+###########################################################
+CREATE TABLE IF NOT EXISTS cust_information (customer_id INT,customer_firstname STRING,customer_secondname STRING,customer_age INT,customer_occupation STRING)
+row format delimited    	i.e. 1 record per line.
+fields terminated by ',';	
+
+CREATE TABLE IF NOT EXISTS cust_transaction (transaction_id INT,transaction_date STRING,customer_id INT,transaction_amount DOUBLE,transaction_section STRING,transaction_equipment STRING,transaction_city STRING,transaction_state STRING,transaction_type STRING)
+row format delimited
+fields terminated by ',';
+
+00000000,06-26-2011,4007024,040.33,Exercise & Fitness,Cardio Machine Accessories,Clarksville,Tennessee,credit
+
+NOTE: If ROW FORMAT SERDE is not specified, ROW FORMAT defaults are the ROW FORMAT DELIMITED options that are not explicitly specified.
+DELIMITED specifies a delimiter at the table level for structured fields:
+FIELDS TERMINATED BY. example, fields terminated by ',';
+LINES TERMINATED BY.  example, LINES TERMINATED BY ‘\n’;
+STORED AS TEXTFILE;
+
+NOTE: this does not create a physical table but just sets up the structure of the table. This forms the Meta data that gets stored in Derby.
+The Meta data is stored in METASTORE (either in DERBY or MYSQL) contains,
+Table Definitions, Column and data type details, HDFS location, row and storage format of files, i/p and o/p format used by MapReduce.	 
+
+################################################################
+Tables can be stored as
+################################################################
+a) TEXT FILE:
+	CREATE TABLE IF NOT EXISTS cust_information (customer_id INT,customer_firstname STRING,customer_secondname STRING,customer_age INT,customer_occupation STRING)
+	row format delimited    	
+	FIELDS TERMINATED BY ','
+	STORED AS TEXTFILE;	
+
+b) AVRO FORMAT: (https://acadgild.com/blog/avro-in-hive/)	
+	Data serialization which is language Neutral. It uses JSON for defining data types and protocols and serializes data in a compact binary format.
+	In order to create a table in AVRO FOrmat, 
+		create table olympic_avro
+		ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'  --acts as the default serialize for the data. If data is already serialized, this can be ignored.
+		STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat' --  file will be stored with extension .avro i.e. Default Hive Package.
+		OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'         --  output of the file is also in Avro format and will have the extension .avro 
+		tblproperties ('avro.schema.literal'='{
+		"name": "my_record",
+		"type": "record",
+		"fields": [
+		{"name":"athelete", "type":"string"},
+		{"name":"age", "type":"int"},
+		{"name":"country", "type":"string"},
+		{"name":"year", "type":"string"},
+		{"name":"closing", "type":"string"},
+		{"name":"sport", "type":"string"},
+		{"name":"gold", "type":"int"},
+		{"name":"silver", "type":"int"},
+		{"name":"bronze", "type":"int"},
+		{"name":"total", "type":"int"}
+		]}');
+		
+		OR IT CAN BE,
+		create table olympic_avro (name STRING, age INT, country STRING....)
+		STORED AS AVRO;
+
+		/* TO LOAD DATA, steps are provided in the link. Above applies both for MANAGED and EXTERNAL files */
+		
+c)  PARQUET FORMAT: <https://acadgild.com/blog/parquet-file-format-hadoop/>
+		Parquet, an open source file format for Hadoop. Parquet stores nested data structures in a flat columnar format. More efficient in terms of storage and performance.
+		In order to create table in PARQUET format,
+		create table olympic_avro (name STRING, age INT, country STRING....)
+		STORED AS PARQUET;
+		
+		/* TO LOAD DATA, steps are provided in the link. Above applies both for MANAGED and EXTERNAL files */
+
+################################################################
+DESCRIBE the tables
+################################################################
+DESCRIBE cust_information;
+OK
+customer_id             int                                         
+customer_firstname      string                                      
+customer_secondname     string                                      
+customer_age            int                                         
+customer_occupation     string                                      
+Time taken: 0.153 seconds, Fetched: 5 row(s)
+
+DESCRIBE cust_transaction;
+OK
+transaction_id          int                                         
+transaction_date        string                                      
+customer_id             int                                         
+transaction_amount      double                                      
+transaction_section     string                                     
+transaction_equipment   string                                      
+transaction_city        string                                      
+transaction_state       string                                      
+transaction_type        string                                      
+Time taken: 0.065 seconds, Fetched: 9 row(s)
+
+NOTE: This is the METADATA that gets stored in Derby.
+
+##############################################################
+Load the data into the table
+##############################################################
+LOAD DATA LOCAL INPATH 'customer_information.txt' OVERWRITE INTO TABLE cust_information;  #looks for the file in LOCAL FS
+
+LOAD DATA INPATH 'hive_shubhro/customer_transactions.txt' OVERWRITE INTO TABLE cust_transaction;  #no "LOCAL" Keyword. So directly loads from  HDFS.
+
+NOTE: Once the file has been loaded, it gets deleted from the i/p folder (hive_shubhro/customer_transactions.txt).
+
+hive (customer_retail)> SELECT * FROM cust_transaction LIMIT 5;
+OK
+0       06-26-2011      4007024 40.33   Exercise & Fitness      Cardio Machine Accessories      Clarksville     Tennessee       credit
+1       05-26-2011      4006742 198.44  Exercise & Fitness      Weightlifting Gloves    Long Beach      California      credit
+2       06-01-2011      4009775 5.58    Exercise & Fitness      Weightlifting Machine Accessories       Anaheim California      credit
+3       06-05-2011      4002199 198.19  Gymnastics      Gymnastics Rings        Milwaukee       Wisconsin       credit
+4       12-17-2011      4002613 98.81   Team Sports     Field Hockey    Nashville       Tennessee       credit
+Time taken: 0.305 seconds, Fetched: 5 row(s)
+
+
+hive (customer_retail)> SELECT * FROM cust_information LIMIT 5;
+OK
+4000001 Kristina        Chung   55      Pilot
+4000002 Paige   Chen    74      Teacher
+4000003 Sherri  Melton  34      Firefighter
+4000004 Gretchen        Hill    66      Computer hardware engineer
+4000005 Karen   Puckett 74      Lawyer
+Time taken: 0.062 seconds, Fetched: 5 row(s)
+
+hive (customer_retail)> DESCRIBE DATABASE customer_retail;
+OK
+customer_retail         hdfs://ip-172-31-53-48.ec2.internal:8020/apps/hive/warehouse/customer_retail.db shubhro2705854012       USER
+Time taken: 0.039 seconds, Fetched: 1 row(s)
+
+hive (customer_retail)> SHOW TABLES;
+OK
+cust_information
+cust_transaction
+Time taken: 0.064 seconds, Fetched: 2 row(s)
+
+-------------------------------------------------------------------------------
+NOTE: HIVE will activate map-reduce only when there is an operation (like cound, join) on the data. For LOADING, CREATING, DELETING or data transfer activities HIVE does not activate map-reduce
+
+example,
+hive (customer_retail)> SELECT * FROM cust_information LIMIT 5;   //no map-reduce
+Query ID = shubhro2705854012_20171225125108_e31ade44-8b83-47c8-acff-9e91ead630ba
+Total jobs = 1
+Launching Job 1 out of 1Tez session was closed. 
+Reopening...Session re-established.
+Status: Running (Executing on YARN cluster with App id application_1514101126282_0117)
+--------------------------------------------------------------------------------        
+VERTICES      STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+--------------------------------------------------------------------------------
+Map 1 ..........   SUCCEEDED      1          1        0        0       0       0
+Reducer 2 ......   SUCCEEDED      1          1        0        0       0       0
+--------------------------------------------------------------------------------
+VERTICES: 02/02  [==========================>>] 100%  ELAPSED TIME: 4.94 s     
+--------------------------------------------------------------------------------
+OK
+9999
+Time taken: 11.574 seconds, Fetched: 1 row(s)hive (customer_retail)> 
+--------------------------------------------------------------------------------------
+###############################################
+Operations on the tables: 
+###############################################
+SELECT transaction_section, SUM(transaction_amount) FROM cust_transaction GROUP BY transaction_section;
+
+Air Sports      99316.89999999994
+Combat Sports   164730.66999999995
+Dancing 42603.70999999998
+Exercise & Fitness      766463.8700000007
+Games   374932.69999999943
+Gymnastics      327225.3399999993
+Indoor Games    288506.0400000002
+Jumping 205842.66999999993
+Outdoor Play Equipment  294728.27999999956
+Outdoor Recreation      846678.6399999991
+Puzzles 61564.74999999998
+Racquet Sports  166976.05999999965
+Team Sports     617461.3799999995
+Water Sports    531815.9700000014
+Winter Sports   321973.56000000006
+
+SELECT customer_id, SUM(transaction_amount) FROM cust_transaction GROUP BY customer_id LIMIT 10;
+OK
+4000000 637.22
+4000001 980.5099999999999
+4000002 112.33
+4000003 371.01
+4000004 672.54
+4000005 1080.4199999999998
+4000006 184.01
+4000007 719.66
+4000009 364.69
+4000010 53.6
+Time taken: 4.903 seconds, Fetched: 10 row(s)
+
+NOTE: LIMIT o/ps the 1st 10 results
+
+SELECT customer_id, SUM(transaction_amount) AS sum_amt FROM cust_transaction GROUP BY customer_id ORDER BY sum_amt DESC LIMIT 3;
+OK
+4009485 1973.3
+4006425 1732.09
+4000221 1671.4700000000003
+
+##### Total Sales from customer_retail DB based on age group##################################################################
+CREATE TABLE IF NOT EXISTS cust_output1 (cust_ID INT, cust_fname STRING, cust_age INT, cust_occup STRING, cust_prod_purch STRING, cust_spent_amt DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'; 
+
+INSERT OVERWRITE TABLE cust_output1 SELECT ci.customer_id, ci.customer_firstname, ci.customer_age, ci.customer_occupation, ct.transaction_equipment, ct.transaction_amount FROM cust_information ci JOIN cust_transaction ct ON (ci.customer_id = ct.customer_id);
+
+NOTE: INSERT OVERWRITE will overwrite any existing data in the table or partition and INSERT INTO will append to the table or partition keeping the existing data.
+
+CREATE TABLE IF NOT EXISTS cust_output2 (cust_ID INT, cust_fname STRING, cust_age INT, cust_occup STRING, cust_prod_purch STRING, cust_spent_amt DOUBLE, cust_age_categ STRING);
+
+
+INSERT OVERWRITE TABLE cust_output2
+SELECT * , CASE
+ WHEN cust_age <30 then 'low'
+ WHEN cust_age >=30 and cust_age < 50 then 'middle'
+ WHEN cust_age >=50 then 'old' 
+ ELSE 'others'
+END
+FROM cust_output1;
+
+SELECT cust_age_categ, SUM(cust_spent_amt) FROM cust_output2 GROUP BY cust_age_categ;
+
+O/p:
+OK
+low     725221.3399999988
+middle  1855861.669999996
+old     2529100.310000011
+####################################################################################################################################
+
+Use a SerDe in Apache Hive: (http://blog.cloudera.com/blog/2012/12/how-to-use-a-serde-in-apache-hive/)
+semistructured and unstructured data can be queried gracefully via Hive, due to two core features: 
+a) Hive’s support of complex data types, such as structs, arrays, and unions (not available in RDBMS). 
+b) SerDe i.e. combination of a Serializer and a Deserializer (hence, Ser-De).
+
+SerDe in details:
+ instructs Hive as to how a record should be processed. Here,
+ a) DeSerializer : takes string record and translates into a java object. Usually used at query time to execute SELECT statements.
+ b) Serializer: takes the Java Object and translates into something which can be stored in HDFS.
+    used when writing data, such as through an INSERT-SELECT statement.
+	
+============================================================================================
+Hive complex data types: (https://acadgild.com/blog/working-with-hive-complex-data-types/)
+A) arrays: ARRAY<data_type>
+B) maps: MAP<primitive_type, data_type>
+C) structs: STRUCT<col_name : data_type [COMMENT col_comment], …>
+ 
+ARRAYS:
+1/2/17	Karnataka	23.2,22.3,20.5
+1/2/17	Maharashtra	25.2,23.3,24.5
+1/2/17	Tamilnadu	24.2,24.3,24.40
+1/2/17	Andhra Pradesh	28.2,21.1,22.2
+1/2/17	Kerala	27.2,25.3,20.50
+1/2/17	Jharkhand	27.7,23.3,22.2	
+
+a) In order to process, we create a table,
+	CREATE DATABASE complex_hive_datatype;
+
+	USE complex_hive_datatype;
+
+b) create table as,
+		CREATE TABLE array_dt (myDate STRING, state STRING, myTemp ARRAY<DOUBLE>)
+		ROW FORMAT DELIMITED
+		FIELDS TERMINATED BY '\t'
+		COLLECTION ITEMS TERMINATED BY ','
+		LINES TERMINATED BY '\n';     -- NOTE: LINES will always come last.
+
+c) Load data from file as,
+		LOAD DATA LOCAL INPATH 'temperature_Array.txt' OVERWRITE INTO TABLE array_dt;
+		
+d) SELECT * FROM array_dt;
+		1/2/17  Karnataka       [23.2,22.3,20.5]
+		1/2/17  Maharashtra     [25.2,23.3,24.5]
+		1/2/17  Tamilnadu       [24.2,24.3,24.4]
+		1/2/17  Andhra Pradesh  [28.2,21.1,22.2]
+		1/2/17  Kerala  [27.2,25.3,20.5]
+		1/2/17  Jharkhand       [27.7,23.3,22.2]
+		
+e) In order to access the array elements, we can use ARRAY[INDEX]. example,
+		SELECT state,myTemp[0] FROM array_dt;
+		
+f) WHAT happens if we give an index out of bounds,
+		Karnataka       NULL
+		Maharashtra     NULL
+		Tamilnadu       NULL
+		Andhra Pradesh  NULL
+		Kerala  NULL
+		Jharkhand       NULL
+
+	i.e. it does not error but provides NULL output.
+	
+MAP:
+Map is a collection of key-value pairs where fields are accessed using array notation of keys. i.e. [‘Key’]
+
+example,
+	SecondarySchool-Assam-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Assam-Female-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Bihar-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Bihar-Female-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chandigarh-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chandigar-Female-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chattisgarh-Male-2015:56344,2016:57573,2017:57563
+	SecondarySchool-Chattisgarh-Female-2015:56344,2016:57573,2017:57563
+
+1) USE complex_hive_datatype;
+2) create a table in Hive for school_Map.txt
+		CREATE TABLE map_dt (school_Type STRING, school_State STRING, school_Gender STRING, school_Total MAP<INT,INT>)
+		ROW FORMAT DELIMITED
+		FIELDS TERMINATED BY '-'
+		COLLECTION ITEMS TERMINATED BY ','
+		MAP KEYS TERMINATED BY ':'
+		LINES TERMINATED BY '\n';
+3) load data from file to table
+		LOAD DATA LOCAL INPATH 'school_Map.txt' OVERWRITE INTO TABLE map_dt;
+5) select data,
+	SELECT * FROM map_dt;
+	SecondarySchool Assam   Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Assam   Female  {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Bihar   Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Bihar   Female  {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chandigarh      Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chandigar       Female  {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chattisgarh     Male    {2015:56344,2016:57573,2017:57563}
+	SecondarySchool Chattisgarh     Female  {2015:56344,2016:57573,2017:57563}
+4) select data from table.
+	SELECT school_STATE,school_Total[2017] FROM map_dt WHERE school_Gender = 'Female';
+
+O/p:
+	Assam   57563
+	Bihar   57563
+	Chandigar       57563
+	Chattisgarh     57563
+	
+STRUCTURES:
+An element in STRUCT type can be accessed using the DOT (.) notation.
+
+1) USE complex_hive_datatype;
+2) create table struct_dt
+	CREATE TABLE IF NOT EXISTS struct_dt (name STRING,features STRUCT<engineType:STRING,cc:DOUBLE,power:DOUBLE,gears:INT>)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY '\t'
+	COLLECTION ITEMS TERMINATED BY ','
+	LINES TERMINATED BY '\n';
+3) load data into table struct_dt 
+	LOAD DATA LOCAL INPATH 'bike_Struct.txt' OVERWRITE INTO TABLE struct_dt;
+4) select data from the new table
+	SELECT * FROM struct_dt;
+
+	Yamaha Ray-Z    {"enginetype":"Aircooled","cc":149.0,"power":14.0,"gears":0}
+	Hero Maestro    {"enginetype":"Aircooled","cc":155.0,"power":14.8,"gears":0}
+	Tvs Wego        {"enginetype":"Aircooled","cc":159.0,"power":15.4,"gears":0}
+	Suzuki Swish    {"enginetype":"Dtsi-Aircooled","cc":149.0,"power":15.6,"gears":0}
+	Honda Dio       {"enginetype":"Fuel-injection","cc":223.0,"power":20.25,"gears":0}
+
+5) SELECT features.engineType FROM struct_dt;
+
+	O/p:
+	Aircooled
+	Aircooled
+	Aircooled
+	Dtsi-Aircooled
+	Fuel-injection
+	
+--------------------------------------------------------------------------
+EXTERNAL / MANAGED TABLES:
+
+Hive is a dataware house, whenever we LOAD a table from an external HDFS file, Hive moved the HDFS file to its
+warehouse (the original file is deleted from the path and now can be seen in the DB ONLY)
+
+BY DEFAULT, every table is a "MANAGED" table in HIVE i.e. HIVE handles the location of a managed table. So,
+once we drop the table, the data is lost forever (unless we have backed it up in local FS)
+
+In order to BYPASS this shortcomming, we use the keyword 'EXTERNAL' (i.e. get control over location from HIVE).
+i.e. by "EXTERNAL" keyword, we create a softlink to the file, so when we drop the table, we do not lose data.
+Whenever the EXTERNAL table gets dropped, only the metadata gets removed.
+
+SELECT COUNT(1) FROM FRAUD_ACH;
+
+CREATE DATABASE Telco_Customer;
+
+USE Telco_Customer;
+
+CREATE EXTERNAL TABLE IF NOT EXISTS Telco_Cust_Churn 
+(customerID STRING,gender STRING,SeniorCitizen INT,Partner STRING,Dependents STRING,tenure INT,PhoneService STRING,MultipleLines STRING,InternetService STRING,OnlineSecurity STRING,OnlineBackup STRING,DeviceProtection STRING,TechSupport STRING,StreamingTV STRING,StreamingMovies STRING,Contract STRING,PaperlessBilling STRING,PaymentMethod STRING,MonthlyCharges DOUBLE,TotalCharges DOUBLE,Churn DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION 'hive2_shubhro/data/telco';
+
+LOAD DATA INPATH "hive_shubhro/Telco_Customer_Churn.csv" OVERWRITE INTO TABLE Telco_Cust_Churn;
+
+********************************************
+ANOTHER EXAMPLE TO EXPLAIN MANAGED and EXTERNAL TABLES
+********************************************
+CREATE TABLE IF NOT EXISTS cust_information (customer_id INT,customer_firstname STRING,customer_secondname STRING,customer_age INT,customer_occupation STRING)
+row format delimited
+fields terminated by ',';	
+
+CREATE TABLE IF NOT EXISTS cust_transaction (transaction_id INT,transaction_date STRING,customer_id INT,transaction_amount DOUBLE,transaction_section STRING,transaction_equipment STRING,transaction_city STRING,transaction_state STRING,transaction_type STRING)
+row format delimited
+fields terminated by ',';
+
+LOAD DATA INPATH 'hive_shubhro/cust_info.txt' OVERWRITE INTO TABLE cust_information;
+
+LOAD DATA INPATH 'hive_shubhro/cust_txns.txt' OVERWRITE INTO TABLE cust_transaction;
+
+
+LOCATION 'hive2_shubhro/data/telco';
+
+
+CREATE EXTERNAL TABLE user_information1 (fname STRING, lname STRING, identity STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION '/user/hive/warehouse/user/';
+
+LOAD DATA INPATH 'hive_shubhro/user_info1.txt' OVERWRITE INTO TABLE user_information1;
+
+The file user_info1.txt is placed in /user/hive/warehouse/user/ and the file disappears from the original location.
+
+When I create a external table (without LOCATION PARAMETER), example,
+
+USE shubhro_library1;
+
+CREATE EXTERNAL TABLE IF NOT EXISTS user_information3 (fname STRING, lname STRING, identity STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info3.txt' OVERWRITE INTO TABLE user_information3;
+
+The table is visible in /users/hive/shubhro_library1/user_information3
+
+DROP user_information3;
+
+I can still see the table and information within /users/hive/shubhro_library1/user_information3 BUT select * returns error
+i.e. only the METADATA of user_intormation3 is removed from METASTORE
+
+
+NOTE: error "Relative path in absolute URI" occurs if there is something wrong with the path given in LOCATION Parameter.
+
+----------------------------------------------------------------------------
+PARTITIONING AND BUCKETING: 
+
+a) partitioning: <https://acadgild.com/blog/partitioning-in-hive/>
+	a) static partitioning: is when user defines the partitions explicitely. This needs to be applied when we know data(supposed to be inserted) belongs to which partition.
+	b) dynamic paritioning: Disadvantage of Static partitioning is that every partitioning needs to be backed with individual hive statement which is 
+							not feasible for large number of partitions as it will require writing of lot of hive statements.
+	
+	Static Partitioning:
+	CREATE DATABASE shubhro_country_info;
+
+	USE shubhro_country_info;
+
+	CREATE TABLE people_India (fname STRING, lname STRING, age INT)
+	PARTITIONED BY (countryName STRING, stateName STRING)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+	LINES TERMINATED BY '\n'
+	STORED AS TEXTFILE;
+
+	LOAD DATA INPATH 'hive_shubhro/UserInfo_India.txt' OVERWRITE INTO TABLE people_India PARTITION(countryName = "India", stateName = "Maharashtra");
+
+	hive (shubhro_country_info)> SELECT * FROM people_india;
+	OK
+	Akash   Chavan  34      India   Maharashtra
+	Prateek Kumar   35      India   Maharashtra
+	Shubhro Banerjee        33      India   Maharashtra
+	Sai     Tez     33      India   Maharashtra
+	Falak   Narang  35      India   Maharashtra
+	Sumit   Kumar   36      India   Maharashtra
+	Abhishek        Wason   33      India   Maharashtra
+	Ajay    Upadhyay        40      India   Maharashtra
+	Yogesh  Mandal  43      India   Maharashtra
+	Raj     Shekhar 34      India   Maharashtra
+	Amit    Dhaiya  32      India   Maharashtra
+	Yogesh  Shiva   28      India   Maharashtra
+	Ankur   Vyas    28      India   Maharashtra
+	Sapan   Jain    32      India   Maharashtra
+	Abhijeet        Mendelkar       32      India   Maharashtra
+
+	CREATE TABLE people_USA (fname STRING, lname STRING, age INT)
+	PARTITIONED BY (countryName STRING, stateName STRING)
+	ROW FORMAT DELIMITED
+	FIELDS TERMINATED BY ','
+	LINES TERMINATED BY '\n'
+	STORED AS TEXTFILE;
+
+	LOAD DATA INPATH 'hive_shubhro/UserInfo_USA.txt' OVERWRITE INTO TABLE people_USA PARTITION(countryName = "NorthAmerica", stateName = "Missouri");
+
+	hive (shubhro_country_info)> SELECT * FROM people_USA;
+	OK
+	John    Eickhoff        50      NorthAmerica    Missouri
+	Brenda  Akin    30      NorthAmerica    Missouri
+	Tina    Caffey  60      NorthAmerica    Missouri
+	Kathy   Rhodes  70      NorthAmerica    Missouri
+	Sue     Flachs  45      NorthAmerica    Missouri
+	Debra   Reller  45      NorthAmerica    Missouri
+	Keith   Rohrer  60      NorthAmerica    Missouri
+	George  Lucas   60      NorthAmerica    Missouri
+	
+	
+	Dynamic paritioning:
+	1) Create a managed/External table (WITHOUT any Partition). Table1
+	2) Create a separate Partitioned table. Table2
+	3) Set up Dynamic partitioned parameters (in hive shell or in hive-site.xml file.)
+		set hive.exec.dynamic.partition=true;               /*enables dynamic paritioning*/
+		set hive.exec.dynamic.partition.mode=nonstrict;  	/*enables all partitioning to be determined dynamically*/
+		set hive.exec.max.dynamic.partitions = 1000;     	/*no of dynamic partitions created by one statement. Raises fatal error if limit is exceeded*/
+		set hive.exec.max.dynamic.partitions.pernode=100;  /*no of dynamic partitions created by each mapper or reducer. Raises fatal error if limit is exceeded*/
+	4) Load input into Table1.   
+	5) Insert the data in Table2 from Table1 i.e.
+		INSERT OVERWRITE TABLE Table2 PARTITION <fields> SELECT <data> FROM TABLE1 [WHERE....];
+		
+		
+PARTITIONING:
+
+3 text files having data:
+•	user_info1.txt - country = 'New Zealand', region = 'Quebec'
+•	user_info2.txt - country = 'Nigeria',region = 'Pomorskie'
+•	user_info3.txt - left for Dynamic partitioning
+
+STATIC:
+USE shubhro_lib1_external;
+
+--
+CREATE TABLE user1 (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, region STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+/*will create 2 partitions within managed table user1*/
+LOAD DATA INPATH 'hive_shubhro/user_info1.txt' OVERWRITE INTO TABLE user1 PARTITION (country = 'New Zealand', region = 'Quebec');
+LOAD DATA INPATH 'hive_shubhro/user_info2.txt' OVERWRITE INTO TABLE user1 PARTITION (country = 'Nigeria',region = 'Pomorskie');
+
+
+
+SELECT * FROM user1;  //will return all rows where country is New Zealand and Nigeria.
+
+Check Hue for the table
+
+
+--
+CREATE EXTERNAL TABLE user2 (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, region STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info2.txt' OVERWRITE INTO TABLE user2 PARTITION (country = 'Nigeria',region = 'Pomorskie');
+
+SELECT * FROM user2;
+
+Check Hue for the table
+
+
+DYNAMIC:
+
+CASE-1: managed tables:
+CREATE TABLE user3_no_partition (fname STRING, lname STRING, identity STRING, country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info3.txt' OVERWRITE INTO TABLE user3_no_partition;
+
+--
+set hive.exec.dynamic.partition=true;       
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions = 1000;
+set hive.exec.max.dynamic.partitions.pernode=100;
+--
+CREATE TABLE user3_partition (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+//ALL columns from base table should be present in the following query
+INSERT OVERWRITE INTO TABLE user3_partition PARTITION (country, state) SELECT * FROM user3_no_partition;
+
+
+NOTE: If you receive following error,
+SemanticException Partition spec {region=null, country=null} contains non-partition columns
+The issue wis with the column naming. Check if the query has proper clolumn names.
+
+CASE-2: external tables:
+CREATE EXTERNAL TABLE user4_no_partition (fname STRING, lname STRING, identity STRING, country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro/user_info3.txt' OVERWRITE INTO TABLE user4_no_partition;
+
+--
+CREATE EXTERNAL TABLE user4_partition (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+INSERT OVERWRITE TABLE user4_partition PARTITION (country, state) SELECT * FROM user3_no_partition;  //if this does not work, instead of *, try the column names.
+
+CASE3: ALTER TABLE to create a PARTITION
+NOTE: DYNAMIC PARTITION cannot be created by ALTER TABLES as we will have to still has to provide values for the partitions.
+      If we have to create DYNAMIC, Run it through shell script.
+	  You can create a variable in shell script for partition and pass it in alter table command, otherwise no option available currently 
+
+CREATE EXTERNAL TABLE user5 (fname STRING, lname STRING, identity STRING, country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+--
+set hive.exec.dynamic.partition=true;       
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions = 1000;
+set hive.exec.max.dynamic.partitions.pernode=100;
+--
+LOAD DATA INPATH 'hive_shubhro/user_info3.txt' OVERWRITE INTO TABLE user5;
+--
+ALTER TABLE user5 ADD PARTITION (country = 'Nigeria',state = 'Pomorskie') LOCATION ' ';
+This will give error 
+"ValidationFailureSemanticException table is not partitioned but partition spec exists: {country=Nigeria, state=Pomorskie}".
+
+Why?
+You can't alter table partition if you didn't define partition while creation of table.
+
+If, when altering a un-partitioned table to add partition, 
+you get this error: "Semantic Exception table is not partitioned but partition spec exists: {col=}," 
+it means you are trying to include the partitioned in the table itself.
+
+
+
+Other concepts abt partitions,
+1) To show all partitions of a table, we use SHOW PARTITIONS <tablename>;
+2) To fetch data from a particular partition, we use SELECT * FROM <tablename> WHERE <column on which table is partitioned> = <value>;
+	OR, to get all data from a particular partition, we use SELECT * FROM <tablename> WHERE partition = <partition name>; 
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+		
+---------------------------------------------------------------------------------------------------------------
+	
+2) Example of partitioning.
+3) How we do partitions in an external table.
+4) Insert into a Hive table (check from the PPT). One row
+5) Write Output from a table into local FS.
+
+####to be executed###################################
+CREATE TABLE USER1 (fname STRING, lname STRING, identity STRING)
+PARTITIONED BY (country STRING, state STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH 'hive_shubhro' OVERWRITE INTO TABLE USER1 PARTITION (country = 'New Zealand', state = 'Quebec');
+#######################################################
+
+BUCKETING.
