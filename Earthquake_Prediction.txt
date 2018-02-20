@@ -1,0 +1,102 @@
+Project 2 (Medium): Earthquake Prediction
+Domain: Disaster Management and Recovery
+Data: data.xls
+---------------------------------------------------
+To design a Real-Time Earthquake Detection Model to send lifesaving alerts, 
+which should improve its machine learning to provide near real-time computation results. 
+We will use the dataset to obtain an ROC (Receiver Operating Characteristic) value using Machine Learning in Apache Spark. 
+An ROC curve is a graphical plot that illustrates the performance of a binary classifier system as its discrimination threshold 
+is varied.
+---------------------------------------------------
+Classification Index,First Activity Time,Time Taken,Acceleration,Building Strength,Velocity,Sa,Sd,First Activity Time,Time Taken,Acceleration,Building Strength,Velocity,Sa,Sd
+0,                   3,                  11,        14,          19,               39,      42,55,64,                 67,        73,          75,               76,      80,83
+0,                   5,                  16,        30,          35,               41,      64,67,73,                 74,        76,          80,               83,        ,
+---------------------------------------------------
+Data Schema:
+I.   Classification Index
+II.  First Activity Time
+III. Time Taken
+IV.  Acceleration
+V.   Building Strength
+VI.  Velocity
+VII. Sa
+VIII.Sd
+IX.  First Activity Time
+X.   Time Taken
+XI.  Acceleration
+XII. Building Strength
+XIII.Velocity
+XIV. Sa
+XV.  Sd
+----------------------------------------------------------------
+Initial Set-up:
+
+val ep_rdd = sc.textFile("sb_spk_proj_earthquake_prediction/data.xls")
+val ep_header = ep_rdd.first
+val ep_record_rdd = ep_rdd.filter( x => (x != ep_header && x != ""))
+
+val ep_record_list_rdd = ep_record_rdd.map { x => 
+var l = List[Int]()
+val arr = x.split(",")
+val i = 0
+for( i <- 0 to arr.size-1) { l=l++List(arr(i).toInt) } 
+val cnt = l.size
+val l_zero = List(0)
+for ( j <- cnt to 14 ) { l=l++l_zero }
+l.mkString(",")
+}
+
+case class ep_schema(Classification_Index:Integer,First_Activity_Time1:Integer,Time_Taken1:Integer,Acceleration1:Integer,Building_Strength1:Integer,Velocity1:Integer,Sa1:Integer,Sd1:Integer,First_Activity_Time2:Integer,Time_Taken2:Integer,Acceleration2:Integer,Building_Strength2:Integer,Velocity2:Integer,Sa2:Integer,Sd2:Integer)
+
+val ep_record_int_rdd = ep_record_list_rdd.map { x =>
+val arr = x.split(",")
+val Classification_Index = arr(0).toInt
+val First_Activity_Time1 = arr(1).toInt
+val Time_Taken1 = arr(2).toInt
+val Acceleration1 = arr(3).toInt
+val Building_Strength1 = arr(4).toInt
+val Velocity1 = arr(5).toInt
+val Sa1 = arr(6).toInt
+val Sd1 = arr(7).toInt
+val First_Activity_Time2 = arr(8).toInt
+val Time_Taken2 = arr(9).toInt
+val Acceleration2 = arr(10).toInt
+val Building_Strength2 = arr(11).toInt
+val Velocity2 = arr(12).toInt
+val Sa2 = arr(13).toInt
+val Sd2 = arr(14).toInt
+ep_schema(Classification_Index,First_Activity_Time1,Time_Taken1,Acceleration1,Building_Strength1,Velocity1,Sa1,Sd1,First_Activity_Time2,Time_Taken2,Acceleration2,Building_Strength2,Velocity2,Sa2,Sd2)
+}
+
+val ep_df = ep_record_int_rdd.toDF()
+
+o/p:
++--------------------+--------------------+-----------+-------------+------------------+---------+---+---+--------------------+-----------+-------------+------------------+---------+---+---+
+|Classification_Index|First_Activity_Time1|Time_Taken1|Acceleration1|Building_Strength1|Velocity1|Sa1|Sd1|First_Activity_Time2|Time_Taken2|Acceleration2|Building_Strength2|Velocity2|Sa2|Sd2|
++--------------------+--------------------+-----------+-------------+------------------+---------+---+---+--------------------+-----------+-------------+------------------+---------+---+---+
+|                   0|                   3|         11|           14|                19|       39| 42| 55|                  64|         67|           73|                75|       76| 80| 83|
+|                   0|                   3|          6|           17|                27|       35| 40| 57|                  63|         69|           73|                74|       76| 81|103|
+|                   0|                   4|          6|           15|                21|       35| 40| 57|                  63|         67|           73|                74|       77| 80| 83|
+.
+.
+.
+|                   0|                   5|         16|           30|                35|       41| 64| 67|                  73|         74|           76|                80|       83|  0|  0|
+
+ep_df.registerTempTable("ep_table")
+----------------------------------------------------------------
+Possible exploration ideas:
+1) Spark SQL:
+a) Insert a column “Total Weight” which contains sum of respective cells in (II) to (XV)
+b) Find the Building Strength(s) for the maximum velocity in the Primary Wave
+c) Find the average value of Sa for both primary and secondary wave
+d) Count the number of instances where Building strength remains equal to or greater than 25 after the secondary wave
+e) Find the velocity for the primary wave which takes the maximum time
+
+2) Spark MLlib:
+a) Train the data for Machine Learning
+b) Create a model for the trained data and predict features by mapping the model
+c) Use Binary Classification metrics on the map to get the area under ROC
+d) Print the area under ROC
+
+
+---------------------------------------------------------------
