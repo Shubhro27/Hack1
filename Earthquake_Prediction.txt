@@ -87,16 +87,130 @@ ep_df.registerTempTable("ep_table")
 Possible exploration ideas:
 1) Spark SQL:
 a) Insert a column “Total Weight” which contains sum of respective cells in (II) to (XV)
+
+	val case1_Tot_Wt_DF = sqlContext.sql("select Classification_Index,First_Activity_Time1,Time_Taken1,Acceleration1,Building_Strength1,Velocity1,Sa1,Sd1,First_Activity_Time2,Time_Taken2,Acceleration2,Building_Strength2,Velocity2,Sa2,Sd2,(First_Activity_Time1+Time_Taken1+Acceleration1+Building_Strength1+Velocity1+Sa1+Sd1+First_Activity_Time2+Time_Taken2+Acceleration2+Building_Strength2+Velocity2+Sa2+Sd2) AS Total_Weight from ep_table")
+	case1_Tot_Wt_DF.registerTempTable("ep_table_case1")
+	val case1_df = sqlContext.sql("SELECT * FROM ep_table_case1 LIMIT 5")
+	case1_df.rdd.saveAsTextFile("sb_spk_proj_earthquake_prediction/CASE1a")
+	
+	o/p:
+	+--------------------+--------------------+-----------+-------------+------------------+---------+---+---+--------------------+-----------+-------------+------------------+---------+---+---+------------+
+	|Classification_Index|First_Activity_Time1|Time_Taken1|Acceleration1|Building_Strength1|Velocity1|Sa1|Sd1|First_Activity_Time2|Time_Taken2|Acceleration2|Building_Strength2|Velocity2|Sa2|Sd2|Total_Weight|
+	+--------------------+--------------------+-----------+-------------+------------------+---------+---+---+--------------------+-----------+-------------+------------------+---------+---+---+------------+
+	|                   0|                   3|         11|           14|                19|       39| 42| 55|                  64|         67|           73|                75|       76| 80| 83|         701|
+	|                   0|                   3|          6|           17|                27|       35| 40| 57|                  63|         69|           73|                74|       76| 81|103|         724|
+	|                   0|                   4|          6|           15|                21|       35| 40| 57|                  63|         67|           73|                74|       77| 80| 83|         695|
+	|                   0|                   5|          6|           15|                22|       36| 41| 47|                  66|         67|           72|                74|       76| 80| 83|         690|
+	|                   0|                   2|          6|           16|                22|       36| 40| 54|                  63|         67|           73|                75|       76| 80| 83|         693|
+	+--------------------+--------------------+-----------+-------------+------------------+---------+---+---+--------------------+-----------+-------------+------------------+---------+---+---+------------+
+	
+	
 b) Find the Building Strength(s) for the maximum velocity in the Primary Wave
+	sqlContext.sql("SELECT MAX(Velocity1) from ep_table").show
+	
+	+---+
+	|_c0|
+	+---+
+	| 45|
+	+---+
+
+	sqlContext.sql("SELECT Building_Strength1,Building_Strength2 FROM ep_table WHERE Velocity1 = 45").show
+	
+	+------------------+------------------+
+	|Building_Strength1|Building_Strength2|
+	+------------------+------------------+
+	|                35|                78|
+	|                35|                80|
+	|                37|                80|
+	|                39|                80|
+	+------------------+------------------+
+	
+
 c) Find the average value of Sa for both primary and secondary wave
+	val case1c_avg_Sa = sqlContext.sql("SELECT AVG(Sa1) as AVG_SA1,AVG(Sa2) as AVG_SA2 FROM ep_table")
+	
+	+-----------------+-----------------+
+	|          AVG_SA1|          AVG_SA2|
+	+-----------------+-----------------+
+	|42.33395638629283|75.46604361370717|
+	+-----------------+-----------------+
+	
 d) Count the number of instances where Building strength remains equal to or greater than 25 after the secondary wave
+	val case1d_count_BS = sqlContext.sql("SELECT count(*) as INSTANCE_BS FROM ep_table WHERE Building_Strength1 >= (Building_Strength2 + 25)")
+	
+	+-----------+
+	|INSTANCE_BS|
+	+-----------+
+	|          0|
+	+-----------+
+	
 e) Find the velocity for the primary wave which takes the maximum time
+	sqlContext.sql("SELECT MAX(Time_Taken1) FROM ep_table").show
+	
+	+---+
+	|_c0|
+	+---+
+	| 18|
+	+---+
+	
+	sqlContext.sql("SELECT DISTINCT(Velocity1) FROM ep_table WHERE Time_Taken1 = 18").show 
+	
+	+---------+
+	|Velocity1|
+	+---------+
+	|       40|
+	|       41|
+	|       42|
+	|       43|
+	+---------+
+	
 
 2) Spark MLlib:
 a) Train the data for Machine Learning
 b) Create a model for the trained data and predict features by mapping the model
 c) Use Binary Classification metrics on the map to get the area under ROC
 d) Print the area under ROC
+---------------------------------------------------------------
+Via Hive and csv package:
+spark-shell --packages com.databricks:spark-csv_2.10:1.5.0
+
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+
+val EquakePredict_schema = StructType(Array(
+StructField("Classification_Index",StringType,false),
+StructField("First_Activity_Time1",StringType,false),
+StructField("Acceleration1",StringType,false),
+StructField("Building_Strength1",StringType,false),
+StructField("Velocity1",StringType,false),
+StructField("Sa1",StringType,false),
+StructField("Sd1",StringType,false),
+StructField("First_Activity_Time2",StringType,false),
+StructField("Time_Taken2",StringType,false),
+StructField("Acceleration2",StringType,false),
+StructField("Building_Strength2",StringType,false),
+StructField("Velocity2",StringType,false),
+StructField("Sa2",StringType,false),
+StructField("Sd2",StringType,false)))
+
+val EQuakePredict_df = sqlContext.read.format("com.databricks.spark.csv").option("header", "false").option("inferSchema", "true").option("delimiter", ",").schema(EquakePredict_schema).load("sb_spk_proj_earthquake_prediction/data.xls")
+
+val EQuakePredict_df1 = EQuakePredict_df.select(EQuakePredict_df("Classification_Index")!=="Classification Index")
 
 
 ---------------------------------------------------------------
+Exceptions,
+scala> val case1_Tot_Wt_DF = sqlContext.sql("UPDATE ep_table SET Total_Weight = (First_Activity_Time1+Time_Taken1+Acceleration1+Building_Strength1+Velocity1+Sa1+Sd1+First_Activity_Time2+Time_Taken2+Acceleration2+Building_Strength2+Velocity2+Sa2+Sd2)")
+18/02/21 08:49:37 INFO ParseDriver: Parse Completedorg.apache.spark.sql.AnalysisException: Unsupported language features in query: UPDATE ep_table SET Total_Weight = (First_Activity_Time1+Time_Taken1+Acceleration1+Building_Strength1+Velocity1+Sa1+Sd1+First_Activity_Time2+Time_Taken2+Acceleration2+Building_Strength2+Velocity2+Sa2+Sd2)
+
+scala> val case1_Tot_Wt_DF = sqlContext.sql("SELECT *  REPLACE(Total_Weight, 0, (First_Activity_Time1+Time_Taken1+Acceleration1+Building_Strength1+Velocity1+Sa1+Sd1+First_Activity_Time2+Time_Taken2+Acceleration2+Building_Strength2+Velocity2+Sa2+Sd2)) AS Total_Weight FROM ep_table")
+18/02/21 09:08:53 INFO ParseDriver: Parsing command: SELECT *  REPLACE(Total_Weight, 0, (First_Activity_Time1+Time_Taken1+Acceleration1+Building_Strength1+Velocity1+Sa1+Sd1+First_Activity_Time2+Time_Taken2+Acceleration2+Building_Strength2+Velocity2+Sa2+Sd2)) AS Total_Weight FROM ep_tableorg.apache.spark.sql.AnalysisException: missing EOF at 'REPLACE' near '*'; line 1 pos 10
+
+scala> val case1_Tot_Wt_DF = sqlContext.sql("select Classification_Index,First_Activity_Time1,Time_Taken1,Acceleration1,Building_Strength1,Velocity1,Sa1,Sd1,First_Activity_Time2,Time_Taken2,Acceleration2,Building_Strength2,Velocity2,Sa2,Sd2,(First_Activity_Time1+Time_Taken1+Acceleration1+Building_Strength1+Velocity1+Sa1+Sd1+First_Activity_Time2+Time_Taken2+Acceleration2+Building_Strength2+Velocity2+Sa2+Sd2) AS Total_Weight from ep_table")
+18/02/21 09:17:57 INFO ParseDriver: Parsing command: select Classification_Index,First_Activity_Time1,Time_Taken1,Acceleration1,Building_Strength1,Velocity1,Sa1,Sd1,First_Activity_Time2,Time_Taken2,Acceleration2,Building_Strength2,Velocity2,Sa2,Sd2,(First_Activity_Time1+Time_Taken1+Acceleration1+Building_Strength1+Velocity1+Sa1+Sd1+First_Activity_Time2+Time_Taken2+Acceleration2+Building_Strength2+Velocity2+Sa2+Sd2) AS Total_Weight from ep_table
+18/02/21 09:17:57 INFO ParseDriver: Parse Completedorg.apache.spark.sql.AnalysisException: no such table ep_table; line 1 pos 387
+
+
+scala> val EQuakePredict_df1 = EQuakePredict_df.select(EQuakePredict_df("Classification_Index")!="Classification Index")<console>:24: error: overloaded method value select with alternatives:  (col: String,cols: String*)org.apache.spark.sql.DataFrame <and>  (cols: org.apache.spark.sql.Column*)org.apache.spark.sql.DataFrame cannot be applied to (Boolean)       val EQuakePredict_df1 = EQuakePredict_df.select(EQuakePredict_df("Classification_Index")!="Classification Index")
+
+val EquakePredict_df = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferSchema", "true").option("delimiter", ",").load("sb_spk_proj_earthquake_prediction/data.xls")
+java.lang.IllegalArgumentException: The header contains a duplicate entry: 'First Activity Time' in [Classification Index, First Activity Time, Time Taken, Acceleration, Building Strength, Velocity, Sa, Sd, First Activity Time, Time Taken, Acceleration, Building Strength, Velocity, Sa, Sd]
