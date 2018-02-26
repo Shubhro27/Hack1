@@ -1,0 +1,125 @@
+In ML:
+we feed some data ====> and we feed expected result ====> and ML should come up with a program.
+
+Machine learning models
+1) Regression analysis: i.e. u already have current data and based on statistical regression, ML will predict. 
+						Regression is finding mean from a set of values i.e. finding a pattern.
+						ex, finding property rate appreciation in next 2 years
+2) classification: classify into a category. example, SPAM email i.e. classify if a email is Spam or not.
+3) clustering : analyzing i/p data, find relation and then cluster them into category. ex: google news.
+
+Mllib: a machine learning lib in Spark
+Mllib supports almost all ML algorithms like regression, classification, clustering, collaborative filtering etc.
+
+2 packages available,
+1) spark.mllib: operates on RDDs i.e. lowlevel API.
+2) spark.ml: operates on top of data frames. Is recommended coz DF is more optimized and improved than RDDs
+
+Mahout was used for ML on top of Hadoop. drawback is it is very slow for scalable machine learning.
+
+Spark Mllib is powerful, faster.
+
+Supervised learning: system wherein we are training system based on labelld training data. i.e. data and results are given.
+						ex, spam determining
+Unsupervised learning: system has to find pattern itself. ex, if a person will vote or not.
+						so u are not feeding any data to the system, it figurs out by taking election data.
+						
+reenforced learning: ex, chess engine.
+
+
+---------------
+Collaborative filtering:
+is used for recommendor systems to recommend items based on info from many users.
+This is based on similarity i.e. it is based on concept - people who like similar items in the past will like the 
+same in future.
+
+spark.mllib currently supports model-based collaborative filtering, 
+in which users and products are described by a small set of latent factors(i.e. hidden factors) 
+that can be used to predict missing entries.
+
+spark.mllib uses the alternating least squares (ALS) algorithm to learn these latent factors.
+
+what is ALS algorithm?
+ALS is Matrix Factorization Algorithm. Matrix Factorization decomposes a large matrix into products of matrices.
+Alternating Least Squares is a method that alternates between two matrices in a product such as Y=UV′ where Y is data.
+Essentially it guesses U to estimate V and then alternates back and forth until U and V stop changing. 
+By fixing one or the other it becomes a simple least squares solution (by generalized inverses).
+
+spark.mllib has the following parameters:
+a) is the number of blocks used to parallelize computation (set to -1 to auto-configure).
+b) rank is the number of latent factors in the model.
+c) iterations is the number of iterations of ALS to run. ALS typically converges to a reasonable solution in 20 iterations or less.
+d) lambda specifies the regularization parameter in ALS.
+e) implicitPrefs specifies whether to use the explicit feedback ALS variant or one adapted for implicit feedback data.
+f) alpha is a parameter applicable to the implicit feedback variant of ALS that governs the baseline confidence in preference observations.
+
+we scale the regularization parameter lambda in solving each least squares problem by the number of ratings 
+the user generated in updating user factors ,or the number of ratings the product received in updating product factors.
+
+------
+import org.apache.spark.mllib.recommendation.ALS
+import org.apache.spark.mllib.recommendation.Rating
+
+//read from the file
+val rawData = sc.textFile("sb_sparkCore_assgmnt_ds/u.data")
+
+//only gather the 1st 3 fields i.e. userID, movieID, rating
+val rawRatings = rawData.map(_.split("\t").take(3))
+--o/p RDD => Array(Array(196, 242, 3), Array(186, 302, 3), Array(22, 377, 1))
+
+//Typecast into Rating object from Spark ML Package
+val ratings = rawRatings.map {case Array(user,movie,rating) => Rating(user.toInt,movie.toInt,rating.toDouble)}
+--Array[org.apache.spark.mllib.recommendation.Rating] = Array(Rating(196,242,3.0), Rating(186,302,3.0), Rating(22,377,1.0))
+
+//train the data. ALS.train() method which assumes ratings are explicit.
+val model = ALS.train(ratings, 50, 5, 0.01) //(keyword, rank, numberOfIteration, lambda, alpha)
+
+//param: userFeatures generates RDD of tuples where each tuple represents the userId and the features computed for this user.
+model.userFeatures
+
+model.userFeatures.count
+
+model.productFeatures.count
+
+val predictedRating = model.predict(789, 123)
+
+val userId = 789  //define a particular userID for sending recommendation.
+
+val K = 10
+
+val topKRecs = model.recommendProducts(userId, K)
+
+//o/p: //Array(Rating(789,502,6.749434324169669), Rating(789,262,6.43250490
+4951045), Rating(789,430,6.057231367166024), Rating(789,529,5.87520303908014), Rating(789,81,5.873471430848295), Rating(789,922,5.
+779552233527941), Rating(789,616,5.756839266718904), Rating(789,484,5.708139570429266), Rating(789,513,5.698412725633263), Rating(
+789,45,5.582052959721147))
+
+//***************** for output to be more readable **********************************
+println(topKRecs.mkString("\n"))
+
+val movies = sc.textFile("sb_sparkCore_assgmnt_ds/u.item")
+
+// convert (movieID, movieName) => (movieID -> movieName)
+val titles = movies.map(line => line.split("\\|").take(2)).map(array => (array(0).toInt,array(1))).collectAsMap()
+--titles: scala.collection.Map[Int,String] = Map(137 -> Big Night (1996), 891 -> Bent (1997),.....)
+
+
+val moviesForUser = ratings.keyBy(_.user).lookup(789)
+
+println(moviesForUser.size)
+
+moviesForUser.sortBy(-_.rating).take(10).map(rating => (titles(rating.product), rating.rating)).foreach(println)
+
+o/p:
+(Godfather, The (1972),5.0)
+(Trainspotting (1996),5.0)
+(Dead Man Walking (1995),5.0)
+(Star Wars (1977),5.0)
+(Swingers (1996),5.0)
+(Leaving Las Vegas (1995),5.0)
+(Bound (1996),5.0)
+(Fargo (1996),5.0)
+(Last Supper, The (1995),5.0)
+(Private Parts (1997),4.0)
+
+
