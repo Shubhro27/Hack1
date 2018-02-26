@@ -1,0 +1,378 @@
+In ML:
+we feed some data ====> and we feed expected result ====> and ML should come up with a program.
+
+Machine learning models
+1) Regression analysis: i.e. u already have current data and based on statistical regression, ML will predict. 
+						Regression is finding mean from a set of values i.e. finding a pattern.
+						ex, finding property rate appreciation in next 2 years
+2) classification: classify into a category. example, SPAM email i.e. classify if a email is Spam or not.
+3) clustering : analyzing i/p data, find relation and then cluster them into category. ex: google news.
+
+Mllib: a machine learning lib in Spark
+Mllib supports almost all ML algorithms like regression, classification, clustering, collaborative filtering etc.
+
+2 packages available,
+1) spark.mllib: operates on RDDs i.e. lowlevel API.
+2) spark.ml: operates on top of data frames. Is recommended coz DF is more optimized and improved than RDDs
+
+Mahout was used for ML on top of Hadoop. drawback is it is very slow for scalable machine learning.
+
+Spark Mllib is powerful, faster.
+
+Supervised learning: system wherein we are training system based on labelld training data. i.e. data and results are given.
+						ex, spam determining
+Unsupervised learning: system has to find pattern itself. ex, if a person will vote or not.
+						so u are not feeding any data to the system, it figurs out by taking election data.
+						
+reenforced learning: ex, chess engine.
+
+
+---------------
+Collaborative filtering:
+is used for recommendor systems to recommend items based on info from many users.
+This is based on similarity i.e. it is based on concept - people who like similar items in the past will like the 
+same in future.
+
+spark.mllib currently supports model-based collaborative filtering, 
+in which users and products are described by a small set of latent factors(i.e. hidden factors) 
+that can be used to predict missing entries.
+
+spark.mllib uses the alternating least squares (ALS) algorithm to learn these latent factors.
+
+what is ALS algorithm?
+ALS is Matrix Factorization Algorithm. Matrix Factorization decomposes a large matrix into products of matrices.
+Alternating Least Squares is a method that alternates between two matrices in a product such as Y=UV′ where Y is data.
+Essentially it guesses U to estimate V and then alternates back and forth until U and V stop changing. 
+By fixing one or the other it becomes a simple least squares solution (by generalized inverses).
+
+spark.mllib has the following parameters:
+a) is the number of blocks used to parallelize computation (set to -1 to auto-configure).
+b) rank is the number of latent factors in the model.
+c) iterations is the number of iterations of ALS to run. ALS typically converges to a reasonable solution in 20 iterations or less.
+d) lambda specifies the regularization parameter in ALS.
+e) implicitPrefs specifies whether to use the explicit feedback ALS variant or one adapted for implicit feedback data.
+f) alpha is a parameter applicable to the implicit feedback variant of ALS that governs the baseline confidence in preference observations.
+
+we scale the regularization parameter lambda in solving each least squares problem by the number of ratings 
+the user generated in updating user factors ,or the number of ratings the product received in updating product factors.
+
+------
+import org.apache.spark.mllib.recommendation.ALS
+import org.apache.spark.mllib.recommendation.Rating
+
+//read from the file
+val rawData = sc.textFile("sb_sparkCore_assgmnt_ds/u.data")
+
+//only gather the 1st 3 fields i.e. userID, movieID, rating
+val rawRatings = rawData.map(_.split("\t").take(3))
+--o/p RDD => Array(Array(196, 242, 3), Array(186, 302, 3), Array(22, 377, 1))
+
+//Typecast into Rating object from Spark ML Package
+val ratings = rawRatings.map {case Array(user,movie,rating) => Rating(user.toInt,movie.toInt,rating.toDouble)}
+--Array[org.apache.spark.mllib.recommendation.Rating] = Array(Rating(196,242,3.0), Rating(186,302,3.0), Rating(22,377,1.0))
+
+//train the data. ALS.train() method which assumes ratings are explicit.
+val model = ALS.train(ratings, 50, 5, 0.01) //(keyword, rank, numberOfIteration, lambda, alpha)
+
+//param: userFeatures generates RDD of tuples where each tuple represents the userId and the features computed for this user.
+model.userFeatures
+
+model.userFeatures.count
+
+model.productFeatures.count
+
+val predictedRating = model.predict(789, 123)
+
+val userId = 789  //define a particular userID for sending recommendation.
+
+val K = 10
+
+val topKRecs = model.recommendProducts(userId, K)
+
+//o/p: //Array(Rating(789,502,6.749434324169669), Rating(789,262,6.43250490
+4951045), Rating(789,430,6.057231367166024), Rating(789,529,5.87520303908014), Rating(789,81,5.873471430848295), Rating(789,922,5.
+779552233527941), Rating(789,616,5.756839266718904), Rating(789,484,5.708139570429266), Rating(789,513,5.698412725633263), Rating(
+789,45,5.582052959721147))
+
+//***************** for output to be more readable **********************************
+println(topKRecs.mkString("\n"))
+
+val movies = sc.textFile("sb_sparkCore_assgmnt_ds/u.item")
+
+// convert (movieID, movieName) => (movieID -> movieName)
+val titles = movies.map(line => line.split("\\|").take(2)).map(array => (array(0).toInt,array(1))).collectAsMap()
+--titles: scala.collection.Map[Int,String] = Map(137 -> Big Night (1996), 891 -> Bent (1997),.....)
+
+
+val moviesForUser = ratings.keyBy(_.user).lookup(789)
+
+println(moviesForUser.size)
+
+moviesForUser.sortBy(-_.rating).take(10).map(rating => (titles(rating.product), rating.rating)).foreach(println)
+
+o/p:
+(Godfather, The (1972),5.0)
+(Trainspotting (1996),5.0)
+(Dead Man Walking (1995),5.0)
+(Star Wars (1977),5.0)
+(Swingers (1996),5.0)
+(Leaving Las Vegas (1995),5.0)
+(Bound (1996),5.0)
+(Fargo (1996),5.0)
+(Last Supper, The (1995),5.0)
+(Private Parts (1997),4.0)
+
+----------------------------------------------------------------------------------------------------------------
+================================================================================================================
+----------------------------------------------------------------------------------------------------------------
+DECISION TREE and RANDOM FORESTS:
+
+sb_spk_mllib_assgmnt_ds/attachment_2014.csv
+---------------
+Data
+
+dayOfMonth,dayOfWeek,carrier,tailNumber,flightNumber,originId,origin,destinationId,destination,crsDepartureTime,actualDepartureTime,departureDelayMinutes,crsArrivalTime,actualArrivalTime,arrivalDelayMinutes,crsElapsedTime,distance
+1,         3,        AA,     N338AA,    1,           12478,   JFK,   12892,        LAX,        900,             914,                14,                   1225,          1238,             13,                 385,           2475
+
+
+2,4,AA,N338AA,1,12478,JFK,12892,LAX,900,857,0,1225,1226,1,385,2475
+4,6,AA,N327AA,1,12478,JFK,12892,LAX,900,1005,65,1225,1324,59,385,2475
+
+---------------
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.mllib.regression.LabeledPoint
+import org.apache.spark.mllib.tree.{DecisionTree, RandomForest}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkConf, SparkContext}
+---------------
+Define the schema and load data from “2014.csv”
+
+//copy the file to a RDD
+val rdd1 = sc.textFile( "sb_spk_mllib_assgmnt_ds/attachment_2014.csv" )
+
+case class Flight(dayOfMonth:Int,dayOfWeek:Int,carrier:String,tailNumber:String,flightNumber:Int,originId:String,origin:String,destinationId:String,destination:String,crsDepartureTime:Double,actualDepartureTime:Double,departureDelayMinutes:Double,crsArrivalTime:Double,actualArrivalTime:Double,arrivalDelayMinutes:Double,crsElapsedTime:Double,distance:Int)
+
+val flights = rdd1.map { x =>
+val r = x.split(",")
+Flight(r(0).toInt - 1, r(1).toInt - 1, r(2), r(3), r(4).toInt, r(5), r(6),r(7), r(8), r(9).toDouble, r(10).toDouble, r(11).toDouble, r(12).toDouble,r(13).toDouble, r(14).toDouble, r(15).toDouble, r(16).toInt)
+}
+
+O/p
+Array(Flight(0,2,AA,N338AA,1,12478,JFK,12892,LAX,900.0,914.0,14.0,1225.0,1238.0,13.0,385.0,2475), 
+Flight(1,3,AA,N338AA,1,12478,JFK,12892,LAX,900.0,857.0,0.0,1225.0,1226.0,1.0,385.0,2475), 
+Flight(3,5,AA,N327AA,1,12478,JFK,12892,LAX,900.0,1005.0,65.0,1225.0,1324.0,59.0,385.0,2475), 
+Flight(4,6,AA,N323AA,1,12478,JFK,12892,LAX,900.0,1050.0,110.0,1225.0,1415.0,110.0,385.0,2475))
+
+---------------
+Create an index of carrier, origin and destination which contains distinct values for each column
+
+//index for carrier
+val carrierIndex = flights.map( x => x.carrier ).distinct.collect.zipWithIndex.toMap
+
+O/p:
+carrierIndex: scala.collection.immutable.Map[String,Int] = 
+Map(DL -> 5, F9 -> 10, US -> 9, OO -> 2, B6 -> 0, AA -> 6, EV -> 12, FL -> 1, UA -> 4, MQ -> 8, WN -> 13, AS -> 3, VX -> 7, HA -> 11)
+
+--
+val originIndex = flights.map( x => x.origin ).distinct.collect.zipWithIndex.toMap
+O/p:
+originIndex: scala.collection.immutable.Map[String,Int] = 
+Map(ROW -> 23, OAJ -> 144, GCC -> 232, SYR -> 80, TYR -> 162, TUL -> 180, STL -> 203, IDA -> 61, ICT -> 62, MQT -> 37, SWF -> 118, EKO -> 148, 
+JFK -> 216, LGB -> 241, ISP -> 101, ART -> 288, ORD -> 234, STX -> 170, EGE -> 159, LWS -> 132, TWF -> 229, LAS -> 44, BET -> 286, GSP -> 117, 
+DAY -> 123, KOA -> 252, BUR -> 292, DRO -> 276, PVD -> 31, BRD -> 77, SPS -> 1, CLD -> 184, SGF -> 86, CDV -> 222, STT -> 214, OTZ -> 279, 
+AVL -> 199, BOI -> 12, PSP -> 150, SAF -> 40, FWA -> 146, MHT -> 186, SBN -> 206, RDM -> 182, PSG -> 59, LAX -> 294, BQN -> 293, 
+HSV -> 257, RIC -> 6, BTM -> 217, LSE -> 33, FCA -> 55, JAC -> 110, ATL -> 273, CHA -> 112, BQK -> 96, MIA -> 176, GUC -> 282, SBP -> 163, BFL -> 74, 
+DHN -> 51, FLG -> 155, BRO -> 274, ...)
+
+--
+val destinationIndex = flights.map( x => x.destination ).distinct.collect.zipWithIndex.toMap
+O/p:
+destinationIndex: scala.collection.immutable.Map[String,Int] = 
+Map(ROW -> 23, OAJ -> 144, GCC -> 232, SYR -> 80, TYR -> 162, TUL -> 180, STL -> 203, IDA -> 61, ICT -> 62, MQT -> 37, SWF -> 118, 
+EKO -> 148, JFK -> 216, LGB -> 241, ISP -> 101, ART -> 288, ORD -> 234, STX -> 170, EGE -> 159, LWS -> 132, TWF -> 229, LAS -> 44, 
+BET -> 286, GSP -> 117, DAY -> 123, KOA -> 252, BUR -> 292, DRO -> 276, PVD -> 31, BRD -> 77, SPS -> 1, CLD -> 184, SGF -> 86, 
+CDV -> 222, STT -> 214, OTZ -> 279, AVL -> 199, BOI -> 12, PSP -> 150, SAF -> 40, FWA -> 146, MHT -> 186, SBN -> 206, RDM -> 182,.....)
+ 
+---------------
+Create a dataframe “features” that contains dayOfMonth, dayOfWeek, crsDepartureTime, crsArrivalTime, carrierIndex, crsElapsedTime, origin, destination, 
+departureDelayMinutes and map it to an array.
+
+val features = flights.map { flight =>
+val dayOfMonth = flight.dayOfMonth.toDouble
+val dayOfWeek = flight.dayOfWeek.toDouble
+val departureTime = flight.crsDepartureTime
+val arrivalTime = flight.crsArrivalTime
+val carrier = carrierIndex(flight.carrier)
+val elapsedTime = flight.crsElapsedTime
+val origin = originIndex(flight.origin).toDouble
+val destination = destinationIndex(flight.destination).toDouble 
+val delayed = if (flight.departureDelayMinutes > 40) 1.0 else 0.0
+Array(delayed, dayOfMonth, dayOfWeek, departureTime, arrivalTime, carrier, elapsedTime, origin, destination)
+}
+
+o/p:
+ Array[Array[Double]] = Array(Array(0.0, 0.0, 2.0, 900.0, 1225.0, 6.0, 385.0, 216.0, 294.0), 
+ Array(0.0, 1.0, 3.0, 900.0, 1225.0, 6.0, 385.0, 216.0, 294.0), 
+ Array(1.0, 3.0, 5.0, 900.0, 1225.0, 6.0, 385.0, 216.0, 294.0)),.....)
+ 
+Note:
+val carrier = carrierIndex(flight.carrier) - example, val car = carrierIndex("DL") => 5 
+ 
+-----------------
+Prepare a test model for the data and train it based on Decision Tree method
+
+val labeled = features.map ( x => LabeledPoint(x(0), Vectors.dense(x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8))) )
+
+o/p:
+Array[org.apache.spark.mllib.regression.LabeledPoint] = Array((0.0,[0.0,2.0,900.0,1225.0,6.0,385.0,216.0,294.0]), (0.0,[1.0,3.0,900.0,1225.0,6.0,385.0,216.0,294.0]), 
+															  (1.0,[3.0,5.0,900.0,1225.0,6.0,385.0,216.0,294.0]), (1.0,[4.0,6.0,900.0,1225.0,6.0,385.0,216.0,294.0]))
+															  
+val delayed = labeled.filter(_.label == 0).randomSplit(Array(0.85, 0.15))(1)  //details of randomSplit given below in notes
+
+o/p: Array[org.apache.spark.mllib.regression.LabeledPoint] = Array((0.0,[27.0,1.0,900.0,1225.0,6.0,385.0,216.0,294.0]), (0.0,[30.0,4.0,900.0,1225.0,6.0,385.0,216.0,294.0]))
+
+val notDelayed = labeled.filter(_.label != 0)
+
+o/p: Array[org.apache.spark.mllib.regression.LabeledPoint] = Array((1.0,[3.0,5.0,900.0,1225.0,6.0,385.0,216.0,294.0]), (1.0,[4.0,6.0,900.0,1225.0,6.0,385.0,216.0,294.0]))
+
+val all = delayed ++ notDelayed
+
+val splits = all.randomSplit(Array(0.7, 0.3))
+
+val (train, test) = (splits(0), splits(1))
+
+//in order to map the labels from previous steps
+val categoricalFeaturesInfo = ((0 -> 31) :: (1 -> 7) :: (4 -> carrierIndex.size) :: (6 -> originIndex.size) ::(7 -> destinationIndex.size) :: Nil).toMap
+
+//details on parameter discussed below
+val model = DecisionTree.trainClassifier(
+input = train,
+numClasses = 2,
+categoricalFeaturesInfo,
+impurity = "gini",
+maxDepth = 9,
+maxBins = 7000
+)
+
+O/p:
+18/02/26 10:45:48 INFO RandomForest: Internal timing for DecisionTree:18/02/26 10:45:48 INFO RandomForest:   init: 2.646948985  
+total: 7.001030541  
+findSplitsBins: 1.430152629  
+findBestSplits: 4.336837177  
+chooseSplits: 4.326214539
+model: org.apache.spark.mllib.tree.model.DecisionTreeModel = DecisionTreeModel classifier of depth 9 with 897 nodes
+
+println(model.toDebugString)
+
+O/p:
+scala> println(model.toDebugString)DecisionTreeModel classifier of depth 9 with 897 nodes
+  If (feature 0 in {11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,21.0,22.0,23.0,24.0,25.0,26.0,27.0,30.0})
+	If (feature 2 <= 1200.0)
+		If (feature 0 in {11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0}) 
+			If (feature 7 in {0.0,1.0,3.0,5.0,6.0,8.0,10.0,11.0,12.0,13.0,14.0,16.0,17.0,18.0,19.0,20.0,22.0,25.0,26.0,27.0,29.0,30.0,31.0,34.0,35.0,36.0,40.0,41.0,42.0,43.0,
+			44.0,45.0,46.0,48.0,49.0,51.0,52.0,53.0,55.0,56.0,57.0,58.0,60.0,61.0,62.0,63.0,64.0,65.0,67.0,68.0,69.0,70.0,71.0,72.0,73.0,74.0,75.0,76.0,77.0,79.0,81.0,82.0,
+			83.0,85.0,86.0,87.0,89.0,90.0,91.0,92.0,93.0,94.0,95.0,96.0,97.0,98.0,99.0,101.0,104.0,105.0,107.0,108.0,109.0,110.0,111.0,112.0,113.0,116.0,117.0,119.0,121.0,
+			123.0,124.0,125.0,126.0,130.0,132.0,135.0,136.0,137.0,138.0,139.0,140.0,141.0,142.0,143.0,144.0,145.0,146.0,147.0,149.0,150.0,153.0,154.0,155.0,156.0,158.0,159.0,
+			160.0,161.0,162.0,163.0,164.0,166.0,167.0,168.0,171.0,172.0,173.0,174.0,176.0,177.0,178.0,180.0,181.0,182.0,183.0,184.0,185.0,186.0,188.0,190.0,191.0,192.0,194.0,
+			195.0,196.0,197.0,198.0,199.0,200.0,202.0,203.0,204.0,205.0,207.0,208.0,211.0,214.0,215.0,216.0,218.0,219.0,220.0,221.0,223.0,224.0,225.0,227.0,228.0,230.0,231.0,
+			232.0,234.0,235.0,236.0,238.0,240.0,241.0,242.0,244.0,246.0,249.0,250.0,251.0,252.0,254.0,255.0,256.0,257.0,258.0,260.0,261.0,262.0,264.0,266.0,267.0,269.0,270.0,
+			272.0,273.0,274.0,275.0,276.0,277.0,279.0,280.0,281.0,282.0,283.0,284.0,285.0,286.0,290.0,291.0,292.0,293.0,294.0,295.0,296.0,298.0,299.0,300.0})
+           Predict: 1.0
+			Else (feature 2 > 853.0)
+			   If (feature 6 in {2.0,8.0,10.0,11.0,12.0,14.0,16.0,17.0,18.0,20.0,23.0,25.0,26.0,27.0,30.0,31.0,40.0,43.0,44.0,45.0,46.0,48.0,52.0,53.0,54.0,56.0,57.0,
+			   58.0,60.0,62.0,63.0,64.0,65.0,69.0,70.0,72.0,73.0,79.0,80.0,82.0,83.0,86.0,87.0,89.0,90.0,91.0,92.0,93.0,95.0,98.0,99.0,102.0,104.0,105.0,107.0,108.0,
+			   111.0,123.0,124.0,125.0,135.0,137.0,138.0,139.0,140.0,141.0,145.0,146.0,149.0,153.0,155.0,156.0,158.0,159.0,160.0,162.0,163.0,167.0,168.0,173.0,174.0,
+			   176.0,178.0,180.0,183.0,188.0,191.0,194.0,195.0,197.0,198.0,200.0,205.0,207.0,210.0,211.0,212.0,213.0,214.0,215.0,216.0,220.0,223.0,224.0,225.0,226.0,
+			   230.0,231.0,233.0,234.0,235.0,236.0,240.0,241.0,242.0,244.0,246.0,247.0,248.0,250.0,252.0,254.0,255.0,258.0,261.0,262.0,264.0,269.0,270.0,273.0,275.0,
+			   277.0,279.0,281.0,283.0,290.0,292.0,294.0,296.0,298.0,299.0,300.0})           Predict: 0.0          Else (feature 6 not in {2.0,8.0,10.0,11.0,12.0,14.0,
+			   16.0,17.0,18.0,20.0,23.0,25.0,26.0,27.0,30.0,31.0,40.0,43.0,44.0,45.0,46.0,48.0,52.0,53.0,54.0,56.0,57.0,58.0,60.0,62.0,63.0,64.0,65.0,69.0,70.0,72.0,73.0,
+			   79.0,80.0,82.0,83.0,86.0,87.0,89.0,90.0,91.0,92.0,93.0,95.0,98.0,99.0,102.0,104.0,105.0,107.0,108.0,111.0,123.0,124.0,125.0,135.0,137.0,138.0,139.0,140.0,
+			   141.0,145.0,146.0,149.0,153.0,155.0,156.0,158.0,159.0,160.0,162.0,163.0,167.0,168.0,173.0,174.0,176.0,178.0,180.0,183.0,188.0,191.0,194.0,195.0,197.0,198.0,
+			   200.0,205.0,207.0,210.0,211.0,212.0,213.0,214.0,215.0,216.0,220.0,223.0,224.0,225.0,226.0,230.0,231.0,233.0,234.0,235.0,236.0,240.0,241.0,242.0,244.0,246.0,
+			   247.0,248.0,250.0,252.0,254.0,255.0,258.0,261.0,262.0,264.0,269.0,270.0,273.0,275.0,277.0,279.0,281.0,283.0,290.0,292.0,294.0,296.0,298.0,299.0,300.0})           
+		   Predict: 1.0        
+			Else (feature 4 not in {0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0})
+
+##################
+Notes:
+##################
+Vector  is a set of numbers, and the number of coordinates determine the dimension of space.
+There are two types of  Vector, one is dense and sparse . 
+A dense vector is backed by an array of its values, while a sparse vector is backed by two parallel arrays, one for indices and another for values.
+
+Sparse vectors are when you have a lot of values in the vector as zero. While a dense vector is when most of the values in the vector are non zero.
+
+import org.apache.spark.mllib.linalg.Vectors;
+// Create a dense vector (1.0, 0.0, 3.0).
+val dv: Vector = Vectors.dense(1.0, 0.0, 3.0)  -- O/p: dv: org.apache.spark.mllib.linalg.Vector = [1.0,0.0,3.0]
+// Create a sparse vector (1.0, 0.0, 3.0) by specifying its indices and values corresponding to nonzero entries.
+val sv1: Vector = Vectors.sparse(3, Array(0, 2), Array(1.0, 3.0))  -- O/p: sv1: org.apache.spark.mllib.linalg.Vector = (3,[0,2],[1.0,3.0])
+
+More on Sparse Vectors: http://techchai.com/2017/03/13/sparse-vectors-in-apache-spark/
+More on dense and Sparse Vectors = https://spark.apache.org/docs/1.1.0/mllib-data-types.html
+
+--
+LabeledPoint: (more details in https://jiaminglin.gitbooks.io/spark-scala-learning-note/content/creating_labeledpoint.html)
+A LabeledPoint is a simple wrapper around the input features (our x variables) and our pre-predicted value (y variable) for these x input values.
+is a case class, and the constructors is new LabeledPoint(label: Double, features: Array[Double])
+where,
+label  - Label for this data point. 
+features - List of features for this data point.  
+
+--
+randomSplit: example, randomSplit([0.6, 0.2, 0.2])
+i.e. I take a rdd array of spark, and split it into two rdds randomly so each rdd will include some part of data (lets say 97% and 3%) using
+val Array(f1,f2) = data.randomSplit(Array(0.97, 0.03))
+It will split the data using the provided weights.
+
+Syntax is:
+def randomSplit(weights: Array[Double], seed: Long = Utils.random.nextLong): Array[RDD[T]]
+// Randomly splits this RDD with the provided weights.
+// weights for splits, will be normalized if they don't sum to 1
+// returns split RDDs in an array
+
+so, val delayed = labeled.filter(_.label == 0).randomSplit(Array(0.85, 0.15))(1)
+will filter based on label == 0 and then split it as 85% and 15% and the 85% [i.e. Array(1)] will be copied to val_delayed
+
+--
+DecisionTree.trainClassifier:
+Syntax is,
+val model = DecisionTree.trainClassifier(trainingData, numClasses, categoricalFeaturesInfo, impurity, maxDepth, maxBins)
+where,
+trainingData -> data prepared for training purpose.
+numClasses -> Number of classes (for Classification only). 
+categoricalFeaturesInfo -> info on the labels used to derive test data
+impurity -> is a measure of the homogeneity of the labels at the node.\
+			two impurity measures for classification (Gini impurity and entropy) and one impurity measure for regression (variance).
+maxDepth -> Maximum depth of a tree. Deeper trees are more expressive (potentially allowing higher accuracy).
+maxBins -> allows the algorithm to consider more split candidates and make fine-grained split decisions. 
+
+----------------
+Compute the predictions and the print the accuracy
+
+//This syntax is fixed to Evaluate model on test instances and compute test error.
+val predictions = test.map { point =>
+val prediction = model.predict(point.features)
+(point.label, prediction)
+}
+
+O/p:
+Array((0.0,0.0), (0.0,0.0), (0.0,0.0), .......,(0.0,1.0), (0.0,0.0),......)
+
+val wrong = predictions.filter {
+case (label, prediction) => label != prediction
+}
+
+O/p:
+Array((0.0,1.0), (0.0,1.0), (0.0,1.0), ......)
+
+val accuracy = 1 - (wrong.count.toDouble / test.count)   //O/p: accuracy: Double = 0.6861121457837884 i.e. depics the accuracy of the model
+
+
+----------------------------------------------------------------------------------------------------------------
+================================================================================================================
+----------------------------------------------------------------------------------------------------------------
+
+
+
+
