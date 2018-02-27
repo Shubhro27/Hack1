@@ -1,0 +1,522 @@
+Project 1 (Easy): Movie Recommender System
+
+Group Lens Research has collected and made available rating data sets from the Movie Lens web site. 
+The data sets were collected over various periods of time, depending on the size of the set. 
+The film industry has seen many technical changes over the years, making itself adaptable to its evolving audience's mentality 
+and contributing to that evolution. Using movies ratings & reviews, both target audiences and public reviews, 
+we have a glimpse into the change process. Any of these data points, once analysed, may contribute to greater business 
+intelligence. After analysing the users’ ratings, based on ages, occupations etc. 
+the movie makers can have better understanding about the viewers’ choice expectations which in turn is beneficial for 
+marketing of their movies. This is done by determining the relationship between viewers and their ratings.
+
+-----------------
+Doubts:
+ 1/b: Detect the gender bias on movie ratings for a genre. 
+ [Shubhro] May I know what is the requirement here? Do we want to know which Genre was rated > 4 By Female viewers and Male viewers?
+ [Faculty] you are expected to find out number/percentage of Male and female voters for each genre 
+ 
+ 1/e: Find out the titles of the best rated movies.
+ [Shubhro] What is the factor for best rated movies? are best rated movies the one which have been rated the highest number of times?
+ [Faculty] calculate the avg rating given to a particular movie and find top 10/20 high rated movies
+
+
+-----------------
+data:
+Movies.dat:
+MovieID::Title::Genres
+1::Toy Story (1995)::Animation|Children's|Comedy
+2::Jumanji (1995)::Adventure|Children's|Fantasy
+3::Grumpier Old Men (1995)::Comedy|Romance
+4::Waiting to Exhale (1995)::Comedy|Drama
+
+ratings.dat
+UserID::MovieID::Rating::Timestamp
+1::1193::5::978300760
+1::661::3::978302109
+1::914::3::978301968
+1::3408::4::978300275
+1::2355::5::978824291
+1::1197::3::978302268
+
+users.dat
+UserID::Gender::Age::Occupation::Zip-code
+1::F::1::10::48067
+2::M::56::16::70072
+3::M::25::15::55117
+4::M::45::7::02460
+5::M::25::20::55455
+6::F::50::9::55117
+7::M::35::1::06810
+
+-------------------------------
+sb_spk_proj_movie_recom_system
+
+val proj1_movie_rdd = sc.textFile("sb_spk_proj_movie_recom_system/movies.dat")
+val proj1_ratings_rdd = sc.textFile("sb_spk_proj_movie_recom_system/ratings.dat")
+val proj1_users_rdd = sc.textFile("sb_spk_proj_movie_recom_system/users.dat")
+-------------------------------
+-------
+1) Spark Core / Spark SQL
+Find out the animated movies that are rated 4 or above
+Algo,
+1) find movie ID's in ratings.dat where rating is >=45
+2) find movie records in Movies.dat which have Animation
+3) join both data from 1 and 2.
+
+val proj1_ratings_filter_rdd = proj1_ratings_rdd.filter { x => 
+val arr = x.split("::")
+val movieID = arr(1)
+val rating = arr(2).toInt
+rating >= 4
+}
+
+val proj1_movie_filter_rdd = proj1_movie_rdd.filter { x =>
+val arr = x.split("::")
+val movieID = arr(0)
+val title = arr(1)
+val genre = arr(2)
+genre contains "Animation"
+}
+
+val proj1_movie_map_rdd = proj1_movie_filter_rdd.map { x => 
+val arr = x.split("::")
+val movieID = arr(0)
+val title = arr(1)
+(movieID,title)
+}
+
+val proj1_ratings_map_rdd = proj1_ratings_filter_rdd.map { x =>
+val arr = x.split("::")
+val movieID = arr(1)
+val rating = arr(2).toInt
+(movieID,rating)
+}
+
+val proj1_movie_rate_join_rdd = proj1_ratings_map_rdd.join(proj1_movie_map_rdd).distinct
+
+val proj1_movie_rate_sort_rdd = proj1_movie_rate_join_rdd.sortByKey(true)
+
+val proj1_movie_names_rdd = proj1_movie_rate_sort_rdd.map ( x => (x._1.toInt,x._2._2)).distinct.sortByKey(true)
+
+proj1_movie_names_rdd.saveAsTextFile("sb_spk_proj_movie_recom_system/animation_top_rated")
+
+-------
+Detect the gender bias on movie ratings for a genre i.e. find out number/percentage of Male and female voters for each genre 
+
+Algo,
+1) From users table, take (userID,Gender)
+2) From ratings table, take (userID, (movieID,Rating))
+3) join ratings table to users table i.e. (userID,(Gender,movieID))
+4) from the join, set up (movieID,gender) and from movies table, set (movieID,Genre)
+5) join  (movieID,gender) and (movieID,Genre) => create ((gender,Genre),1)
+ 
+val proj1_movie_rdd = sc.textFile("sb_spk_proj_movie_recom_system/movies.dat")
+val proj1_ratings_rdd = sc.textFile("sb_spk_proj_movie_recom_system/ratings.dat")
+val proj1_users_rdd = sc.textFile("sb_spk_proj_movie_recom_system/users.dat")
+ 
+val proj1_user_map_rdd2 = proj1_users_rdd.map { x =>
+val arr = x.split("::")
+val userID = arr(0)
+val gender = arr(1)
+(userID,gender)
+} 
+
+val proj1_ratings_map_rdd2 = proj1_ratings_rdd.map { x =>
+val arr = x.split("::")
+val userID = arr(0)
+val movieID = arr(1)
+val rating = arr(2)
+(userID,movieID)
+}
+
+val proj1_ratings_user_join_rdd2 = proj1_ratings_map_rdd2.join(proj1_user_map_rdd2)
+//new o/p: Array[(String, (String, String))] = Array((2828,(3793,M)), (2828,(2997,M)), (2828,(3005,M)))  i.e. (userID,(movieID,Gender))
+
+val proj1_ratings_user_map_rdd2 = proj1_ratings_user_join_rdd2.map ( x => (x._2._1,x._2._2))
+//new o/p: Array[(String, String)] = Array((3793,M), (2997,M), (3005,M))  i.e. (movieID,Gender)
+
+val proj1_movie_map_rdd2 = proj1_movie_rdd.map { x => 
+val arr = x.split("::")
+val movieID = arr(0)
+val genre = arr(2)
+(movieID,genre)
+}
+
+val proj1_join1_mv_join_rdd = proj1_ratings_user_map_rdd2.join(proj1_movie_map_rdd2)
+
+o/p: Array[(String, (String, String))] = Array((2828,(M,Children's|Comedy)), (2828,(F,Children's|Comedy)), (2828,(F,Children's|Comedy)))
+
+
+val proj1_join2_group_rdd = proj1_join1_mv_join_rdd.map ( x => ((x._2._1,x._2._2),1)).groupByKey()
+
+val proj1_gen_count_rdd = proj1_join2_group_rdd.map { x =>
+val count = x._2.size
+(x._1,count) 
+}
+
+val proj1_female_genre_rdd = proj1_gen_count_rdd.filter ( x => x._1._1 == "F").sortBy(_._2,false)
+
+o/p:
+Array(((F,Drama),32852), ((F,Comedy),29208), ((F,Comedy|Romance),15600), ((F,Comedy|Drama),12308), ((F,Drama|Romance),11749), 
+((F,Action|Thriller),4830), ((F,Drama|Thriller),4620), ((F,Thriller),4312), ((F,Horror),4254),.....) 
+
+val proj1_male_genre_rdd = proj1_gen_count_rdd.filter ( x => x._1._1 == "M").sortBy(_._2,false)
+
+o/p:
+Array(((M,Comedy),87675), ((M,Drama),78571), ((M,Comedy|Drama),29937), ((M,Comedy|Romance),27112), ((M,Action|Thriller),21929), 
+((M,Horror),18309), ((M,Drama|Romance),17421), ((M,Action|Adventure|Sci-Fi),14896),.....)
+
+proj1_female_genre_rdd.coalesce(1).saveAsTextFile("sb_spk_proj_movie_recom_system/gender_bias/female")
+
+proj1_male_genre_rdd.coalesce(1).saveAsTextFile("sb_spk_proj_movie_recom_system/gender_bias/male")
+
+
+-------
+Group the ratings by age
+Algo,
+1) join users.dat and ratings.dat on the basis of userID
+2) consider only age, ratings.
+3) group by age, ratings.
+4) Write a case statement on age as per :
+	*  1:  "Under 18"
+	* 18:  "18-24"
+	* 25:  "25-34"
+	* 35:  "35-44"
+	* 45:  "45-49"
+	* 50:  "50-55"
+	* 56:  "56+"
+
+val proj1_user_map_rdd = proj1_users_rdd.map { x =>
+val arr = x.split("::")
+val userID = arr(0)
+val age = arr(2)
+(userID,age)
+}
+
+val proj1_ratings_map_rdd1 = proj1_ratings_rdd.map { x =>
+val arr = x.split("::")
+val userID = arr(0)
+val rating = arr(2)
+(userID,rating)
+}
+
+val proj1_user_rating_join_rdd = proj1_user_map_rdd.join(proj1_ratings_map_rdd1)
+
+//o/p: res1: Array[(String, (String, String))] = Array((2828,(18,3)), (2828,(18,5)), (2828,(18,4)), (2828,(18,5)), (2828,(18,5))
+
+val proj1_user_rating_map_rdd = proj1_user_rating_join_rdd.map( x => (x._2._1,x._2._2.toInt))
+
+//o/p:
+res0: Array[(String, String)] = Array((18,3), (18,5), (18,4), (18,5), (18,5),.....)
+
+val proj1_user_rating_group_rdd = proj1_user_rating_map_rdd.groupByKey()
+
+val proj1_user_rating_age_rdd = proj1_user_rating_group_rdd.map { x =>
+val age = x._1 match {
+case "1" => "Under 18"
+case "18" =>  "18-24"
+case "25" =>  "25-34"
+case "35" =>  "35-44"
+case "45" =>  "45-49"
+case "50" =>  "50-55"
+case "56" =>  "56+" }
+val rate_count = x._2.size
+val rate_sum = x._2.sum
+val rate_avg = rate_sum/rate_count
+(age,rate_avg)
+}
+
+//o/p: res0: Array[(String, Int)] = Array((35-44,3), (18-24,3), (45-49,3), (56+,3), (50-55,3), (25-34,3), (Under 18,3))
+
+proj1_user_rating_age_rdd.saveAsTextFile("sb_spk_proj_movie_recom_system/avg_rating_by_age")
+------------
+Find out the average rating for movies
+Algo,
+1) join ratings.dat and movies.dat
+2) create a structure (movieID,movieName),ratings
+3) groupBy(movieID,movieName) and calculate the average.
+
+val proj1_movie_map_rdd = proj1_movie_rdd.map { x => 
+val arr = x.split("::")
+val movieID = arr(0)
+val title = arr(1)
+(movieID,title)
+}
+
+val proj1_ratings_map_rdd = proj1_ratings_rdd.map { x =>
+val arr = x.split("::")
+val movieID = arr(1)
+val rating = arr(2).toInt
+(movieID,rating)
+}
+
+val proj1_movie_rate_join_rdd = proj1_ratings_map_rdd.join(proj1_movie_map_rdd)
+
+//o/p: Array((2828,(1,Dudley Do-Right (1999))), (2828,(2,Dudley Do-Right (1999))), (2828,(5,Dudley
+ Do-Right (1999))), (2828,(2,Dudley Do-Right (1999))), (2828,(4,Dudley Do-Right (1999))),....)
+ 
+val proj1_avg_movie_map_rdd = proj1_movie_rate_join_rdd.map( x => ((x._1,x._2._2),x._2._1.toInt) )
+
+val proj1_avg_movie_group_rdd = proj1_avg_movie_map_rdd.groupByKey()
+
+val proj1_avg_movie_result_rdd = proj1_avg_movie_group_rdd.map { x =>
+val movie_det = x._1._2
+val movie_rate_sum = x._2.sum
+val movie_rate_count = x._2.size
+val movie_rate_avg = movie_rate_sum/movie_rate_count
+(movie_det,movie_rate_avg)
+}
+
+//o/p: Array[(String, Int)] = Array((James and the Giant Peach (1996),3), (Man of No Importance, A (1994),3), (Adrenalin: Fear the 
+Rush (1996),1), (American President, The (1995),3),.......)
+
+proj1_avg_movie_result_rdd.saveAsTextFile("sb_spk_proj_movie_recom_system/movie_average_rating")
+
+------------
+Find out the titles of the best rated movies i.e. calculate the avg rating given to a particular movie and find top 10/20 high rated movies
+Algo,
+best rated movies -> rated the highest number of times
+1) group Ratings.dat by movie, calculate the average rating
+2) take top 20 and join them with Movies.dat
+
+val proj1_movie_map_rdd = proj1_movie_rdd.map { x => 
+val arr = x.split("::")
+val movieID = arr(0)
+val title = arr(1)
+(movieID,title)
+}
+
+val proj1_rate_group_rdd = proj1_ratings_rdd.map { x =>
+val arr = x.split("::")
+val movieID = arr(1)
+val rate = arr(2).toInt
+(movieID,rate)
+}.groupByKey()
+
+val proj1_rate_total_rdd = proj1_rate_group_rdd.map { x =>
+val movieID = x._1
+val tot = x._2.sum
+val siz = x._2.size
+val avg = (tot/siz)
+(movieID,avg)
+}
+
+//o/p: Array[(String, Int)] = Array((2828,2), (2350,2), (3492,3))
+
+val proj1_rate_join_movies_rdd = proj1_rate_total_rdd.join(proj1_movie_map_rdd)
+
+val proj1_highest_rated_mv_rdd = proj1_rate_join_movies_rdd.map ( x => (x._2._2,x._2._1) ).sortBy(_._2,false)
+
+//o/p:
+res8: Array[(String, Int)] = Array((American Beauty (1999),14800), (Star Wars: Episode IV - A New Hope (1977),13321), (Star Wars: 
+Episode V - The Empire Strikes Back (1980),12836), (Star Wars: Episode VI - Return of the Jedi (1983),11598), (Saving Private Ryan
+ (1998),11507), (Raiders of the Lost Ark (1981),11257), (Silence of the Lambs, The (1991),11219), (Matrix, The (1999),11178), (Six
+th Sense, The (1999),10835), (Terminator 2: Judgment Day (1991),10751))
+
+
+proj1_highest_rated_mv_rdd.coalesce(1).saveAsTextFile("sb_spk_proj_movie_recom_system/highest_rated_movies")
+
+------------
+Visualizations
+------------
+
+
+2) Spark MLLIB
+Add personal ratings to the movies and train a model to provide movie recommendation based on the personal ratings
+
+users1.dat
+UserID::Gender::Age::Occupation::Zip-code
+6041::M::25::17::22205
+
+Ratings1.dat
+UserID::MovieID::Rating::Timestamp
+6041::14::5::968116315
+6041::26::5::968116315
+6041::27::5::968116315
+6041::31::5::968116315
+6041::40::5::968116315
+6041::5::5::968116315
+6041::52::5::968116315
+6041::69::5::968116315
+6041::9::4::968116315
+6041::20::4::968116315
+6041::145::4::968116315
+6041::17::1::968116315
+6041::25::1::968116315
+6041::35::1::968116315
+6041::49::1::968116315
+6041::118::1::968116315
+6041::122::1::968116315
+6041::129::1::968116315
+6041::237::1::968116315
+6041::364::3::968116315
+6041::594::3::968116315
+6041::595::3::968116315
+6041::31::3::968116315
+
+Movies1.dat:
+MovieID::Title::Genres
+14::Nixon (1995)::Drama
+26::Othello (1995)::Drama
+27::Now and Then (1995)::Drama
+31::Dangerous Minds (1995)::Drama
+36::Dead Man Walking (1995)::Drama
+40::Cry, the Beloved Country (1995)::Drama
+
+5::Father of the Bride Part II (1995)::Comedy
+52::Mighty Aphrodite (1995)::Comedy
+69::Friday (1995)::Comedy
+
+9::Sudden Death (1995)::Action
+20::Money Train (1995)::Action
+145::Bad Boys (1995)::Action
+
+17::Sense and Sensibility (1995)::Drama|Romance
+25::Leaving Las Vegas (1995)::Drama|Romance
+35::Carrington (1995)::Drama|Romance
+49::When Night Is Falling (1995)::Drama|Romance
+
+118::If Lucy Fell (1996)::Comedy|Romance
+122::Boomerang (1992)::Comedy|Romance
+129::Pie in the Sky (1995)::Comedy|Romance
+237::Forget Paris (1995)::Comedy|Romance
+
+364::Lion King, The (1994)::Animation|Children's|Musical
+594::Snow White and the Seven Dwarfs (1937)::Animation|Children's|Musical
+595::Beauty and the Beast (1991)::Animation|Children's|Musical
+31::All Dogs Go to Heaven 2 (1996)::Animation|Children's|Musical
+
+
+---------
+import org.apache.spark.mllib.recommendation.ALS
+import org.apache.spark.mllib.recommendation.Rating
+
+val proj1_ml_ratings_rdd = sc.textFile("sb_spk_proj_movie_recom_system/ratings1.dat")
+
+val proj1_ml_ratings_map_rdd = proj1_ml_ratings_rdd.map ( x => x.split("::").take(3) )
+
+val proj1_ratings_case_rdd = proj1_ml_ratings_map_rdd.map{case Array(user,movie,rating) => Rating(user.toInt,movie.toInt,rating.toDouble)}
+
+val proj1_model = ALS.train(proj1_ratings_case_rdd, 50, 5, 0.01)
+
+val proj1_topKRecs = proj1_model.recommendProducts(6041, 10)
+
+-- o/p: proj1_topKRecs: Array[org.apache.spark.mllib.recommendation.Rating] = Array(Rating(6041,3616,7.267185079565172), Rating(6041,2625,6.9512174996082985), 
+	Rating(6041,2260,6.9211805129650825), Rating(6041,1410,6.557200987718043), Rating(6041,2458,6.550038535737836), Rating(6041,1858,6.407971229135227), 
+	Rating(6041,2380,6.341627836792889), Rating(6041,1866,6.284168597955429), Rating(6041,3674,6.22494503473873), Rating(6041,1703,6.200815790625837))
+
+println(proj1_topKRecs.mkString("\n"))
+
+--
+val proj1_ml_movie_rdd = sc.textFile("sb_spk_proj_movie_recom_system/movies1.dat")
+
+val proj1_ml_movie_titles_rdd = proj1_ml_movie_rdd.map(line => line.split("::").take(2)).map(array => (array(0).toInt,array(1))).collectAsMap()
+
+--o/p: proj1_ml_movie_titles_rdd: scala.collection.Map[Int,String] = Map(3672 -> Benji (1974), 3331 -> My Tutor (1983), 2990 -> Licence to Kill (1989), ....)
+
+val proj1_ml_moviesForUser_rdd = proj1_ratings_case_rdd.keyBy(_.user).lookup(6041)
+
+proj1_ml_moviesForUser_rdd.sortBy(-_.rating).take(10).map(rating => (proj1_ml_movie_titles_rdd(rating.product), rating.rating)).foreach(println)
+
+--o/p:
+(Nixon (1995),5.0)
+(Othello (1995),5.0)
+(Now and Then (1995),5.0)
+(Dangerous Minds (1995),5.0)
+(Cry, the Beloved Country (1995),5.0)
+(Father of the Bride Part II (1995),5.0)
+(Mighty Aphrodite (1995),5.0)
+(Friday (1995),5.0)
+(Sudden Death (1995),4.0)
+(Money Train (1995),4.0)
+
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+import org.apache.spark.SparkConf
+
+object MovieRecommendApp {
+
+	def main (args: Array[String])
+	{
+		val conf = new SparkConf().setAppName("Movie_Recommender_App")
+		val sc = new SparkContext(conf)
+	
+		val proj1_movie_rdd = sc.textFile("sb_spk_proj_movie_recom_system/movies.dat")
+		val proj1_ratings_rdd = sc.textFile("sb_spk_proj_movie_recom_system/ratings.dat")
+		val proj1_users_rdd = sc.textFile("sb_spk_proj_movie_recom_system/users.dat")
+			
+		val proj1_ratings_filter_rdd = proj1_ratings_rdd.filter { x => 
+		val arr = x.split("::")
+		val movieID = arr(1)
+		val rating = arr(2).toInt
+		rating >= 4
+		}
+
+		val proj1_movie_filter_rdd = proj1_movie_rdd.filter { x =>
+		val arr = x.split("::")
+		val movieID = arr(0)
+		val title = arr(1)
+		val genre = arr(2)
+		genre contains "Animation"
+		}
+		
+		val proj1_movie_map_rdd = proj1_movie_filter_rdd.map { x => 
+		val arr = x.split("::")
+		val movieID = arr(0)
+		val title = arr(1)
+		(movieID,title)
+		}
+
+		val proj1_ratings_map_rdd = proj1_ratings_filter_rdd.map { x =>
+		val arr = x.split("::")
+		val movieID = arr(1)
+		val rating = arr(2).toInt
+		(movieID,rating)
+		}
+
+		val proj1_movie_rate_join_rdd = proj1_ratings_map_rdd.join(proj1_movie_map_rdd).distinct
+
+		val proj1_movie_rate_sort_rdd = proj1_movie_rate_join_rdd.sortByKey(true)
+
+		val proj1_movie_names_rdd = proj1_movie_rate_sort_rdd.map ( x => (x._1.toInt,x._2._2)).distinct.sortByKey(true)
+
+		proj1_movie_names_rdd.saveAsTextFile("sb_spk_proj_movie_recom_system/animation_top_rated1")			
+
+	}
+
+}
+
+vi Proj1_Movies.sbt
+
+name := "Movie_Recommender_App"
+version := "1.5.2"
+scalaVersion := "2.10.4"
+libraryDependencies += "org.apache.spark" %% "spark-sql" % "2.2.0" // specify ur dependencies in ur sbt file
+
+spark-submit \
+--class "MovieRecommendApp" \
+--master local[4] \
+target/scala-2.10/movie_recommender_app_2.10-1.5.2.jar
+
+
+-------------------------------------------------------------------
+
+[error] /home/shubhro2705854012/proj1_spk_movies/src/main/scala/MovieRecommendApp1.scala:55: type mismatch;
+[error]  found   : Int(4)
+[error]  required: String
+[error]                 val case1_ratings_filter_rdd = ratings_map_rdd.filter ( x => x._2 > 4 )
+[error]                                                                                     ^
+[error] /home/shubhro2705854012/proj1_spk_movies/src/main/scala/MovieRecommendApp1.scala:67: not found: value proj1_movie_names_rd
+d
+[error]                 proj1_movie_names_rdd.saveAsTextFile("sb_spk_proj_movie_recom_system/animation_top_rated1")
+[error]                 ^
+[error] /home/shubhro2705854012/proj1_spk_movies/src/main/scala/MovieRecommendApp1.scala:129: org.apache.spark.rdd.RDD[(String, It
+erable[Int])] does not take parameters
+[error]                 val case4_rate_total_rdd = case4_rate_group_rdd { x =>
+[error]                                                                 ^
+[error] three errors found
+[error] (compile:compileIncremental) Compilation failed
+[error] Total time: 30 s, completed Feb 20, 2018 7:50:38 AM
