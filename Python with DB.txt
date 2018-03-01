@@ -1,0 +1,1 @@
+Python with DB: https://www.safaribooksonline.com/blog/2013/05/02/importing-data-from-relational-databases-into-hadoop/
