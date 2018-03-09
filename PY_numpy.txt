@@ -575,6 +575,187 @@ example 3,
 	print a[np.iscomplex(a)]
 
 O/p: [2.0+6.j  3.5+5.j] 
+------------------------------------------------------------------------------------------------
+Broadcasting,
+
+Arithmetic operations on arrays are usually done on corresponding elements i.e. the 2 arrays should be of same size.
+
+example,
+	import numpy as np 
+	a = np.array([1,2,3,4]) 
+	b = np.array([10,20,30,40]) 
+	c = a * b 
+	print c
+
+	o/p:
+	[10   40   90   160]
+	
+Broadcasting in Numpy allows operations on arrays of non-similar shapes.
+i.e. The smaller array is broadcast to the size of the larger array so that they have compatible shapes.
+
+Broadcasting is possible on following cases:
+1) Array with smaller dimension is prepended with 1.
+2) Dimension of o/p array is same as the i/p array with bigger dimension.
+3) If the dimension lengths aren't equal, and none of the dimensions have length 1, then there's an error.
+4) If an input has a dimension size of 1, the first data entry in that dimension is used for 
+	all calculations along that dimension.
+	
+example,
+	import numpy as np 
+	a = np.array([[0.0,0.0,0.0],[10.0,10.0,10.0],[20.0,20.0,20.0],[30.0,30.0,30.0]]) 
+	b = np.array([1.0,2.0,3.0])  
+	# 
+	print 'First array:' 
+	print a 
+	print '\n'  
+	#  
+	print 'Second array:' 
+	print b 
+	print '\n'  
+	#  
+	print 'First Array + Second Array' 
+	print a + b
+	
+O/p:
+First array:
+[[ 0. 0. 0.]
+ [ 10. 10. 10.]
+ [ 20. 20. 20.]
+ [ 30. 30. 30.]]
+
+Second array:
+[ 1. 2. 3.]
+
+First Array + Second Array
+[[ 1. 2. 3.]
+ [ 11. 12. 13.]
+ [ 21. 22. 23.]
+ [ 31. 32. 33.]]
+
+The following shapes are compatible, 
+1) A: (50,3) & B: (3,) although B is then out of elements
+	BUT the length of the trailing dimension of array A is 3, and the length of the trailing dimension of array B is 3
+	They're equal, so that dimension is okay.
+
+2) A: (1,2) & B: (50,2) The last dimension matches, and A is of length 1 in the first dimension.
+
+The following shapes are not compatible,
+1) A: (50,50) & B: (49,49) The lengths of the dimensions aren't equal, and neither array has either dimension length equal to 1.
+
+	
+----------------------------------------------------------------
+Iterating Over Array:
+
+a) numpy.nditer is an efficient multidimensional iterator object using which it is possible to iterate over an array.
+
+example 1,
+	import numpy as np
+	a = np.arange(0,60,5)
+	print 'Original array is:'
+	print a
+	a = a.reshape(3,4)
+	print a
+	for x in np.nditer(a):
+	   print x,
+
+	o/p:
+	[ 0  5 10 15 20 25 30 35 40 45 50 55]
+
+	[[ 0 5 10 15]
+	 [20 25 30 35]
+	 [40 45 50 55]]
+	 
+	0 5 10 15 20 25 30 35 40 45 50 55
+	
+example 2, (transposing an array)
+	import numpy as np 
+	a = np.arange(0,60,5) 
+	a = a.reshape(3,4) 
+	   
+	print 'Original array is:'
+	print a 
+	print '\n'  
+	   
+	print 'Transpose of the original array is:' 
+	b = a.T 
+	print b 
+	print '\n'  
+	   
+	print 'Modified array is:' 
+	for x in np.nditer(b): 
+	   print x,
+
+o/p:
+Original array is:
+[[ 0 5 10 15]
+ [20 25 30 35]
+ [40 45 50 55]]
+
+Transpose of the original array is:
+[[ 0 20 40]
+ [ 5 25 45]
+ [10 30 50]
+ [15 35 55]]
+
+Modified array is:
+0 5 10 15 20 25 30 35 40 45 50 55
+
+b) Iteration Order
+	a) if elements are stored using C-style order, the iterator chooses the way an array was populated.
+	b) if elements are stored using F-style order, the iterator chooses the more efficient way of iterating over an array.
+	
+example,
+	import numpy as np
+	a = np.arange(0,60,5)
+	a = a.reshape(3,4)
+	print 'Original array is:'
+	print a
+	print '\n'
+
+	print 'Transpose of the original array is:'
+	b = a.T
+	print b
+	print '\n'
+
+	print 'Sorted in C-style order:'
+	c = b.copy(order='C')
+	print c
+	for x in np.nditer(c):
+	   print x,
+
+	print '\n'
+
+	print 'Sorted in F-style order:'
+	c = b.copy(order='F')
+	print c
+	for x in np.nditer(c):
+	   print x,
+	   
+o/p:
+	Original array is:
+	[[ 0 5 10 15]
+	 [20 25 30 35]
+	 [40 45 50 55]]
+
+	Transpose of the original array is:
+	[[ 0 20 40]
+	 [ 5 25 45]
+	 [10 30 50]
+	 [15 35 55]]
+
+	Sorted in C-style order:
+	[[ 0 20 40]
+	 [ 5 25 45]
+	 [10 30 50]
+	 [15 35 55]]
+	0 20 40 5 25 45 10 30 50 15 35 55
+
+	Sorted in F-style order:
+	[[ 0 20 40]
+	 [ 5 25 45]
+	 [10 30 50]
+	 [15 35 55]]
+	0 5 10 15 20 25 30 35 40 45 50 55
 ----------------------------------------------------------------------------------------------------------
 Numpy operation in csv or text file.
 
