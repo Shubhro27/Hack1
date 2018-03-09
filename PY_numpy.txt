@@ -1,4 +1,7 @@
-NumPy stands for Numerical Python is a library consisting of multidimensional array objecs and functions to process them
+http://nbviewer.jupyter.org/github/jrjohansson/scientific-python-lectures/blob/master/Lecture-2-Numpy.ipynb
+
+----------------------------------
+NumPy stands for Numerical Python is a library consisting of multidimensional array objects and functions to process them
 
 NumPy is often used along with packages like SciPy (Scientific Python) and Mat-plotlib (plotting library) for technical computing (Matlab can also be used for same)
 
@@ -20,11 +23,59 @@ ndarray: N-dimensional array is array of items of the same type.Items in the col
 		 
 		 NOTE: One of the limitations of NumPy is that all the elements in an array have to be of the same type
 		 
+axis explained with examples,
+2 dimensional arrays:
+	x = np.array([[1, 2, 3], [4,5,6],[7,8,9]], np.int32)
+
+	O/p: 
+	array([[1, 2, 3],
+		   [4, 5, 6],
+		   [7, 8, 9]], dtype=int32)
+
+	x.sum(axis=0)  
+	# sum the columns [1,4,7] = 12, [2,5,8] = 15 [3,6,9] = 18  
+	array([12, 15, 18])
+
+	x.sum(axis=1)    
+	# sum the rows [1,2,3] = 6, [4,5,6] = 15 [7,8,9] = 24
+	array([ 6, 15, 24])
+
+3 dimentional arrays:
+	x = np.array((((1,2), (3,4) ), ((5,6),(7,8))))
+	O/p:
+	array([[[1, 2],
+		   [3, 4]],
+		  [[5, 6],
+		   [7, 8]]])
+	x.shape 
+	# dimensions of the array : (2, 2, 2)
+
+	x.sum(axis=0)   i.e. sum of 
+	# O/p:
+	array([[ 6,  8],   #  [1,5] = 6 [2,6] = 8 [3,7] = 10 [4, 8] = 12
+		  [10, 12]])
+		  
+	x.sum(axis=1)   i.e. columns
+	# O/p:
+	array([[ 4,  6],   # [1,3] = 4 [2,4] = 6 [5, 7] = 12 [6, 8] = 14
+		   [12, 14]])
+		   
+	x.sum(axis=2)   i.e. rows 
+	# O/p: 
+	[1, 2] = 3 [3, 4] = 7 [5, 6] = 11 [7, 8] = 15
+
+	array([[ 3,  7],
+		   [11, 15]])
+
+	x.ndim # number of dimensions of the array
+	3
+
+-	
 The basic ndarray is created using,
 1) numpy.array.
 	example-1,
 	import numpy as np 
-	a = np.array([1,2,3]) 
+	a = np.array([1,2,3])     //NOTE, this format ([]) is important. () will not work. 
 	print a  //o/p: [1, 2, 3]
 	
 	example-2,
@@ -210,7 +261,7 @@ o/p:
 [41526,30510]
 
 
-Datatype explicit convesion:
+Datatype explicit conversion:
 numpy.ndarray.astype is used for explicit conversion.
 example, 
 wines.astype(int)
@@ -393,11 +444,11 @@ Array From Existing Data (ex, array, tuples etc)
 			
 	example,
 		import numpy as np
-		x = np.arange(5) 
+		x = np.arange(5)      //arange will skip the "stop" value, i.e. in this case, it is 5, so x will be [1 2 3 4]
 		print x
 		y = np.arange(5, dtype = float)
 		print y
-		z = np.arange(10,20,2) 
+		z = np.arange(10,20,2)   //will skip "20" i.e. stop value.
 		print z
 
 	o/p:
@@ -425,7 +476,7 @@ example 1,
 	print a[2:]
 	print a[2:5]
 	z = np.array([[1,2,3],[3,4,5],[4,5,6]]) 
-	print a
+	print z
 	print 'Now we will slice the array from the index a[1:]' 
 	print a[1:]
 	
@@ -602,8 +653,8 @@ Broadcasting is possible on following cases:
 	
 example,
 	import numpy as np 
-	a = np.array([[0.0,0.0,0.0],[10.0,10.0,10.0],[20.0,20.0,20.0],[30.0,30.0,30.0]]) 
-	b = np.array([1.0,2.0,3.0])  
+	a = np.array([[0.0,0.0,0.0],[10.0,10.0,10.0],[20.0,20.0,20.0],[30.0,30.0,30.0]])     //shape (4,3)
+	b = np.array([1.0,2.0,3.0])                                                          //shape (3,)
 	# 
 	print 'First array:' 
 	print a 
@@ -701,8 +752,8 @@ Modified array is:
 0 5 10 15 20 25 30 35 40 45 50 55
 
 b) Iteration Order
-	a) if elements are stored using C-style order, the iterator chooses the way an array was populated.
-	b) if elements are stored using F-style order, the iterator chooses the more efficient way of iterating over an array.
+	a) if elements are stored using C-style order, the iterator iterates row wise.
+	b) if elements are stored using F-style order, the iterator iterates column wise.
 	
 example,
 	import numpy as np
@@ -756,6 +807,225 @@ o/p:
 	 [10 30 50]
 	 [15 35 55]]
 	0 5 10 15 20 25 30 35 40 45 50 55
+	
+----------------------------------------------------------------------------------------------------------
+Modifying array values:
+
+nditer can also be used to modify array values with optional parameter called "op_flags".
+op_flags values are,
+1) Its default value is read-only, 
+2) To enable modifying array elements with,
+	a) read-write 
+	b) write-only mode.
+
+for instance, "np.nditer(a, op_flags=['readwrite'])"
+
+example,
+	import numpy as np
+	a = np.arange(0,60,5)
+	a = a.reshape(3,4)
+	print 'Original array is:'
+	print a
+	print '\n'
+
+	for x in np.nditer(a, op_flags=['readwrite']):
+	   x[...]=2*x
+	print 'Modified array is:'
+	print a
+	
+o/p:
+	Original array is:
+	[[ 0 5 10 15]
+	 [20 25 30 35]
+	 [40 45 50 55]]
+
+	Modified array is:
+	[[ 0 10 20 30]
+	 [ 40 50 60 70]
+	 [ 80 90 100 110]]
+	 
+
+Broadcasting Iteration:
+i.e. combined nditer object is able to iterate thru multiple arrays concurrently as,
+
+example,
+	import numpy as np 
+	a = np.arange(0,60,5) 
+	a = a.reshape(3,4) 
+	#
+	print 'First array is:' 
+	print a 
+	print '\n'  
+	#
+	print 'Second array is:' 
+	b = np.array([1, 2, 3, 4], dtype = int) 
+	print b  
+	print '\n' 
+	#
+	print 'Modified array is:' 
+	for x,y in np.nditer([a,b]): 
+	   print "%d:%d" % (x,y),
+	   
+o/p:
+	First array is:
+	[[ 0 5 10 15]
+	 [20 25 30 35]
+	 [40 45 50 55]]
+
+	Second array is:
+	[1 2 3 4]
+
+	Modified array is:
+	0:1 5:2 10:3 15:4 20:1 25:2 30:3 35:4 40:1 45:2 50:3 55:4
+	 
+----------------------------------------------------------------------------------------------------------
+Array Manipulation:
+
+1) changing shape (dimensions) of the array. 
+	a) reshape,
+		example,
+			import numpy as np
+			a = np.arange(8)
+			print 'The original array:'
+			print a
+			print '\n'
+			#
+			b = a.reshape(4,2)
+			print 'The modified array:'
+			print b
+	
+		o/p:
+		[0 1 2 3 4 5 6 7]
+		The modified array:
+		[[0 1]
+		 [2 3]
+		 [4 5]
+		 [6 7]]
+		 
+	b) flatten, returns a copy of an array collapsed into one dimension.
+		example,
+			import numpy as np 
+			a = np.arange(8).reshape(2,4) 
+			#
+			print 'The original array is:' 
+			print a 
+			print '\n'  
+			# default is column-major 
+			print 'The flattened array is:' 
+			print a.flatten() 
+			print '\n'  
+			print 'The flattened array in F-style ordering:' 
+			print a.flatten(order = 'F')
+			
+		o/p:
+			The original array is:
+			[[0 1 2 3]
+			 [4 5 6 7]]
+
+			The flattened array is:
+			[0 1 2 3 4 5 6 7]
+
+			The flattened array in F-style ordering:
+			[0 4 1 5 2 6 3 7]
+			
+	c) ravel: returns a flattened one-dimensional array. A copy is made only if needed.
+		example,
+			import numpy as np 
+			a = np.arange(8).reshape(2,4) 
+			#
+			print 'The original array is:' 
+			print a 
+			print '\n'  
+			#
+			print 'After applying ravel function:' 
+			print a.ravel()  
+			print '\n' 
+			#
+			print 'Applying ravel function in F-style ordering:' 
+			print a.ravel(order = 'F')
+			
+		o/p:
+		The original array is:
+		[[0 1 2 3]
+		 [4 5 6 7]]
+
+		After applying ravel function:
+		[0 1 2 3 4 5 6 7]
+
+		Applying ravel function in F-style ordering:
+		[0 4 1 5 2 6 3 7]
+		
+2) Transpose Operations: 
+	a) transpose: permutes the dimension of the given array.
+	   example,
+			import numpy as np 
+			a = np.arange(12).reshape(3,4) 
+			print 'The original array is:' 
+			print a  
+			print '\n' 
+			print 'The transposed array is:' 
+			print np.transpose(a)
+		
+		o/p:
+		The original array is:
+		[[ 0 1 2 3]	
+		 [ 4 5 6 7]
+		 [ 8 9 10 11]]
+
+		The transposed array is:
+		[[ 0 4 8]
+		 [ 1 5 9]
+		 [ 2 6 10]
+		 [ 3 7 11]]
+		 
+	b) ndarray.T: same functionality as transpose,
+		example,
+			a = np.arange(12).reshape(3,4)
+			print a.T
+		
+		o/p: same as transpose.
+		
+3) Joining Arrays:
+	a) numpy.concatenate:
+		example,
+			import numpy as np 
+			a = np.array([[1,2],[3,4]]) 
+			#
+			print 'First array:' 
+			print a 
+			print '\n'  
+			b = np.array([[5,6],[7,8]]) 
+			#
+			print 'Second array:' 
+			print b 
+			print '\n'  
+			# both the arrays are of same dimensions 
+			print 'Joining the two arrays along axis 0:' 
+			print np.concatenate((a,b)) 
+			print '\n'  
+			print 'Joining the two arrays along axis 1:' 
+			print np.concatenate((a,b),axis = 1)
+			
+		o/p:
+			First array:
+			[[1 2]
+			 [3 4]]
+
+			Second array:
+			[[5 6]
+			 [7 8]]
+
+			Joining the two arrays along axis 0:
+			[[1 2]
+			 [3 4]
+			 [5 6]
+			 [7 8]]
+
+			Joining the two arrays along axis 1:
+			[[1 2 5 6]
+			 [3 4 7 8]]
+			 
+	b) numpy.stack: 
 ----------------------------------------------------------------------------------------------------------
 Numpy operation in csv or text file.
 
