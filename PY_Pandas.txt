@@ -2,13 +2,24 @@ Pandas:
 shortform for "Panel Data System" is built on top of NumPy and SciPy
 
 Pandas has,
-1) data manipulation capabilites of spreadsheets and Relational DB.
-2) Indexing capability
-3) DS and DS manipulation capabilities.
-4) Perform data analytics in python i.e clean, analyze, model data and organize results of analysis.
+1) a tabular data structure that can hold both homogenous and heterogenous data.
+2) Very good indexing capabilities that makes data alignment and merging easy.
+3) Good time series functionality. No need to use different data structures for time series and cross sectional data. Allows for both ordered and unordered time-series data.
+4) A host of statistical functions developed around NumPy and pandas that makes a researcher’s task easy and fast.
+5) Programming is lot simpler and faster.
+6) Easily handles data manipulation and cleaning.
+7) Easy to expand and shorten data sets. Comprehensive merging, joins, and group by functionality to join multiple data sets.
+
+In order to be able to use Pandas and NumPy, first import it using import statement
+import pandas as pd                         # This will import pandas into your workspace
+import numpy as np                          # We will be using numpy functions so import numpy
 
 There are 2 key components in Panda:
-1) Series : Series is a 1-D array like object.
+1) Series : Series is a 1-D array like object. pandas attaches a label to each of the values. If the labels are not provided by the programmer, 
+			then pandas assigns labels ( 0 for first element, 1 for second element and so on).
+			A benefit of assigning labels to data values is that it becomes easier to perform manipulations on the dataset as the whole dataset 
+			becomes more of a dictionary where each value is associated with a label.
+			
 			example, 
 			import pandas as pd
 			s = pd.Series((1,2,3,4,5)) //series object for tuple
@@ -103,6 +114,208 @@ example,
 o/p:
 [2 2.25 2.75 3.0 3.25 3.50 3.75 4.0]
 
+-------------------------------------------------
+Pandas Series (revisited): definition already present.
 
-			
+example 1,
+	import pandas as pd
+	import numpy as np
+	series1 = pd.Series([10,20,30,40])   #NOTE: Series keyword is case sensitive. "series" will error out.
+	print (series1)
+	print (series1.values)   #will give the data type object of the Series and the values
+	print (series1.index)    #will give the index data type (usually Int64) and list of index values and data type.
+	print ("\n")
+	series2 = pd.Series([1,2,3,4,5],index = [10,20,30,40,50])  #creating custom indexes
+	print (series2)
+	print (series2.values)
+	print (series2.index) 
 
+o/p:
+	0    10
+	1    20
+	2    30
+	3    40
+	#
+	dtype: int64
+	[10 20 30 40]
+	#
+	Int64Index([0, 1, 2, 3], dtype='int64')
+
+	10    1
+	20    2
+	30    3
+	40    4
+	50    5
+	#
+	dtype: int64
+	[1 2 3 4 5]
+	#
+	Int64Index([10, 20, 30, 40, 50], dtype='int64')
+
+example 2, Series can accept heterogeneous datatypes. In case a series has heterogenous items, dtype: object
+	series3 = pd.Series([1,2,3,"four",5],index = [10,20,30,40,50])
+	print (series3)
+	print (series3.values)
+	print (series3.index)
+
+	o/p:
+	10       1
+	20       2
+	30       3
+	40    four
+	50       5
+	#
+	dtype: object
+	[1 2 3 'four' 5]
+	#
+	Int64Index([10, 20, 30, 40, 50], dtype='int64')
+
+example 3, string index and heterogeneous index,
+	series4 = pd.Series([1,2,3,4,5],index = ['a','b','c','d','e'])
+	print (series4)
+	print (series4.values)
+	print (series4.index)
+	print ("\n")
+	#
+	series5 = pd.Series([1,2,3,4,5],index = ['one',2,'three','four',5])
+	print (series5)
+	print (series5.values)
+	print (series5.index)	
+
+	o/p:
+	a    1
+	b    2
+	c    3
+	d    4
+	e    5
+	dtype: int64
+	[1 2 3 4 5]
+	Index([u'a', u'b', u'c', u'd', u'e'], dtype='object')
+	#
+	one      1
+	2        2
+	three    3
+	four     4
+	5        5
+	dtype: int64
+	[1 2 3 4 5]
+	Index([u'one', 2, u'three', u'four', 5], dtype='object')	
+
+
+Accessing specific elements in a series: this can be done using the same way as numpy.
+example,
+	series3 = pd.Series([1,2,3,"four",5],index = [10,20,30,40,50])
+	print (series3[[10,40]])
+	print (series3[[10:40]])   //THIS WILL ERROR. SyntaxError: invalid syntax
+	series5 = pd.Series([1,2,3,4,5],index = ['one',2,'three','four',5])
+	print (series5[2])
+	print (series5['three'])
+    print (series5['two'])  //THIS WILL ERROR. KeyError: 'two'
+
+	o/p:
+	#series3
+	10       1
+	20       2
+	30       3
+	40    four
+	50       5	
+
+	10       1
+	40    four
+	dtype: object
+
+	#series5
+	one      1
+	2        2
+	three    3
+	four     4
+	5        5
+
+	2
+	9
+	
+Arithmetic operations on each element in a series.
+example,
+	series6 = pd.Series([1,2,3,4,5])
+	print (series6 + 10)
+	print (series6 ** 2)
+	print (np.sqrt(series6))
+	series7 = series6 + 10
+	print (series7)   #Assignment to a different series. same result as (series6 + 10).
+
+	O/p:
+	0    11
+	1    12
+	2    13
+	3    14
+	4    15
+	dtype: int64
+	0     1
+	1     4
+	2     9
+	3    16
+	4    25
+	dtype: int64
+	0    1.000000
+	1    1.414214
+	2    1.732051
+	3    2.000000
+	4    2.236068
+	dtype: float64
+	
+Filtering elements of a series.
+example,
+		print (series7[series7 > 11])
+	
+	o/p:
+	1    12
+	2    13
+	3    14
+	4    15
+	dtype: int64
+	
+If you have a dictionary, you can create a Series data structure from that dictionary,
+example,
+	years = [91, 90, 92, 93, 94, 95, 96, 97]
+	f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11, 96:13}
+	firm1 = pd.Series(f1,index=years)                     # Extra element in VALUE not an issue. The extra element is NaN
+	print(firm1)
+	f2 = {90:14,92:9, 93:13, 94:5}
+	firm2 = pd.Series(f2,index=years)
+	print(firm2)
+	print (pd.isnull(firm2))  							  # isnull() function to find out if there are any missing values in the data structure.
+	print (~pd.isnull(firm2))                             # "~" is NOT Operator. gives opposite of previous statement.
+	
+	o/p:
+	91     9
+	90     8
+	92     7
+	93     8
+	94     9
+	95    11
+	96    13
+	97   NaN
+	dtype: float64
+	#
+	91   NaN
+	90    14
+	92     9
+	93    13
+	94     5
+	95   NaN
+	96   NaN
+	97   NaN
+	dtype: float64
+	#
+	91     True
+	90    False
+	92    False
+	93    False
+	94    False
+	95     True
+	96     True
+	97     True
+	dtype: bool
+	
+	NOTE: NaN stands for missing or NA values in pandas. Make use of isnull() function to find out if there are any missing values in the data structure.
+	
