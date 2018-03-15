@@ -1,0 +1,108 @@
+Pandas:
+shortform for "Panel Data System" is built on top of NumPy and SciPy
+
+Pandas has,
+1) data manipulation capabilites of spreadsheets and Relational DB.
+2) Indexing capability
+3) DS and DS manipulation capabilities.
+4) Perform data analytics in python i.e clean, analyze, model data and organize results of analysis.
+
+There are 2 key components in Panda:
+1) Series : Series is a 1-D array like object.
+			example, 
+			import pandas as pd
+			s = pd.Series((1,2,3,4,5)) //series object for tuple
+			s1 = pd.Series(list('abcdef')) //series object for list.
+			print s
+			print s.values
+			print s.index    //default index is 0 : N-1
+			print s1
+			print s1.values
+			print s1.index
+			
+			o/p:
+			print s will give:
+			0	1
+			1	2
+			2	3
+			3	4
+			4	5
+			
+			print s.index will give: 0 1 2 3 4 
+			print s.values will give : 1 2 3 4 5
+			
+			Print s1 will give:
+			0	a
+			1	b
+			2	c
+			3	d
+			4	e
+			5	f
+			
+			print s1.index will give: 0 1 2 3 4 5
+			print s1.values will give: a b c d e f
+			
+			
+		** NOTE: details mentioned later in this learning doc	
+					 
+2) Dataframe: 2-D tabular data structure with integrated indexing. Supports both homogeneous and heterogeneous columns.
+			example,
+			import pandas as pd
+			pop_data = {'FL':{2010:18.8,2011:19.1},'GA':{2008:9.7,2010:9.7,2011:9.8}}
+			pop = pd.DataFrame(pop_data)
+			print pop
+			
+			o/p:
+					FL		GA
+			2008	NaN		9.7
+			2010	18.8	9.7
+			2011	19.1	9.8
+
+-------------------
+Lambda Functions: i.e. functions without a name which are used as soon as they have been created.
+				Syntax: lambda argument_list: expression (usually functions like filter(),map(),reduce())
+						where,
+						argument_list: comma separated arguments.
+						expression: arithmetic expression using arguments.
+						
+						
+				example,
+				f = lambda x,y: x+y
+				print (f(1,1))
+				
+				o/p:
+				2
+				
+what is map() function?
+map function syntax is - map(func,sequence) where func -> name of function and sequence is a list, array etc
+map function applies to all elements in the sequence i.e. the function will be applied on each element.
+map function returns a new list of elements changed by func
+
+example (function usage of map vs lambda usage of map),
+def far(T):
+ return((float(9)/5)*T + 32)
+ 
+def celsius(T):
+ return((float(5)/9)*(T - 32)
+ 
+temp = (36.5,37,37.5,39)
+f = map(far,temp)
+c = map (celsius,f)
+
+with lambda,
+celsius = (36.5,37,37.5,39)
+far = map(lambda x:(float(9)/5)*x+32,celsius)
+C = map( lambda x:(float(5)/9)*(x-32),far)
+
+------------------------------------------------
+Linspace:
+provides result of the formula = (Max - Initial)/[number of elements - 1]
+example,
+	array(np.linspace(2,4,9))
+
+o/p:
+[2 2.25 2.75 3.0 3.25 3.50 3.75 4.0]
+
+
+			
+
