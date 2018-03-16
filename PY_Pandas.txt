@@ -211,7 +211,8 @@ example,
 	print (series5[2])
 	print (series5['three'])
     print (series5['two'])  //THIS WILL ERROR. KeyError: 'two'
-
+	print (series3[60])     //THIS WILL ERROR as 60 is not listed in index.
+	
 	o/p:
 	#series3
 	10       1
@@ -233,6 +234,22 @@ example,
 
 	2
 	9
+	
+However, if we give a [[]], the keyError is bypassed and o/p becomes NaN
+	example,
+	series3 = pd.Series([1,2,3,"four",5],index = [10,20,30,40,50])
+	print (series3[[60]])
+	print (series3['two'])
+	print (series3[['two',60,45]]) 
+	
+	O/p:
+	60    NaN
+	#
+	two   NaN
+	#
+	two    NaN
+	60     NaN
+	45     NaN
 	
 Arithmetic operations on each element in a series.
 example,
@@ -266,6 +283,7 @@ example,
 Filtering elements of a series.
 example,
 		print (series7[series7 > 11])
+		print (series2[[series2>30]]) #i.e. [[]], will error with too many indices.
 	
 	o/p:
 	1    12
@@ -319,3 +337,237 @@ example,
 	
 	NOTE: NaN stands for missing or NA values in pandas. Make use of isnull() function to find out if there are any missing values in the data structure.
 	
+	
+If we are operating on 2 different series, we do not have to worry about data alignment. Pandas takes care of that.
+example, calculate the sum of common words in combined files
+	dict1 = {'finance': 10, 'earning': 5, 'debt':8}
+	dict2 = {'finance' : 8, 'compensation':4, 'earning': 9}
+	count1 = pd.Series(dict1)
+	count2 = pd.Series(dict2)
+	print (count1)
+	print (count2)
+	print (count1 + count2) #
+	
+	o/p:
+	debt        8
+	earning     5
+	finance    10
+	dtype: int64
+	#
+	compensation    4
+	earning         9
+	finance         8
+	dtype: int64
+	#
+	compensation     NaN
+	debt             NaN
+	earning         14.0
+	finance         18.0
+	
+-----------------------------------------------------------------------------
+Data Frame (revisited):
+is a tabular data structure in which data is laid out in rows and column format (similar to a CSV and SQL file),
+DF is logical extension of Series data structures. 
+In contrast to Series, where there is one index, a DataFrame object has one index for column and one index for rows. 
+This allows flexibility in accessing and manipulating data.
+
+example,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print(data) 	
+
+	O/p: # each key forms a column and each row is automatically indexed from 0-n
+		company				price	ticker
+	0	American Express	95	AXP
+	1	Cisco				25	CSCO
+	2	Walt Disney			85	DIS
+	3	Microsoft			41	MSFT
+	4	Walmart				78	WMT
+
+Note: all the arrays in a DF should be of the same size,
+example,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney']})  /#i.e. company has only 3 values
+	print(data)
+						 
+	O/p:
+	ValueError: arrays must all be same length
+
+to print data for a specific key,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print(data['company'])
+	print(data.company)  //same result as above  
+	
+	o/p:
+	0    American Express
+	1               Cisco
+	2         Walt Disney
+	3           Microsoft
+	4             Walmart
+	Name: company, dtype: object
+	
+to print a row corresponding to an index,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print (data.ix[2])       # Print the row corresponding to the given Index
+	print (data.ix[2:4])     #range of indices
+	
+	o/p:
+	company    Walt Disney
+	price               85
+	ticker             DIS
+	Name: 2, dtype: object
+	
+		   company  price ticker
+	2  Walt Disney     85    DIS
+	3    Microsoft     41   MSFT
+	4      Walmart     78    WMT
+	
+filtering DF based on "key"/"columns":
+example,
+	data.ix[data.ticker=='DIS']            # Print the row corresponding to the ticker that is 'DIS'
+	print(data)
+
+	o/p:
+	company	price	ticker
+	2	Walt Disney	85	DIS
+
+adding a new column to a DF,
+example,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	data['Year'] = 2014                    # Add additional column Year. Populate value of 2014 in all the rows.
+	print(data)
+	data['pricesquared'] = data.price**2      # Square all the prices and add another column 'pricesquared'.
+	print(data)
+	del data['pricesquared']                  # Delete column 'pricesquared'
+	print(data)
+	data['pricesquared'] = np.NaN             # Create column 'pricesquared' with NaN values
+	print(data)
+	data['sequence'] = np.arange(2014,2024,2) # Add column 'sequence'												
+	print(data)
+	
+O/p:
+	company				price	ticker	Year
+0	American Express	95		AXP		2014
+1	Cisco				25		CSCO	2014
+2	Walt Disney			85		DIS		2014
+3	Microsoft			41		MSFT	2014
+4	Walmart				78		WMT		2014
+#
+	company				price	ticker	Year	pricesquared
+0	American Express	95		AXP		2014	9025
+1	Cisco				25		CSCO	2014	625
+2	Walt Disney			85		DIS		2014	7225
+3	Microsoft			41		MSFT	2014	1681
+4	Walmart				78		WMT		2014	6084
+#
+	company				price	ticker	Year
+0	American Express	95		AXP		2014
+1	Cisco				25		CSCO	2014
+2	Walt Disney			85		DIS		2014
+3	Microsoft			41		MSFT	2014
+4	Walmart				78		WMT		2014
+#
+	company				price	ticker	Year	pricesquared
+0	American Express	95		AXP		2014	NaN
+1	Cisco				25		CSCO	2014	NaN
+2	Walt Disney			85		DIS		2014	NaN
+3	Microsoft			41		MSFT	2014	NaN
+4	Walmart				78		WMT		2014	NaN
+#
+	company				price	ticker	Year	pricesquared	sequence
+0	American Express	95		AXP		2014	NaN				2014
+1	Cisco				25		CSCO	2014	NaN				2016
+2	Walt Disney			85		DIS		2014	NaN				2018
+3	Microsoft			41		MSFT	2014	NaN				2020
+4	Walmart				78		WMT		2014	NaN				2022
+
+
+Using Numpy functions inside DataFrame Objects:
+example,
+	import pandas as pd
+	import numpy as np
+	# Create array of 3*3 dimensionality using standard normally distributed random vales
+	dataframe = pd.DataFrame(np.random.randn(3,3),columns=['one','two','three'])  
+	print(dataframe)
+	print(np.abs(dataframe))                   # Absolute value
+	f = lambda x:x.max()-x.min()               # lambda function to get range i.e. max - min.
+	print (abs(dataframe).apply(f))            # applies to column (BY-DEFAULT)
+	abs(dataframe).apply(f,axis=1)             #axis=1, applies to row
+	
+	
+	o/p:
+		one			two			three
+	0	-0.057379	0.244387	0.128660
+	1	0.342184	1.080002	-0.528302
+	2	0.370405	-0.319412	1.427701
+	#
+		one			two			three
+	0	0.057379	0.244387	0.128660
+	1	0.342184	1.080002	0.528302
+	2	0.370405	0.319412	1.427701
+	# column range
+	one      0.313026
+	two      0.835614
+	three    1.299041
+	dtype: float64
+	#row range
+	0    0.187008
+	1    0.737818
+	2    1.108289
+	dtype: float64
+	
+example-2:
+	print(dataframe)
+	dataframe.sum()                          # Column wise sum
+	dataframe.sum(axis=1)                    # Row wise sum
+	dataframe.cumsum()                 		 # Get cumulative sum
+	
+o/p:
+#column-wise
+one      0.655210
+two      1.004977
+three    1.028059
+dtype: float64
+#row-wise
+0    0.315668
+1    0.893883
+2    1.478694
+dtype: float64
+#cumlative
+
+
+	
+function to create a series having mean, max and min of a set of DF rows using numpy functions.
+example,
+	def f(x):
+		return pd.Series([np.mean(x), x.max(), x.min()], index=['mean','max','min'])
+	print(dataframe)
+	print(dataframe.apply(f,axis=1))
+	
+o/p:
+	one       two     three
+0 -0.057379  0.244387  0.128660
+1  0.342184  1.080002 -0.528302
+2  0.370405 -0.319412  1.427701
+#
+	mean		max			min
+0	0.105223	0.244387	-0.057379
+1	0.297961	1.080002	-0.528302
+2	0.492898	1.427701	-0.319412
+	
+
+
+	
+
+
+
+
+
