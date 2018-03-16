@@ -251,6 +251,18 @@ However, if we give a [[]], the keyError is bypassed and o/p becomes NaN
 	60     NaN
 	45     NaN
 	
+to show the elements for an index range. ex, show all elements between 2 to 4 index values.
+example,
+	series8 = pd.Series([1,2,3,4,5])
+	print (series8.ix[2:4])
+	print (series8.ix[2:6])   //If index is out of bounds, elements are displayed only till the maximum index value.
+
+	o/p:
+	2    3
+	3    4
+	4    5
+	dtype: int64
+	
 Arithmetic operations on each element in a series.
 example,
 	series6 = pd.Series([1,2,3,4,5])
@@ -379,11 +391,11 @@ example,
 
 	O/p: # each key forms a column and each row is automatically indexed from 0-n
 		company				price	ticker
-	0	American Express	95	AXP
-	1	Cisco				25	CSCO
-	2	Walt Disney			85	DIS
-	3	Microsoft			41	MSFT
-	4	Walmart				78	WMT
+	0	American Express	95		AXP
+	1	Cisco				25		CSCO
+	2	Walt Disney			85		DIS
+	3	Microsoft			41		MSFT
+	4	Walmart				78		WMT
 
 Note: all the arrays in a DF should be of the same size,
 example,
@@ -434,8 +446,8 @@ example,
 	print(data)
 
 	o/p:
-	company	price	ticker
-	2	Walt Disney	85	DIS
+		company		price	ticker
+	2	Walt Disney	85		DIS
 
 adding a new column to a DF,
 example,
@@ -528,7 +540,7 @@ example-2:
 	print(dataframe)
 	dataframe.sum()                          # Column wise sum
 	dataframe.sum(axis=1)                    # Row wise sum
-	dataframe.cumsum()                 		 # Get cumulative sum
+	dataframe.cumsum()                 		 # Get cumulative sum for columns 
 	
 o/p:
 #column-wise
@@ -542,7 +554,11 @@ dtype: float64
 2    1.478694
 dtype: float64
 #cumlative
-
+        one       two     three
+0       0.043830  1.328110  0.739642
+1       0.040941  1.518764  2.111642
+2      -0.331633  1.103796  3.745047
+i.e. each column value is added to the next column value. if dataframe.cumsum(axis=1), the sum of consecutive rows. 
 
 	
 function to create a series having mean, max and min of a set of DF rows using numpy functions.
@@ -563,11 +579,249 @@ o/p:
 1	0.297961	1.080002	-0.528302
 2	0.492898	1.427701	-0.319412
 	
-
-
+describe the characteristics of a dataframe,
+example, (when the data frame contains numbers)
+	dataframe = pd.DataFrame(np.random.randn(3,3),columns=['one','two','three']) 
+	dataframe.describe()
 	
+	o/p:
+				one       two     three
+	count  3.000000  3.000000  3.000000
+	mean   0.170356  1.069239 -0.593476
+	std    0.994400  0.551264  0.298080
+	min   -0.975123  0.432745 -0.849494
+	25%   -0.150436  0.906642 -0.757096
+	50%    0.674251  1.380539 -0.664698
+	75%    0.743096  1.387486 -0.465467
+	max    0.811941  1.394433 -0.266237
+	
+example, (when the dataframe is combination of string and number columns, describe will only aggregate the numeric fields in the DF
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	
+	data['Year'] = [2014] 
+	print(data)
+	
+	o/p:
+			  price
+	count   5.00000
+	mean   64.80000
+	std    30.18609
+	min    25.00000
+	25%    41.00000
+	50%    78.00000
+	75%    85.00000
+	max    95.00000
 
+			  price  Year
+	count   5.00000     5
+	mean   64.80000  2014
+	std    30.18609     0
+	min    25.00000  2014
+	25%    41.00000  2014
+	50%    78.00000  2014
+	75%    85.00000  2014
+	max    95.00000  2014
 
+example, (when the data frame contains ONLY string),
+	data = pd.DataFrame({'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print(data.describe())
+	
+	o/p:
+				company ticker
+	count             5      5
+	unique            5      5
+	top     Walt Disney    DIS
+	freq              1      1
 
+To conclude,
+Describe will give - count, mean, std, min, max FOR NUMBERS
+					 count, unique, top, freq FOR STRINGS
+					 
+					 
+-----------------------------------------------------------------------------------------------------------
+Pandas for handling missing data:
 
+1) how to create a dataFrame from a set of series, INITIALIZE to NaN and then populate it with series data as columns.
+
+	example,
+		import numpy as np
+		import pandas as pd
+		years = [90, 91, 92, 93, 94, 95]
+		f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11}
+		firm1 = pd.Series(f1,index=years)
+		print firm1print("\n")
+		f2 = {90:14,92:9, 93:13, 94:5}
+		firm2 = pd.Series(f2,index=years)
+		print firm2
+		print("\n")
+		f3 = {93:10, 94:12, 95: 13}
+		firm3 = pd.Series(f3,index=years)
+		print firm3print("\n")
+		df3 = pd.DataFrame(columns=['Firm1','Firm2','Firm3'],index=years)
+		print df3
+		print("\n")
+		df3.Firm1 = firm1
+		df3.Firm2 = firm2
+		df3.Firm3 = firm3
+		print df3
+		
+	o/p:
+	90     8
+	91     9
+	92     7
+	93     8
+	94     9
+	95    11
+	dtype: int64
+	90    14
+	91   NaN
+	92     9
+	93    13
+	94     5
+	95   NaN
+	dtype: float64
+	90   NaN
+	91   NaN
+	92   NaN
+	93    10
+	94    12
+	95    13
+	dtype: float64
+		 Firm1 Firm2 Firm
+	390  NaN   NaN   NaN
+	91   NaN   NaN   NaN
+	92   NaN   NaN   NaN
+	93   NaN   NaN   NaN
+	94   NaN   NaN   NaN
+	95   NaN   NaN   NaN
+
+		 Firm1  Firm2  Firm3
+	90      8     14    NaN
+	91      9    NaN    NaN
+	92      7      9    NaN
+	93      8     13     10
+	94      9      5     12
+	95     11    NaN     13
+	
+2) drop NaN values from a series or DataFrame.
+	1) delete the entire row from series or DF which has NaN
+		years = [90, 91, 92, 93, 94, 95]
+		f2 = {90:14,92:9, 93:13, 94:5}
+		firm2 = pd.Series(f2,index=years)
+		print(firm2)
+		nadeleted = firm2.dropna()
+		print(nadeleted)
+		cleandf3 = df3.dropna(axis=1)          # DF3 row created above. REMOVES COLUMNS having even 1 NaN value.
+		#cleandf3 = df3.dropna(axis=0)         # df3.dropna() will REMOVE ROWS having even 1 NaN value.
+		print(cleandf3)
+		
+		o/p:
+		90    14
+		91   NaN
+		92     9
+		93    13
+		94     5
+		95   NaN
+		dtype: float64
+		#91 and 95th rows are deleted
+		90    14
+		92     9
+		93    13
+		94     5
+		dtype: float64
+		#DF3
+			 Firm1  Firm2  Firm3
+		90      8     14    NaN
+		91      9    NaN    NaN
+		92      7      9    NaN
+		93      8     13     10
+		94      9      5     12
+		95     11    NaN     13
+		#df3.dropna(axis=1) 
+			Firm1
+		90      8
+		91      9
+		92      7
+		93      8
+		94      9
+		95     11
+		#df3.dropna(axis=0)
+			Firm1  Firm2  Firm3
+		93      8     13     10
+		94      9      5     12
+		
+	3) drop a row only if ALL the values in the row is NaN. ex, clean2 = df3.dropna(how='all')
+
+	4) Define threshold of NaN i.e. number of NaN for a row/column is > threshhold.
+			thresholddf1 = df3.dropna(axis=1,thresh=2)    # Define threshold. In this case column having >= 2 NaN, drop the column
+			thresholddf2 = df3.dropna(axis=0,thresh=2)    # Define threshold. In this case row having >= 2 NaN, drop the row
+			
+	5) fill the NaN with another value.
+		example,
+		fillna1 = df3.fillna(0)      # Fill all NaN values with 0
+		print(fillna1)
+		fillna2 = df3.fillna({'Firm1':8, 'Firm2': 10, 'Firm3':14})	# We can specify what value should be replaced
+		print(fillna2)				
+		
+	o/p:
+				 Firm1  Firm2  Firm3
+			90      8     14    NaN
+			91      9    NaN    NaN
+			92      7      9    NaN
+			93      8     13     10
+			94      9      5     12
+			95     11    NaN     13
+			##### replaced with ZERO
+				Firm1  Firm2  Firm3
+			90      8     14      0
+			91      9      0      0
+			92      7      9      0
+			93      8     13     10
+			94      9      5     12
+			95     11      0     13
+			##### replace with different values
+				Firm1  Firm2  Firm3
+			90      8     14     14
+			91      9     10     14
+			92      7      9     14
+			93      8     13     10
+			94      9      5     12
+			95     11     10     13
+			
+		example 2,
+		#Forward fill and backward fill
+		fillna3 = df3.fillna(method='ffill')
+		print(fillna3)
+		fillna4 = df3.fillna(method='bfill')
+		print(fillna4)
+		
+	o/p:
+				 Firm1  Firm2  Firm3
+			90      8     14    NaN
+			91      9    NaN    NaN
+			92      7      9    NaN
+			93      8     13     10
+			94      9      5     12
+			95     11    NaN     13
+			#####forward fill
+				Firm1  Firm2  Firm3
+			90      8     14    NaN
+			91      9     14    NaN
+			92      7      9    NaN
+			93      8     13     10
+			94      9      5     12
+			95     11      5     13
+			#####backward fill
+				Firm1  Firm2  Firm3
+			90      8     14     10
+			91      9      9     10
+			92      7      9     10
+			93      8     13     10
+			94      9      5     12
+			95     11    NaN     13
+		
+	
 
