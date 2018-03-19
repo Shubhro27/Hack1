@@ -68,6 +68,18 @@ There are 2 key components in Panda:
 			2008	NaN		9.7
 			2010	18.8	9.7
 			2011	19.1	9.8
+			
+3) Panel: 3-D matrix. It has 3 axes,
+		a) items: axis-0 and corresponds to the dataframe.
+		b) major_axis: axis-1 and corresponds to rows of each dataframe.
+		c) minor_axis: axis-2 and corresponds to columns of each dataframe.
+		
+		example,
+		import pandas as pd
+		import numpy as np
+		data = np.random.rand(2,4,5)
+		p = pd.Panel(data)
+		print p
 
 -------------------
 Lambda Functions: i.e. functions without a name which are used as soon as they have been created.
@@ -299,7 +311,7 @@ If you have a dictionary, you can create a Series data structure from that dicti
 example,
 	years = [91, 90, 92, 93, 94, 95, 96, 97]
 	f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11, 96:13}
-	firm1 = pd.Series(f1,index=years)                     # Extra element in VALUE not an issue. The extra element is NaN
+	firm1 = pd.Series(f1,index=years)                     # Extra element in VALUE not an issue. The extra element is substituted with NaN
 	print(firm1)
 	f2 = {90:14,92:9, 93:13, 94:5}
 	firm2 = pd.Series(f2,index=years)
@@ -590,7 +602,7 @@ example,
 	print(np.abs(dataframe))                   # Absolute value
 	f = lambda x:x.max()-x.min()               # lambda function to get range i.e. max - min.
 	print (abs(dataframe).apply(f))            # applies to column (BY-DEFAULT)
-	abs(dataframe).apply(f,axis=1)             #axis=1, applies to row
+	print (abs(dataframe).apply(f,axis=1))     #axis=1, applies to row
 	
 	
 	o/p:
@@ -831,7 +843,110 @@ c) concatenating a dataframe,
 		1         red lobster   20.0               NaN    NaN    NaN
 
 	
-d) 	
+d) Merging 2 dataframes.
+		example-1, (merge on the basis of key)
+			left_frame = pd.DataFrame({'key': range(5),'left_value': ['a', 'b', 'c', 'd', 'e']})
+			right_frame = pd.DataFrame({'key': range(2, 7),'right_value': ['f', 'g', 'h', 'i', 'j']})
+			print(left_frame)
+			print("\n")
+			print(right_frame)
+			pd.merge(left_frame, right_frame, on='key')
+			
+		o/p:
+			   key left_value
+			0    0          a
+			1    1          b
+			2    2          c
+			3    3          d
+			4    4          e   
+			#
+			   key right_value
+			0    2           f
+			1    3           g
+			2    4           h
+			3    5           i
+			4    6           j
+			#
+			   key left_value right_value
+			0    2          c           f
+			1    3          d           g
+			2    4          e           h
+		
+		example-2, (merge on the basis of multiple keys)
+			left = pd.DataFrame({
+					 'id':[1,2,3,4,5],
+					 'Name': ['Alex', 'Amy', 'Allen', 'Alice', 'Ayoung'],
+					 'subject_id':['sub1','sub2','sub4','sub6','sub5']})
+			right = pd.DataFrame(
+					 {'id':[1,2,3,4,5],
+					 'Name': ['Billy', 'Brian', 'Bran', 'Bryce', 'Betty'],
+					 'subject_id':['sub2','sub4','sub3','sub6','sub5']})
+			print pd.merge(left, right, on='subject_id')
+			
+		o/p:
+				Name_x   id   subject_id   Name_y
+			0    Alice    4         sub6    Bryce
+			1   Ayoung    5         sub5    Betty
+			
+		example, for different kind of joins,
+		i/p:
+			Name  id   subject_id
+		0   Alex   1         sub1
+		1    Amy   2         sub2
+		2  Allen   3         sub4
+		3  Alice   4         sub6
+		4  Ayoung  5         sub5
+
+			Name  id   subject_id
+		0  Billy   1         sub2
+		1  Brian   2         sub4
+		2  Bran    3         sub3
+		3  Bryce   4         sub6
+		4  Betty   5         sub5
+
+		Merge_Method	SQL_Equivalent		Description
+		left 			LEFT OUTER JOIN 	Use keys from left object 
+		right 			RIGHT OUTER JOIN 	Use keys from right object 
+		outer 			FULL OUTER JOIN 	Use union of keys 
+		inner 			INNER JOIN 			Use intersection of keys 
+		
+		Left join : print pd.merge(left, right, on='subject_id', how='left')
+		Right join: print pd.merge(left, right, on='subject_id', how='right')
+		Outer join: print pd.merge(left, right, how='outer', on='subject_id')
+		Inner join: print pd.merge(left, right, on='subject_id', how='inner')
+		
+		o/p:
+			#left
+				Name_x   id_x   subject_id   Name_y   id_y
+			0     Alex      1         sub1      NaN    NaN
+			1      Amy      2         sub2    Billy    1.0
+			2    Allen      3         sub4    Brian    2.0
+			3    Alice      4         sub6    Bryce    4.0
+			4   Ayoung      5         sub5    Betty    5.0
+			#right
+				Name_x  id_x   subject_id   Name_y   id_y
+			0      Amy   2.0         sub2    Billy      1
+			1    Allen   3.0         sub4    Brian      2
+			2    Alice   4.0         sub6    Bryce      4
+			3   Ayoung   5.0         sub5    Betty      5
+			4      NaN   NaN         sub3     Bran      3
+			#outer
+				Name_x  id_x   subject_id   Name_y   id_y
+			0     Alex   1.0         sub1      NaN    NaN
+			1      Amy   2.0         sub2    Billy    1.0
+			2    Allen   3.0         sub4    Brian    2.0
+			3    Alice   4.0         sub6    Bryce    4.0
+			4   Ayoung   5.0         sub5    Betty    5.0
+			5      NaN   NaN         sub3     Bran    3.0
+			#inner
+				Name_x   id_x   subject_id   Name_y   id_y
+			0      Amy      2         sub2    Billy      1
+			1    Allen      3         sub4    Brian      2
+			2    Alice      4         sub6    Bryce      4
+			3   Ayoung      5         sub5    Betty      5
+		
+
+
 -----------------------------------------------------------------------------------------------------------
 Pandas for handling missing data in a dataframe:
 
@@ -843,14 +958,16 @@ Pandas for handling missing data in a dataframe:
 		years = [90, 91, 92, 93, 94, 95]
 		f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11}
 		firm1 = pd.Series(f1,index=years)
-		print firm1print("\n")
+		print firm1
+		print("\n")
 		f2 = {90:14,92:9, 93:13, 94:5}
 		firm2 = pd.Series(f2,index=years)
 		print firm2
 		print("\n")
 		f3 = {93:10, 94:12, 95: 13}
 		firm3 = pd.Series(f3,index=years)
-		print firm3print("\n")
+		print firm3
+		print("\n")
 		df3 = pd.DataFrame(columns=['Firm1','Firm2','Firm3'],index=years)
 		print df3
 		print("\n")
@@ -881,8 +998,8 @@ Pandas for handling missing data in a dataframe:
 	94    12
 	95    13
 	dtype: float64
-		 Firm1 Firm2 Firm
-	390  NaN   NaN   NaN
+		 Firm1 Firm2 Firm3
+	90   NaN   NaN   NaN
 	91   NaN   NaN   NaN
 	92   NaN   NaN   NaN
 	93   NaN   NaN   NaN
@@ -1014,7 +1131,7 @@ Pandas for handling missing data in a dataframe:
 			94      9      5     12
 			95     11    NaN     13
 			
-	6) Interpolate: is usually used to replace a Nan, but it can also be used to populate a value with avg of 2 values
+	6) Interpolate: is usually used to replace a Nan, but it can also be used to populate a value with avg of 2 values.
 		as shown below
 		
 		example-1, replace NaN
@@ -1443,11 +1560,52 @@ example,
 	.
 	.
 	
+	in case u do not want to use the first row as header, you use 'name',
+	i/p csv file, Pandas_file.csv
+		X,Y,Z,Value
+		18,55,1,70
+		18,55,2,67
+		18,57,2,75
+		18,58,1,35
+		19,54,2,70
+		
+	dem_csv1 = pd.read_csv('Pandas_file.csv')
+	print (dem_csv1)	
+	dem_csv2 = pd.read_csv('Pandas_file.csv',names=['A','B','C','D'])
+	print (dem_csv2)
+	
+	o/p:
+		X   Y  Z  Value
+	0  18  55  1     70
+	1  18  55  2     67
+	2  18  57  2     75
+	3  18  58  1     35
+	4  19  54  2     70
+	#with custom header
+		A   B  C      D
+	0   X   Y  Z  Value
+	1  18  55  1     70
+	2  18  55  2     67
+	3  18  57  2     75
+	4  18  58  1     35
+	5  19  54  2     70
+	
+	if header than the 1st row in csv file, u use header = '<row-number>'
+	dem_csv = pd.read_csv('Pandas_file.csv',header=1)
+	print (dem_csv)	
+
+	o/p:
+	   18  55  1  70
+	0  18  55  2  67
+	1  18  57  2  75
+	2  18  58  1  35
+	3  19  54  2  70
+	
 If the file does not have a header, then you can either let pandas assign default headers or you can specify custom headers. 
 If you want industry name to be the index of DataFrame, you can achieve that.
 		  
 example,
-	roedatacsv = pd.read_csv(your_local_path+'roedata.csv', index_col = 'Industry Name' )
+	roedatacsv = pd.read_csv( your_local_path+'roedata.csv', index_col = 'Industry Name' )
 	print(roedatacsv)
 	
 	o/p:
@@ -1498,6 +1656,35 @@ example,
 	47	Information Services	71				22.24%
 	48	Insurance (General)		26				4.08%
 	49	Insurance (Life)		27				6.08%
+	
+skipping rows from dataset:
+	i/p csv file, Pandas_file.csv
+			X,Y,Z,Value
+			18,55,1,70
+			18,55,2,67
+			18,57,2,75
+			18,58,1,35
+			19,54,2,70
+
+	example,
+		import pandas as pd
+		df=pd.read_csv("Pandas_file.csv", skiprows=2)
+		print df
+	
+	o/p:
+	#Actual dataframe
+		X   Y  Z  Value
+	0  18  55  1     70
+	1  18  55  2     67
+	2  18  57  2     75
+	3  18  58  1     35
+	4  19  54  2     70	
+	
+	#skipped 2 rows from top
+	   18  55  2  67
+	0  18  57  2  75
+	1  18  58  1  35
+	2  19  54  2  70
 
 ----
 Reading from text file,
@@ -1515,8 +1702,19 @@ example,
 	.
 	49	195710	880226	-0.008547	0.001747
 	
+example-2, ( if we skip the header )
+	capm_dem_data = pd.read_table(your_local_path+'capm_dem.txt',nrows = 5, delimiter=' ')
+	print(capm_dem_data)
 	
-Separator,
+	o/p:
+	   195710  880211  -0.012605  0.003871
+	0  195710  880212  -0.008511  0.007406
+	1  195710  880216   0.008584  0.001411
+	2  195710  880217  -0.004255  0.002414
+	3  195710  880218   0.000000  0.002845
+	4  195710  880219   0.008547  0.004753
+	
+Separator, (same as delimiter)
 	crsp_data = pd.read_table(your_local_path+'crsp.output', sep='\s+', header = None)
 	crsp_data
 	
@@ -1537,6 +1735,14 @@ Separator,
 	1       2   	blue      y    cat
 	2       3    	red       z    owl
 	
+----
+Writing data to csv file,
+roedata = pd.read_csv(your_local_path+'roedata.csv')
+print(roedata)
+roedata.to_csv(your_local_path+'roedatawrite89.csv')
 	
-	
+Writing data to text file,
+import numpy as np
+import pandas as pd
+np.savetxt(r'c:\data\np.txt', df.values, fmt='%d')
 	
