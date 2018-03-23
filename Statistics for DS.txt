@@ -1,0 +1,152 @@
+Stat is scientific approach to do data analysis and predictions.
+
+In stat, predictions based on experience (i.e. no proof) is called hypothesis
+
+Correlation value: relation between 2 factors used to calculate +ve or -ve dependencies.
+positive dependency: as one increases, other will also increases. ex, if temperature increases, sale of cold drink increases.
+negative dependency: as one increase, other will decrease.ex, if temperature decreases, sale of sweaters increase.
+
+TO understand dependency between 2 variables, correlation proof can be used.
+Where correlation is estimated by correlation efficient (depicted as "r")
+r value will always be between -1 to +1 where 
+a) if "r" is 0, there is no dependecy between variables.
+b) if "r" is > 0, then positive dependency i.e. both variables flow in same directtion. ex corr(temperature, cold drink sales) = 0.8
+c) if "r" is < 0, then negative dependency i.e. both variables flow in opposite direction. ex corr(temperature, sweater sales) = -0.78
+
+Stat analyisis is subclassified as:
+1) Descriptive stat: getting better sense of data i.e. describing data. ex, mean, median, mode
+					 i.e. collect data, Present data, Summarize data. So we analyze over the entire data for a question
+					and then come to conclusion.
+2) Inferential stat: drawing conclusion abt something (ex, population) based on sample data.eg: probability.
+					 i.e. we analyze over sample data and then come to conclusion.
+					example, if we want to know the avg weight of females (age 20-35) in Pune, it will not be a wise choice to 
+					collect entire data for entire population.
+					Solution will be to collect sample. This process of collecting sample is "Sampling"
+					example, collect sample for about 500 females and then apply avg on weight.
+					based on this data conclude on entire population.
+					When doing Inferencial stats, "confidence Interval" (CI) i.e. the %confidence that data is correct.
+					ex,
+					"the avg age of females (20-35) is 85 kg with 0.05 CI"
+					CI (how it is calculated),this test should be done before coming to conclusion,
+					if CI = 0.05
+					confidence on data is (1 - CI) i.e. 1 - 0.05 = 0.95 => 95%
+					In general, if data is increasing, CI should also increase.
+				
+					When collecting sample, usually Sampling bias happens, i.e. different people have different interpretations
+					for same data.
+					
+					
+Statistical analysis can be divided into:
+1) Univariate Analysis 	 : Analysis over single variable. 
+							ex, runs scored by Sachin T and Saurav G over 100 matches is given, 
+							    among Sacin and Ganguly, whose performance is good? 
+								as Statistical instrument is mean. i.e. applied on runs of each player 
+								
+							ex, MCT (measure of central tendency),Despertions, distributions.
+2) MultiVariate Analysis : Analysis over multiple variables i.e. combination of variables.	
+							ex,runs scored by Sachin T and Saurav G over 100 matches is given,
+								what is dependency between 2 players? as Statistical instrument is correlation.
+								correlation applies on combination of runs scored by each player. 
+								i.e.corr(s,g) = -0.78 (i.e. -ve dependency)
+							
+							ex, covariance, correlation, linear and non linear regression, logistic regression.
+							
+
+Univariate analysis methods,
+1) measure of central tendency (MCT): mean , mode, median. Used to explain a variable's performance with a single value.
+	MCT however does not include sum, max, min, count because these do not help explain performance of a variable.
+	
+	following are used in MCT:
+	a) Mean: (summing up values/number of data types) i.e. average. It can be used to determine which variables' value is 
+			  close to mean. ex, Sachin's avg run is 70 => most of sachin's scores are close to 70.
+			  
+			  3 types of mean,
+			  a) arithmetic mean: (sum of all elements/number of elements) i.e. avg.
+					AM can be used wherever decimal is neglectable. 
+					ex, if there is a list of weights like [50.25,50.50,49.25,50.75] and we need to determine who among
+					these 3 participants is slim, we will concurr all of them are slim as the weights are similar, something
+					decimal is not significant here.
+					ex 2
+			  b) geometric mean: GM is used whenever decimal is important.
+					ex, if there is list of weight of gold jewellery like [1.5,1.75,1.25], we cannot ignore the change
+					in decimals as each gram will add/deduct considerable money, so GM is used as decimal value is important.
+					
+					formula : n th root of product of all elements. ex, GM of [10,20,30] = cube root of (10 * 20 * 30)
+			  
+			  c) harmonic mean: HM is used when there is one or more outliers. HM allows us to neglect the outlier by 
+					providing less weightage to outlier.
+					Also, when the decimals have to be considered minutely, it is preferrable to use harmonic mean.
+					ex, in a tournament, id Sachin's score is following in 4 matches [60,70,80,290], mean will be 125
+					i.e. it will imply Sachin performed exceptional in the tournament, but the avg increased just because of score
+					of 290 in 1 match (i.e. outlier) thus giving incorrect judgement.
+					ex 2, when we are taking weight of chemical composition
+					[0.00354678,0.00351111,0.0034999], although, if rounded off to 4 decimals i.e. [0.0035,0.0035,0.0034]
+					still there will be considerable difference, so we need to consider decimals minutely.
+					
+					formula: n/sum of each element inversion => 1/ (1/x + 1/y + ....). ex, HM of [10,20,30]
+					will be 1/(1/10 + 1/20 + 1/30) 
+		
+	b) Mode: most repeated value. ex, if a class has students from following background,[BE, BE,MBA, BE,BE,MCA], then mode is BE.
+			 however, if the data is like, in a class of 100 students learning DS,[51 male students and 49 female students], then
+			 using mode is not a very good idea to define that males students are preferring DS as career.
+			 ex 2, among cancer patients, 
+				1) if 100 are non smokers and 900 are smokers, we can say that "smoking cause cancer"
+				2) if 501 are non smokers and 499 are smokers, we cannot infer if "smoking causes cancer"
+			 
+			 Note: Mode is used when the number of choices is less (ex, choice from yes or no).
+				   Mode cannot be used when data is variable, in this case we create status (or category)
+				   ex,
+				   a cricketers score in 10 matches - [90,70,75,0,79,100,50,49,0,45]
+				   Mode will be 0, which does not indicate the player's performance in 10 matches.
+				   so, we categorize it as,
+				   [90,70,75,0,79,100,71,49,0,72] =>  [above, above,above,below,above,above,above,below,below,above]
+				   where above is (scores above average) and below is (scores below average)
+				   so here mode(player performance) = above, hence cricketer performed well.
+				  
+	c) Median: sort the data in asc and desc and take exact middle value (called central value). Usually used for comparitive
+			   analysis
+				example, [10,90,34,6,89,67,12] =>sort [6,10,12,34,67,89,90] => Median is 34 (i,e, 4th value from both ends)
+						i.e. 50% of data is less than 34.
+					 [10,90,34,6,89,67] => sort [6,10,34,67,89,90] => Median is 50.5 (i.e. (34+67)/2)
+					 
+				NOTE: We come to median only when mean and mode fetches the same/similar results.
+				   
+				example, there are 2 cricketers who played 1000 matches.
+				C1: median is 60 runs
+				C2: median is 80 runs
+				implies,
+				C1                           			C2
+				C1 scored >=60 runs in 500 matches		C2 scored >=80 runs in 500 matches
+				-										C2 scored >=60 runs in approx 700 matches (assumptions)
+				C1 scored >=80 runs in 300 matches      -
+				implies,
+				C2 is a better scorer than C1.
+				
+				if median does not help decide i.e. median is also same/similar, we use QUARTILES (1/4th of data).
+				
+				there are 3 QUARILES,
+				a) Q1: 25% of entire data i.e. 25% of data is less than Q1 and 75% is greater than Q1
+				b) Q2: 50% of entire data i.e. 50% of data is less than Q2 and 50% is greater than Q2 i.e.median.
+				c) Q3: 75% of entire data i.e. 75% of data is less than Q3 and 25% is greater than Q3.
+				
+	
+	
+	
+								
+
+
+								
+								
+								
+								
+								
+
+					
+					
+					 
+
+
+
+
+
+
