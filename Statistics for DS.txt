@@ -124,10 +124,279 @@ Univariate analysis methods,
 				
 				if median does not help decide i.e. median is also same/similar, we use QUARTILES (1/4th of data).
 				
-				there are 3 QUARILES,
+				there are 3 QUARTILES,
 				a) Q1: 25% of entire data i.e. 25% of data is less than Q1 and 75% is greater than Q1
 				b) Q2: 50% of entire data i.e. 50% of data is less than Q2 and 50% is greater than Q2 i.e.median.
 				c) Q3: 75% of entire data i.e. 75% of data is less than Q3 and 25% is greater than Q3.
+				
+------------------------------------------
+MCT (mean, median,mode, quartile) when all are equal or similar, how to determine data:
+
+MCT helps determine positivity (how good) of data. When all factors are same, we will need to determine how the negativity of 
+data shows.
+
+The negativity of data can be determined by dispersion techniques. Dispersion determines spread of a variable.
+
+spread determines how ,clustered the values are, such as,
+1) if spread is less, the values are clustered closely.
+2) if spread is high, the values are distributed far off.
+
+Spread determines:
+1) variability/risk : spread is high, variability is high.
+2) consistency: spread is high, consistency is less.
+
+example,
+in a tournament,
+Sachin's score: 60,70,80......i.e. mean is 70
+Ganguly's score: 0,10,210.....i.e. mean is 70
+
+from data,
+probability of Sachin to score a 70 runs in next match is high and of ganguly is low.
+Variability of Sachin's score is less (i.e. less spread), so consistency is high and risk/variability is low. On other hand,
+Ganguly's variability is high, consistency is less and risk is high.
+
+
+Dispersion techniques include:
+a) Range: difference between maximum value and minimum value is a data set. Used to give variability or spread of data.
+		  High range implies high variability i.e. less consistency, less range implies less variability i.e. high consistency.
+		  example,
+			in a tournament,
+			Sachin's score: 60,70,80......i.e. range is 20 (i.e. 80-60)
+			Ganguly's score: 0,10,210.....i.e. range is 210 (i.e. 210-0)
+		  Range is good ONLY when there are no outliers.
+		  example,
+		  Sachin's score: 60,70,80......i.e. range is 20
+		  Sachin's score: 0,60,70,80,200 ...i.e. range is 200 i.e. high risk, but sachin's score implies consistency.
+		  
+		  NOTE: usually Range is not used.
+		  
+b) IQR (Inter Quartile Range): i.e. (Q3 - Q1) where,
+		Q1 -> 25% is less than Q1
+		Q3 -> 25% is greater than Q3
+		example,
+		Sachin's score: 0,60,70,80,200
+		where, 0 will fall below Q1 and 200 will fall above Q3, so the outliers are neglected.
+		There are 2 problems with IQR:
+		1) We may sometime miss imporant data. example, if Sachin has played 1000 matches,
+			250 matches will fall below Q1 and 250 matches will fall above Q3. So we are missing data for 500 matches.
+		2) If between Q1 and Q3, data is clustered in certain positions and not consistent, IQT will give incorrect explaination.
+		
+		So IQR is of greates advantage when data is equally spread between Q1 and Q3.
+		
+c) Variance: 
+		formula is : sigma(x - xbar)/n where xbar is average, n is number of elements, sigma is sum.
+		(x-xbar) is called deviation which can be +ve or -ve. so we square the deviation to calculate Variance.
+		so formula becomes
+		sigma(x - xbar)^2/n ie devation square divided by number of elements.
+		example, variance of [10,20,30]
+		average i.e. xbar is 20
+		deviation is [10-20,20-20,30-20] i.e. [-10,0,10]
+		(x - xbar)^2 is [100,0,100]
+		sigma[(x - xbar)^2] is 200 i.e. sum
+		variance is 200/3 = 66.66
+
+		variance of population i.e. entire data available is sigma(x - xbar)^2/n
+		variance of sample i.e. only sample data available for inference is sigma(x - xbar)^2/(n-1)
+		
+		high variance implies high variability/risk and less consistency
+		low variance implies low variability/risk and high consistency.
+		
+		Variance is only good FOR COMPARISION, we cannot comment by calculating variance for a single dataset
+		example, v(sachin) = 110, v(Ganguly) = 180,
+		we can say that Sachin is more consistent than Ganguly, but if we have have only Sachin's variance, 
+		we cannot comment on anything.
+		
+d) Standard Deviation: SD is sqrt(variance) i.e. square root of variance.
+	SD of population is sqrt(variance of population)
+	SD of sample is sqrt(variance of sample)
+	
+	SD overcomes the disadvantage of variance, i.e. it can be used to comment on behaviour of a single dataset.
+	example,
+	Sachin: mean is 70 and SD is 10
+	Ganguly: mean is 70 and SD is 50
+	
+	Sachin is more consistent as SD is less than Ganguly i.e. Ganguly is more variant.
+	Now, if we consider only sachin's data i.e. mean is 70 and SD is 10
+	High peak is (mean + SD) = 70 + 10 = 80
+	Low peak is  (mean - SD) = 70 - 10 = 60
+	implies, Sachin's runs are fluctuating between 60 to 80.
+	Similarly for Ganguly, runs are fluctuating between 20 and 120.
+	
+	As spread of Ganguly's runs is more, prediction becomes difficult.
+	
+	
+NOTE: when determining data behaviour, we should consider BOTH positivity and negativity.
+example,
+consider the investment returns of IBM and Infosys shares where,
+			Mean		SD
+Infosys		20			5 
+IBM			30			40
+
+mean will imply, if we invest 100,000 INR, for Infy and IBM we get 20,000 and 30,000 INR profit, so IBM is more profitable
+SD will imply risk, i.e. IBM has more variance than infy i.e less consistency.
+
+peak for Infy is 15 to 25
+	 for IBM is -10 to 70
+
+i.e.
+			profit in low peak		profit in high peak		summary
+Infosys		15000 INR				25000 INR				less returns but less risk
+IBM	 		-10000 INR 				70000 INR				high risk but high returns.
+	
+	
+-------------------------------------------------------------
+Multivariate analysis: i.e. analysis over combination of variables. example, covariance, correlation, regression (linear and non-linear).
+
+1) Covariance: This helps understand dependency between 2 variables. example, if business question is "if temperature is 30 C, what will be the cold-drink sales",
+			   first we will have to establish/prove dependency between temperature and cold-drink sales. 
+			   
+			   Prediction model can only be based on dependency between variables. No dependency implies no prediction. 
+			   i.e. we need to understand how i/p variable is influencing target variable. example,
+			   based on height, weight and age, we need to predict cholestrol levels, if we apply,
+			   cov(age,cholestrol) = 1.23     i.e. positive dependency
+			   cov(height, cholestrol) = 0.0  i.e. zero dependency
+			   cov(weight,cholestrol) = -0.34 i.e. negative dependency
+			   
+			   so we can ignore height for predicting cholestrol levels.
+			   
+			   Covariance formula,
+			   COV(x,y) = sum [(x - mean(x)) * (y - mean(y))] / (n-1)
+			   where,
+			   (x - mean(x)),(y - mean(y)) -> deviation (distance) of x and y from mean.
+			   n -> number of elements.
+			   
+			   there can be 3 possible values for covariance,
+			   =0 : implies no dependency between the variables. i.e. change in value of one variable does not impact value of other variable. i.e. both variables are INDEPENDENT.
+			   >0 : implies positive dependency i.e. increase in value of one variable will cause increase in value of other variable. similar for DECREASE.
+					example, cov(temperature, cold-drink sales) will be +VE.
+			   <0 : implies negative dependency i.e. increase in value of one variable will cause decrease in value of other variable. similar for DECREASE.
+					example, cov(temperature, sweater sales) will be -VE.
+			   
+			   NOTE: is covariance is very close to ZERO, then also we can imply NO DEPENDENCY. example, 0.000073, -0.000058 will also imply NO DEPENDENCY.
+			   
+			   Problem with covariance is that it can just explain positive OR negative OR no dependencies. How strongly/weakly the variables are associated/bonded/dependent 
+			   cannot be explained with covariance.
+					 
+2) Correlation: Correlation also helps understand dependency between 2 variables. This however helps overcome the disadvantage of covariance.
+				i.e. we can use to derive strong dependency or weak dependency.
+				
+				correlation is measured by "correlation coefficient" (SYMBOL is "r") where -1 <= r <= 1 (i.e. r lies between -1 and +1)
+				
+				correlation formula,
+				r = n[sum(x*y) - {sum(x)*sum(y)}]/sqrt[{n*sum(x^2)- sum(x)^2}*{n*sum(y^2)- sum(y)^2}]
+				where,
+				x*y -> product of each x value with corresponding y value 
+				n -> number of elements
+				sum(x^2)-> sum of square of each element.
+				sum(x)^2 -> square of sum of each element.
+				
+				There are 3 possible values similar to covariance. However based on range of values, we can explain dependencies in 7 ways,
+				-1____________-0.5___________0____________0.5_____________+1
+				 |     |               |     |      |              |      |
+                 3     7               6     1      4              5      2    -> positions explaining dependency. 
+                                                                                7 (range between -1 to -0.5)
+																				6 (range between -0.5 to 0)
+																				4 (range between 0 to 0.5)
+																				5 (range between 0.5 to 1)
+			   
+			    when r = 1         i.e. perfect positive correlation- same percentage reflection happens between values of 2 variables i.e. y = f(x)
+																	   ex, if x =(10,20,30,15) then y =(1,2,3,1.5)  i.e. y = 10% of x
+																	       if x =(10,100,30,90) then y =(20,200,60,90) i.e. y = 2x 
+																		   so both variables move in the same direction and reflection of changes is also same.
+				    r = -1         i.e  perfect negative correlation - same percentage reflection happens between values of 2 variables but in opposite direction i.e. y = -f(x)
+																	   ex, if x =(10,20,30,15) then y =(-1,-2,-3,-1.5)  i.e. y = minus(10% of x)
+																	       if x =(10,100,30,90) then y =(-20,-200,-60,-90) i.e. y = -2x 	
+																		   i.e. both move in the opposite direction but reflection of changes is also same.
+					0 < r <=0.5   i.e. weak positive correlation     - both variables will move in same direction but reflection is NOT close (i.e. FAR reflection)
+																	   ex, x increases by 70% but y increased by only 10%.
+																	       x increased by 7% but y increased by 80%
+																		   i.e. high change (increment/decrement) in x will cause less change in y OR
+																		        high change in y will cause less change in x
+																			so less change in one variable will cause high change in other variable.
+					 r> 0.5        i.e. strong positive correlation - both variables move in the same direction BUT the percentage reflection is not same but close
+					                                                   ex, if x increases by 10% (10,11,12,13) but y increases by 20% (1,2,4,8)
+																	       x increases by 10% and y by 9%, x decreases by 11% but y decreases by 13%.
+																		   so less change in one variable will cause less change in other variable and
+																		   high change in one variable will cause high change in other variable.
+					 -0.5 <= r < 0 i.e. weak negative correlation   - both variables move in opposite direction but reflection of changes is Far.
+																	   ex, if x gets incremented by 70%, but y gets decreased by 10%
+																		   if x gets decremented by 7% but y increased by 80%
+																		   i.e. high increment in one variable will cause less decrement in other variable.
+																		   OR low decrement in one variable will cause high increment in other variable.
+					 r < -0.5      i.e. strong negative correlation	- both variables move in opposite direction but reflection of changes is close.
+                                                                      ex, x increased by 10% but y decreased by 9%
+																		  x decreased by 9% but y increased by 8% 
+			         r = 0         i.e. no dependency
+					 
+	graphical representations of correlation:
+	1) perfect positive correlation: angle of the curve is exactly 45 degree with x-axis.
+	2) strong positive correlation: angle of the curve is > or < than 45 degree with x-axis but the angle will be close to 45 degree (ex, 43, 47).
+	3) weak positive correlation:  angle of the curve is > or < than 45 degree with x-axis but the angle will be far way from 45 degree (ex, 20, 75).
+	
+	4) perfect negative correlation: the line will form a triange with x and y axis and where it meets x and y axis, the angle will be exactly 45 degree.
+	5) strong negative correlation: the line will form a triange with x and y axis and where it meets x axis, the angle will be close to 45 degree.
+	6) weak negative correlation: the line will form a triange with x and y axis and where it meets x axis, the angle will be far away from 45 degree (i.e. close to 90 or 0 deg).
+	
+----------------------------------------------------
+Predictions & forecasting:
+
+Predictive analysis comprises of 2 models -  prediction and forecasting.
+
+Prediction is estimating the value of one variable (i.e. target variable) based on values of other variable (i.e input variable).
+example, based on temperature, estimate cold drink sales.
+         based on age, experience, designation, industry estimate annual income.
+		 
+Predictions are used to predict,
+1) regression problems: in this case target variable is continuous (i.e. values change). I/p variables should also be continuous.
+            regression models primary are of 2 types,
+			a) linear regression
+			b) non linear regression
+			
+			there are others like ridge regression, lasso regression.
+2) classification problems: target variable is a classifier (i.e. any one of the given options i.e. discrete variables). example, tomorrow will it rain (yes/no).
+                            Classifiers (options) can be 2 or more.
+			classification models include,
+			a) logistic regression
+			b) Naive bays classifier
+			c) decision tree
+			d) random forest
+			e) support vector machines (SVM)
+		    f) ADABooster	
+		 
+Forecasting is estimating feature depending on timeline. Input and target variables are same for forecasts.
+example, based on a list of temperature for last 20 days, estimate tomorrow's temperature.
+         based on last 100 days of Infy's share values, estimate Infy share price for tomorrow.
+
+Forecasting models include,
+1) time series analysis: following a series of timelines i.e. tomorrow depends on today's data and today depends of yesterday's data and so on
+	example, if we have data for last 1 month, we can use if to predict the next day's data.
+	TSA models include,
+	a) Auto regression (AR)
+	b) Integration
+	c) Moving average (MA)
+	d) ARMA: combination of AR and MA
+	e) ARIMA: combination of AR, Integration and MA
+	there are more models.
+	
+Linear regression: There are 2 LR models
+a) Simple LR : i.e. there will be 1 i/p variable and 1 target variable. ex, y = a + bx
+b) Multiple LR : i.e. multiple i/p variables and 1 target variable. ex, y = b0 + b1.x1 + b2.x2 + ........ + bn.xn
+	
+---------------------------------------------------------
+Principal component Analysis (PCA) - This is used in machine learning
+
+PCA is the practice of eliminating unnecessary input variables (i.e. variables not participating well) before training 
+a model for machine learning. This process is also called reducing dimensionality.
+
+correlation matrix -> eigen matrix (values and vectors) -> PCA
+where -> serves as i/p to
+ 
+
+
+
+	
+	
+
 				
 	
 	
