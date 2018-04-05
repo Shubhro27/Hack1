@@ -379,8 +379,18 @@ Forecasting models include,
 	there are more models.
 	
 Linear regression: There are 2 LR models
-a) Simple LR : i.e. there will be 1 i/p variable and 1 target variable. ex, y = a + bx
+a) Simple LR :  i.e. there will be 1 i/p variable and 1 target variable. 
+				equation, y = a + bx
+				where a-> intercept
+				      b -> slope
+					  
+				difference between straight line intercept and regression intercept
 b) Multiple LR : i.e. multiple i/p variables and 1 target variable. ex, y = b0 + b1.x1 + b2.x2 + ........ + bn.xn
+
+
+***** what is slope and intercept: http://support.minitab.com/en-us/minitab-express/1/help-and-how-to/modeling-statistics/regression/supporting-topics/regression-models/slope-and-intercept-of-the-regression-line/
+      difference between straight line intercept and regression intercept
+	  https://www.researchgate.net/post/Difference_between_linear_regression_with_or_without_a_constant
 	
 ---------------------------------------------------------
 Principal component Analysis (PCA) - This is used in machine learning
