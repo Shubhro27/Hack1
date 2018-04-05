@@ -380,18 +380,113 @@ Forecasting models include,
 	
 Linear regression: There are 2 LR models
 a) Simple LR :  i.e. there will be 1 i/p variable and 1 target variable. 
+
+				Intercept: indicates the location of regression line where it intersects an y-axis. Origin of a line.
+				Slope    : indicates the steepness of the regression line. Trignomatically, tan(angle) with x-axis.
+				
+				The slope and the intercept define the linear relationship between two variables
+				
 				equation, y = a + bx
 				where a-> intercept
 				      b -> slope
+					 
+				example, y = 2 + 5x The y-intercept is 2, so y will be starting from 2 and The slope is positive 5. When x increases by 1, y increases by 5. 
+                         y = 7 - 2x The y-intercept is 7.2, so y starts from 7.2 and The slope is negative 0.4. When x increases by 1, y decreases by 0.4. 	
+
+				y = bx will mean that intercept is zero i.e. the regression line will pass thru the origin but this is not a real scenario.
+			    as there will always be "bias" associated with i/p variable.
+				ex, if temp increases, cold-drink sales increases but if temperature is 0, does not mean that cold-drink sale is 0.
+				    if age grows, weight grows BUT if age is 0. does not mean that height or weight will not be zero.
+					
+				Thus "intercept is used to handle this bias."
+				
+				how to find intercept and slope in a + bx:
+				here,
+				slope     -> b = cor(x,y) * [sd(y)/sd(x)] where cor -> correlation between x and y & sd is standard deviation 
+				intercept -> a = mean(y) - {b * mean(x)}
+				
+				example-1,
+				x        y
+				10		 30
+				40		 120
+				100      300
+				
+				1st change in x = 30; change in y = 90
+				slope = change in y/change in x = 90/30 = 3
+				
+				2nd change in x = 60; change in y =180
+				slope = change in y/change in x = 180/60 = 3
+				
 					  
-				difference between straight line intercept and regression intercept
-b) Multiple LR : i.e. multiple i/p variables and 1 target variable. ex, y = b0 + b1.x1 + b2.x2 + ........ + bn.xn
+
+b) Multiple LR : i.e. multiple i/p variables and 1 target variable. 
+				 
+				equation, y = b0 + b1.x1 + b2.x2 + ........ + bn.xn
+				where b0 -> intercept
+				      b1, b2....bn -> slope of x1,x2,x3.....xn
+                 
+				 These coefficients are calculated based on given data.
+				 
+				MLR has multiple slopes as each i/p variable has different impact on target variable. Intercept however remains constant.
+				example if income is dependent on 2 variables age and technology, each i/p variable (i.e. age and technology) will have its own impact on the
+				target variable (i.e. income), so there will be different slopes. 
 
 
-***** what is slope and intercept: http://support.minitab.com/en-us/minitab-express/1/help-and-how-to/modeling-statistics/regression/supporting-topics/regression-models/slope-and-intercept-of-the-regression-line/
-      difference between straight line intercept and regression intercept
-	  https://www.researchgate.net/post/Difference_between_linear_regression_with_or_without_a_constant
-	
+How to test quality of a regression line:
+This is done using  Rquare method i.e r^2 (where r is correlation)
+example,
+r = 0.9
+r^2 = 0.81 i.e 81% of values are close to regression line and remaining is far way from regression line.
+
+75% is the standard for regression line quality to be good.
+
+The problem with this approach is that rsq is hypothetically true but not in reality i.e. there is no benchmark for closeness.
+example, if the rsq is 81%, it does not imply how accurate is the prediction.
+---------------------------------------------------------
+How to choose a model for prediction:
+
+this can be done using hypothesis testing.
+if p <= 0.05, then do linear regression
+if p > 0.05 , then do non linear regression
+
+where p is calculated by t-test, z-test, f-test. All these are inferential test metrics.
+However these test metrics is good for low sample volume. example,
+t is good for 130 sample
+z is good for 160 sample
+f is good for 450 sample
+but in organizations now, the volume of sample data is usually very high.
+
+In ML, the solution for this problem is "accuracy testing" is used to select a model.
+step-1: take 20% random sample from data. 
+step-2: Apply all possible models. 
+step-3: test accuracy of all models.
+step-3: chose model with highest accuracy.
+---------------------------------------------------------
+Standard error:
+
+Formula,
+se = sqrt[sum(y - mean(y))^2]/(n-2)
+
+example,
+y = 3 + 2x        -------> has error quotient
+se = 4
+y - se = 3 + 2x
+i.e. y = 7 + 2x  ---------> has less error
+se = 2
+i.e. y = 9 + 2x  ---------> has even less error
+.
+. 
+.
+at one point the error again starts increasing so we will have to stop at that point.
+
+in this approach, there are 2 problems,
+1) Intercept keeps increasing.
+2) slope is constant.
+
+but the 2 factors should be ideally neutralized.
+
+In ML, we use Gradiant Descent Algorithm where gradiant will adjust both intercept and slope.so gradient will calculate the slope and intercept also wrt SE.
+
 ---------------------------------------------------------
 Principal component Analysis (PCA) - This is used in machine learning
 
@@ -401,6 +496,7 @@ a model for machine learning. This process is also called reducing dimensionalit
 correlation matrix -> eigen matrix (values and vectors) -> PCA
 where -> serves as i/p to
  
+----------------------------------------------------------
 
 
 
