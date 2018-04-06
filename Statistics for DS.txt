@@ -417,7 +417,15 @@ a) Simple LR :  i.e. there will be 1 i/p variable and 1 target variable.
 				2nd change in x = 60; change in y =180
 				slope = change in y/change in x = 180/60 = 3
 				
-					  
+				Matrix representation of SLR: i.e. y = a + bx
+				[y] = [1 x][a
+							b]
+				[1 x] is a 1*2 matrix
+				[a    is a 2*1 matrix
+				 b]
+				
+				as per Matrix multiplication rule, num of cols of 1st matrix == num of rows of 2nd matrix
+				so this multiplication will produce 1 * 1 matrix	  
 
 b) Multiple LR : i.e. multiple i/p variables and 1 target variable. 
 				 
@@ -430,7 +438,88 @@ b) Multiple LR : i.e. multiple i/p variables and 1 target variable.
 				MLR has multiple slopes as each i/p variable has different impact on target variable. Intercept however remains constant.
 				example if income is dependent on 2 variables age and technology, each i/p variable (i.e. age and technology) will have its own impact on the
 				target variable (i.e. income), so there will be different slopes. 
+				
+				example,
+				"age","w","h","chol"
+				20,56,5.5,45
+				25,70,6.0,55
+				24,90,5.9,89
+				34,100,5.7,99
+				45,120,5.8,100
+				22,78,5.5,66
+				28,80,5.6,77
+				30,90,5.9,90
+				
+				Problem statement: based on age, weight, Height, predict person's cholestrol level.
+				here i/p variables:   age, weight, Height
+				     target variable: cholestrol level
+				i.e multiple i/p variable.
+				
+				so MLR equation will be cholestrol = b0 + b1*age + b2*w + b3*hand
+				ex, 45 = b0 + 20 * b1 + 56 * b2 + 5.5 * b3
+				
+				in matrix format, this equation may look like,
+				y1 = b0 + b1 * x11 + b2 * x12 + b3 * x13 + ....... + bn * x1n
+				where,
+				y1 -> cholestrol in first row
+				x11 -> 1st row * 1st column
+				x12 -> 1st row * 2nd column
 
+				similarly y2 = b0 + b1 * x21 + b2 * x22 + b3 * x23 + ....... + bn * x2n
+				
+				so the matrix will look like
+				[y1] = [1 x11 x12 x13 .... x1n][b0
+												b1
+												b2
+												b3
+												.
+												.
+												.
+												bn]
+												
+				1st matrix is : 1 * (n+1)
+				2nd matrix is : (n+1) * 1
+				multiplication will fetch : 1 * 1 matrix
+				
+				if we convert all such rows y2, y3....yn into matrix format
+				
+				[y1   = [1 x11 x12 x13 .... x1n   * [b0
+				 y2      1 x21 x22 x23 .... x2n		 b1
+				 y3      .                           .
+				 .		 . 							 .
+				 .
+				 .
+				 ym]     1 xn1 xn2 xn3 .... xmn]     bn]
+				 
+				1st matrix is [m * (n+1)] dimension
+				2nd matrix is [(n+1) * 1] dimension
+				so result is [m * 1] dimension
+				
+				to find the value of intercept (B) in Y = X * B
+				where Y -> Y Matrix in MLR
+				      X ->  X Matrix in MLR
+					  B -> B Matrix in MLR
+					  
+				mathematically B = Y/X but this is incorrect as X should be a square matrix to calculate (1/X)
+				so we can use
+				Transpose(X) * Y = [Transpose(X) * X] * B
+				Transpose -> convert rows to columns
+				[Transpose(X) * X] will help form a square matrix 
+				ex, if X is [5 * 4] matrix, Transpose[X] will be [4 * 5] matrix and
+				[Transpose(X) * X] will be [4 * 5] * [5*4] = 4 * 4 matrix
+
+				Transpose(X) * Y is done to maintain equilibrium on both sides
+				
+				so B = inv[transpose(X) * X] * [Transpose(X) * Y]
+				size of B matrix will be 
+				inv[transpose(X) * X] = [ (n+1 * m) * (m * n+1)] = [n+1 * n+1] matrix
+				[Transpose(X) * Y]    = [ (n+1 * m) * (m * 1) ]  = [n+1 * 1] matrix
+				so [n+1 * n+1] * [n+1 * 1] = [n+1 * 1]
+				so B is [n+1 * 1] matrix
+				
+				once we have value of B (Beta), we can put it in MLR and calculate Regression value (Ycap)
+				which can then be put into different accuracy models to determine accuracy of a prediction
+				
 
 How to test quality of a regression line:
 This is done using  Rquare method i.e r^2 (where r is correlation)
@@ -441,13 +530,14 @@ r^2 = 0.81 i.e 81% of values are close to regression line and remaining is far w
 75% is the standard for regression line quality to be good.
 
 The problem with this approach is that rsq is hypothetically true but not in reality i.e. there is no benchmark for closeness.
-example, if the rsq is 81%, it does not imply how accurate is the prediction.
+example, if the rsq is 81%, it does not imply how close is the prediction to the regression line.
 ---------------------------------------------------------
 How to choose a model for prediction:
 
-this can be done using hypothesis testing.
+this can be done using "hypothesis testing".
 if p <= 0.05, then do linear regression
 if p > 0.05 , then do non linear regression
+where p -> benchmark
 
 where p is calculated by t-test, z-test, f-test. All these are inferential test metrics.
 However these test metrics is good for low sample volume. example,
@@ -461,7 +551,39 @@ step-1: take 20% random sample from data.
 step-2: Apply all possible models. 
 step-3: test accuracy of all models.
 step-3: chose model with highest accuracy.
+Step-4: apply model from step-3 to entire data.
 ---------------------------------------------------------
+non linear regression:
+a curve best represents non linear regression [as a st line best represents linear regression]
+
+NLR has 3 models as:
+1) Quadratic model:
+	y = b0 + b1 * x + b2 * (x^2)
+	example,
+	x   y
+	10	120
+	5	50
+	
+	X i.e. x matrix = [1 10 100
+					   1  5  25]
+					   
+	Y i.e. y matrix = [120
+	                    50]
+						
+	B = inv[transpose(X) * X] * [Transpose(X) * Y] i.e. same as linear reg
+	B is 3 * 1 matrix
+	
+	B[1,1] -> b0 i.e. intercept
+	B[2,1] -> b1 i.e. slope of x
+	B[3,1] -> b2 i.e. slope of x^2
+	
+	
+2) Cubic models:
+	y = b0 + b1 * x + b2 * (x^2) + b3 * (x^3)
+3) power model: this curve will be like sine wave
+	y = b0 * (b1^x) i.e. [a * (b^x)]
+
+----------------------------------------------------------
 Standard error:
 
 Formula,
