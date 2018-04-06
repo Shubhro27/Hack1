@@ -130,14 +130,14 @@ Univariate analysis methods,
 				c) Q3: 75% of entire data i.e. 75% of data is less than Q3 and 25% is greater than Q3.
 				
 ------------------------------------------
-MCT (mean, median,mode, quartile) when all are equal or similar, how to determine data:
+MCT (mean, median, mode, quartile) when all are equal or similar, how to determine data:
 
 MCT helps determine positivity (how good) of data. When all factors are same, we will need to determine how the negativity of 
 data shows.
 
 The negativity of data can be determined by dispersion techniques. Dispersion determines spread of a variable.
 
-spread determines how ,clustered the values are, such as,
+spread determines how clustered the values are, such as,
 1) if spread is less, the values are clustered closely.
 2) if spread is high, the values are distributed far off.
 
@@ -520,7 +520,52 @@ b) Multiple LR : i.e. multiple i/p variables and 1 target variable.
 				once we have value of B (Beta), we can put it in MLR and calculate Regression value (Ycap)
 				which can then be put into different accuracy models to determine accuracy of a prediction
 				
+				consider example,
+				"age","w","h","chol"
+				20,56,5.5,45
+				25,70,6.0,55
+				24,90,5.9,89
+				34,100,5.7,99
+				45,120,5.8,100
+				22,78,5.5,66
+				28,80,5.6,77
+				30,90,5.9,90
+				
+				Problem statement: based on age, weight, Height, predict person's cholestrol level.
+		
+		
+				one age age^2 age^3 w  w^2  w^3 	h 		h^2 	h^3
+		X	[	1	20  400   8000  56 3136 175616  5.5     30.25   166.375
+		        2nd row
+				.
+				.
+				last row                                                      ]
+				
+		Y   [45
+			 55
+			 89
+			 .
+			 .
+			 .
+			 90]
+			 
+		B  	inv[transpose(X) * X] * [Transpose(X) * Y] will be a 10*1 matrix
+		
+		here,
+		B[1,1] = b0 = intercept
+		B[2,1] = b1 = slope of age
+		B[3,1] = b2 = slope of (age)^2
+		B[4,1] = b3 = slope of (age)^3
+		
+		B[5,1] = b4 = slope of (weight)
+		B[6,1] = b5 = slope of (weight)^2
+		B[7,1] = b6 = slope of (weight)^3
 
+		B[8,1] = b7 = slope of (height)		
+		B[9,1] = b8 = slope of (height)^2
+		B[10,1] = b9 = slope of (height)^3
+		
+		
 How to test quality of a regression line:
 This is done using  Rquare method i.e r^2 (where r is correlation)
 example,
@@ -580,8 +625,56 @@ NLR has 3 models as:
 	
 2) Cubic models:
 	y = b0 + b1 * x + b2 * (x^2) + b3 * (x^3)
+	example,
+	x   y
+	10	120
+	5	50
+
+	X i.e. x matrix = [1 10 100 1000
+					   1  5  25 125]
+					   
+	Y i.e. y matrix = [120
+	                    50]
+						
+	B = inv[transpose(X) * X] * [Transpose(X) * Y] i.e. same as linear reg
+	B is 4 * 1 matrix
+	
+	B[1,1] -> b0 i.e. intercept
+	B[2,1] -> b1 i.e. slope of x
+	B[3,1] -> b2 i.e. slope of x^2
+	B[3,1] -> b3 i.e. slope of x^3
+	
 3) power model: this curve will be like sine wave
 	y = b0 * (b1^x) i.e. [a * (b^x)]
+	
+	for PM, derive b0 and b1.
+	
+	example,
+	x   y
+	10	120
+	5	50
+
+	X i.e. x matrix = [1 10 
+					   1  5]
+					   
+	Y i.e. y matrix = [120
+	                    50]
+						
+	B = inv[transpose(X) * X] * [Transpose(X) * Y] i.e. same as linear reg
+	B is 2 * 1 matrix
+	
+	B[1,1] -> b0 i.e. intercept
+	B[2,1] -> b1 i.e. slope of x
+
+In case we have 4 models,
+1) linear regression: Y = X * B
+2) quadratic NLR
+3) cubic NLR
+4) Power NLR
+in order to chose which one is appropriate for prediction, we will do "accuracy test". The model which gives highest accuracy value, will be chosen.
+
+----------------------------------------------------------
+Logistic regression: this is used to predict classifiers (i.e. options). example, will it rain or not (An. Yes/No)
 
 ----------------------------------------------------------
 Standard error:
