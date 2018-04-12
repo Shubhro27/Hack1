@@ -1,0 +1,65 @@
+import pandas as pd
+import numpy as np
+
+df1 = pd.DataFrame({'Company_A':[12,24,34,43,np.NaN],
+                   'Company_B':[13,np.NaN,16,54,np.NaN],
+                   'Company_C':[np.NaN,10,17,np.NaN,3]})
+				   
+df1=df1.fillna(0)
+
+df1.index=range(2008,2017,2)
+print(df1)
+
+2)
+
+df = pd.DataFrame({ 'Col1' : [1,np.NaN,3,np.NaN],
+                   'Col2' : [8,9,7,10]}) 
+				   
+def impute(df):
+    if (np.mean(df.Col2) > 5):
+        df = df.fillna(np.mean(df.Col2))
+    else:
+        df = df.fillna(0)
+    return df 
+	
+impute(df)
+
+3) 
+
+roedata = pd.read_csv('roedata.csv')
+import re
+
+roedata[10:21]
+
+roedata['ROE'] = roedata['ROE'].apply(lambda x: re.sub(r'\-+\d*\.\d*\%','0',x))
+
+roedata[10:21]
+
+4) 
+df4 = pd.DataFrame({'first_name': ['Jason',np.NaN,'Tina','Jake','Amy'],
+                   'last_name': ['Miller',np.NaN,'Ali','Milner','Cooze'],
+                   'age': [42,np.NaN,36,24,73],
+                   'sex': ['m',np.NaN,'f','m','f'],
+                   'preTestScore': [4,3,3,2,3],
+                   'postTestScore': [25,np.NaN,70,62,70],
+                   'location': [np.NaN,np.NaN,np.NaN,np.NaN,np.NaN]
+                    })
+					
+df4.age=df4.age.fillna(np.mean(df4.age))
+
+df4[['first_name','last_name']]=df4[['first_name','last_name']].fillna("XYZ")
+
+df4.sex=df4.sex.fillna(df4.sex.value_counts().idxmax()) #filling with most frequently occuring gender
+
+df4.postTestScore=df4.postTestScore.fillna(df4.groupby("sex")["postTestScore"].transform("mean"))
+df4
+
+5)
+df5 = pd.DataFrame([[np.NaN,2],[3,np.NaN]])
+df6 = pd.DataFrame([[10,11],[12,13]])
+
+print(df5)
+print(df6)
+
+df5.fillna(df6)
+
