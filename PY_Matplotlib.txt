@@ -468,197 +468,201 @@ fig = plt.figure()
 -----------------------------------------------------------------------
 1.Plot a line from 0 to 10
 
-An. Code,
-x = np.arange(0,11,1)
-plt.plot(x,x,color = 'c')
-plt.title("Assignment-1")
-plt.xlabel("x-axis")
-plt.ylabel("y-axis")
-plt.show()
+An. Code-1,
+	x = np.arange(0,11,1)
+	plt.plot(x,x,color = 'c')
+	plt.title("Assignment-1")
+	plt.xlabel("x-axis")
+	plt.ylabel("y-axis")
+	plt.show()
 
-	Code-2
+	Code-2,
+	plt.plot(range(10))     	#range(0) will form y-axis and x-axis will be populated with [0,1,2,3.....9]. This will also create a linear graph.
+	plt.title("Assignment-1")
+	plt.xlabel("x-axis")
+	plt.ylabel("y-axis")
+	plt.show()
 	
 --------------------------------------------------------------------------
 2. Plot time on x-axis and co2 and temparature in same figure
 
-Code-1
-times = range(7)
-co2 = [250, 265, 272, 260, 300, 320, 389]
-temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
-#code goes here
-plt.plot(times,co2,color = 'b')
-plt.plot(times,temp,color = 'r',linestyle = '--')
-plt.title("Assignment-2")
-plt.xlabel("time")
-plt.ylabel("co2 vs temp")
-plt.show()
+An.	Code-1,
+	times = range(7)
+	co2 = [250, 265, 272, 260, 300, 320, 389]
+	temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
+	#code goes here
+	plt.plot(times,co2,color = 'b')
+	plt.plot(times,temp,color = 'r',linestyle = '--')
+	plt.title("Assignment-2")
+	plt.xlabel("time")
+	plt.ylabel("co2 vs temp")
+	plt.show()
 
-Code-2
-times = range(7)
-co2 = [250, 265, 272, 260, 300, 320, 389]
-temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
-plt.plot(times, co2, 'b--', times, temp, 'r*-')
-plt.show()
+	Code-2
+	times = range(7)
+	co2 = [250, 265, 272, 260, 300, 320, 389]
+	temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
+	plt.plot(times, co2, 'b--', times, temp, 'r*-')   #both graphs can be plotted by this. "b--" is "blue" dashed line. "r*-" will add a * at each plotting point.
+	plt.show()
 
 --------------------------------------------------------------------------
 3. Plot co2 in left y-axis and temp in right y-axis and time in x-axis
 
-Code-1:
-times = range(7)
-co2 = [250, 265, 272, 260, 300, 320, 389]
-temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
-#code goes here
-ax1 = plt.plot()
-plt.plot(times,co2,color = 'b',linestyle = "--")
-plt.xlabel("[CO2]")
-ax2 = plt.gca().twinx()
-ax2.plot(times,temp,color = 'r')
-plt.ylabel("Temp(degC)")
-plt.show()
+An. Code-1:
+	times = range(7)
+	co2 = [250, 265, 272, 260, 300, 320, 389]
+	temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
+	#code goes here
+	ax1 = plt.plot()
+	plt.plot(times,co2,color = 'b',linestyle = "--")
+	plt.xlabel("[CO2]")
+	ax2 = plt.gca().twinx()
+	ax2.plot(times,temp,color = 'r')
+	plt.ylabel("Temp(degC)")
+	plt.show()
 
-Code-2:
-import matplotlib.pyplot as plt
-fig, ax1 = plt.subplots()
-times = range(7)
-co2 = [250, 265, 272, 260, 300, 320, 389]
-ax1.plot(times, co2, "b--")
-ax1.set_ylabel("[CO2]")
-ax2 = ax1.twinx()
-temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
-ax2.plot(times, temp, "r*-")
-ax2.set_ylabel("Temp (degC)")
-plt.show()
+	Code-2:
+	import matplotlib.pyplot as plt
+	fig, ax1 = plt.subplots()
+	times = range(7)
+	co2 = [250, 265, 272, 260, 300, 320, 389]
+	ax1.plot(times, co2, "b--")               #1st plot among subplots.
+	ax1.set_ylabel("[CO2]")
+	ax2 = ax1.twinx()                         #twinx: create a new axis while sharing the same x-axis.
+	temp = [14.1, 15.5, 16.3, 18.1, 17.3, 19.1, 20.2]
+	ax2.plot(times, temp, "r*-")
+	ax2.set_ylabel("Temp (degC)")
+	plt.show()
 
 ---------------------------------------------------------------------------
 4. Create sine wave
 
-Code-1:
-x_ax = np.linspace(0,2,9)
-y_ax = np.sin(x_ax)
-plt.plot(x_ax,y_ax,color = 'b')
-plt.title("Sine Wave")
-plt.xlabel("time(s)")
-plt.grid()
-plt.show()
+An) Code-1:
+	x_ax = np.linspace(0,2,9)
+	y_ax = np.sin(x_ax)
+	plt.plot(x_ax,y_ax,color = 'b')
+	plt.title("Sine Wave")
+	plt.xlabel("time(s)")
+	plt.grid()
+	plt.show()
 
-Code-2: (gives full sine-wave)
-import numpy as np
-t = np.arange(0.0, 2.0, 0.01)
-s = np.sin(2*np.pi*t)
-plt.plot(t, s)
-
-plt.xlabel('time (s)')
-plt.title('Sine Wave')
-plt.grid(True)
-plt.savefig("test.png")
-plt.show()
+	Code-2: (gives full sine-wave)
+	import numpy as np
+	t = np.arange(0.0, 2.0, 0.01)
+	s = np.sin(2*np.pi*t)
+	plt.plot(t, s)
+	plt.xlabel('time (s)')
+	plt.title('Sine Wave')
+	plt.grid(True)
+	plt.savefig("test.png")
+	plt.show()
 ---------------------------------------------------------------------------
 5. Insert a figure inside another figure
 
-Code-1:
-X = [1, 2, 3, 4, 5, 6, 7]
-Y = [1, 3, 4, 2, 5, 8, 6]
-#code goes here
-plt.plot(X,Y,color = 'r')
-plt.title("title")
-plt.xlabel("x")
-plt.ylabel("y")
-#insert a figure inside another figure
-a = plt.axes([0.2, 0.6, .2, .2])
-plt.title("title Inside")
-#plt.xticks([])
-#plt.yticks([])
-plt.plot(X,Y,color = 'g')
-plt.show()
+An) Code-1:
+	X = [1, 2, 3, 4, 5, 6, 7]
+	Y = [1, 3, 4, 2, 5, 8, 6]
+	#code goes here
+	plt.plot(X,Y,color = 'r')
+	plt.title("title")
+	plt.xlabel("x")
+	plt.ylabel("y")
+	#insert a figure inside another figure
+	a = plt.axes([0.2, 0.6, .2, .2])
+	plt.title("title Inside")
+	#plt.xticks([])
+	#plt.yticks([])
+	plt.plot(X,Y,color = 'g')
+	plt.show()
 
-Code-2:
-import numpy as np
-import matplotlib.pyplot as plt
-fig = plt.figure()
-X = [1, 2, 3, 4, 5, 6, 7]
-Y = [1, 3, 4, 2, 5, 8, 6]
-axes1 = fig.add_axes([0.1, 0.1, 0.9, 0.9]) # main axes
-axes2 = fig.add_axes([0.2, 0.6, 0.4, 0.3]) # inset axes
-# main figure
-axes1.plot(X, Y, 'r')
-axes1.set_xlabel('x')
-axes1.set_ylabel('y')
-axes1.set_title('title')
-# insert
-axes2.plot(Y, X, 'g')
-axes2.set_xlabel('y')
-axes2.set_ylabel('x')
-axes2.set_title('title inside')
-plt.show()
+	Code-2:
+	import numpy as np
+	import matplotlib.pyplot as plt
+	fig = plt.figure()
+	X = [1, 2, 3, 4, 5, 6, 7]
+	Y = [1, 3, 4, 2, 5, 8, 6]
+	axes1 = fig.add_axes([0.1, 0.1, 0.9, 0.9]) # main axes - add_axes: defines your own coordinates.
+	axes2 = fig.add_axes([0.2, 0.6, 0.4, 0.3]) # inset axes
+	# main figure
+	axes1.plot(X, Y, 'r')
+	axes1.set_xlabel('x')
+	axes1.set_ylabel('y')
+	axes1.set_title('title')
+	# insert
+	axes2.plot(Y, X, 'g')
+	axes2.set_xlabel('y')
+	axes2.set_ylabel('x')
+	axes2.set_title('title inside')
+	plt.show()
 
 ---------------------------------------------------------------------------
 6. Plot both side of X-axis
 
-Code-1 (gave incorrect result):
-n = 12
-X = np.arange(n)
-#print(X)
-Y1 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
-Y2 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
-#code goes here
-plt.bar(X,Y1,color = 'b',align = 'center')
-plt.bar(X,Y2,color = 'c',align = 'center')
-plt.show()
+	Code-1 (gave incorrect result):
+	n = 12
+	X = np.arange(n)
+	#print(X)
+	Y1 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
+	Y2 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
+	#code goes here
+	plt.bar(X,Y1,color = 'b',align = 'center')
+	plt.bar(X,Y2,color = 'c',align = 'center')
+	plt.show()
 
-Code-2:
-import numpy as np
-import matplotlib.pyplot as plt
-#
-n = 12
-X = np.arange(n)
-Y1 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
-Y2 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
-#
-plt.axes([0.025,0.025,0.95,0.95])
-plt.bar(X, +Y1, facecolor='#9999ff', edgecolor='white')
-plt.bar(X, -Y2, facecolor='#ff9999', edgecolor='white')
-#
-for x,y in zip(X,Y1):
-    plt.text(x+0.4, y+0.05, '%.2f' % y, ha='center', va= 'bottom')
+	Code-2:
+	import numpy as np
+	import matplotlib.pyplot as plt
+	#
+	n = 12
+	X = np.arange(n)
+	Y1 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
+	Y2 = (1-X/float(n)) * np.random.uniform(0.5,1.0,n)
+	#
+	plt.axes([0.025,0.025,0.95,0.95])
+	plt.bar(X, +Y1, facecolor='#9999ff', edgecolor='white')
+	plt.bar(X, -Y2, facecolor='#ff9999', edgecolor='white')
+	#
+	for x,y in zip(X,Y1):
+		plt.text(x+0.4, y+0.05, '%.2f' % y, ha='center', va= 'bottom')  #x+0.4 moves the text by 0.4 above x-axis; y+0.05 moves text by 0.05 between each Y-axis element.
 
-for x,y in zip(X,Y2):
-    plt.text(x+0.4, -y-0.05, '%.2f' % y, ha='center', va= 'top')
-#
-plt.xlim(-.5,n), plt.xticks([])
-plt.ylim(-1.25,+1.25), plt.yticks([])
-#
-# savefig('../figures/bar_ex.png', dpi=48)
-plt.show()
+	for x,y in zip(X,Y2):
+		plt.text(x+0.4, -y-0.05, '%.2f' % y, ha='center', va= 'top')
+	#
+	plt.xlim(-.5,n), plt.xticks([])        #defines the limit of x-axis from -0.5 to n.
+	plt.ylim(-1.25,+1.25), plt.yticks([])
+	#
+	# savefig('../figures/bar_ex.png', dpi=48)
+	plt.show()
 
 ----------------------------------------------------------------------------
 7. Pie-Chart
 
-Code-1:
-labels = 'Option 1', 'Option 2', 'Option 3', 'Option 4' , 'Option 5'
-sizes = [25, 15, 60, 30, 15]
-colors = ['lightseagreen', 'lightsalmon', 'lightskyblue', 'lightcoral', 'lightgreen']
-#code goes here
-plt.pie(sizes,
-        labels=labels,
-        colors=colors,
-        startangle=90,
-        shadow= True,
-        explode=(0.1,0.1,0.1,0.1,0.1))
-#        autopct='%1.1f%%')
-#
-plt.show()
+	Code-1:
+	labels = 'Option 1', 'Option 2', 'Option 3', 'Option 4' , 'Option 5'
+	sizes = [25, 15, 60, 30, 15]
+	colors = ['lightseagreen', 'lightsalmon', 'lightskyblue', 'lightcoral', 'lightgreen']
+	#code goes here
+	plt.pie(sizes,
+			labels=labels,
+			colors=colors,
+			startangle=90,
+			shadow= True,
+			explode=(0.1,0.1,0.1,0.1,0.1))
+	#        autopct='%1.1f%%')
+	#
+	plt.show()
 
-Code-2:
-labels = 'Option 1', 'Option 2', 'Option 3', 'Option 4' , 'Option 5'
-sizes = [25, 15, 60, 30, 15]
-colors = ['lightseagreen', 'lightsalmon', 'lightskyblue', 'lightcoral', 'lightgreen']
-explode = (0, 0.2, 0, 0.1, 0)
-#
-plt.pie(sizes, explode=explode, labels=labels, colors=colors,
-        shadow=True, startangle=90,
-        counterclock=False, textprops={"fontweight":"bold", "fontsize":"large"})
-#
-# Set aspect ratio to be equal so that pie is drawn as a circle.
-plt.axis('equal')
-#
-plt.show()
+	Code-2:
+	labels = 'Option 1', 'Option 2', 'Option 3', 'Option 4' , 'Option 5'
+	sizes = [25, 15, 60, 30, 15]
+	colors = ['lightseagreen', 'lightsalmon', 'lightskyblue', 'lightcoral', 'lightgreen']
+	explode = (0, 0.2, 0, 0.1, 0)   //as only option 2 and 4 should be exploded.
+	#
+	plt.pie(sizes, explode=explode, labels=labels, colors=colors,
+			shadow=True, startangle=90,
+			counterclock=False, textprops={"fontweight":"bold", "fontsize":"large"})
+	#
+	# Set aspect ratio to be equal so that pie is drawn as a circle.
+	plt.axis('equal')     #ensures that the pie is a proper circle by making x == y.
+	#
+	plt.show()

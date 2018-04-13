@@ -1,0 +1,85 @@
+Central limit theorem:
+This is a part of inferential statistics. example, exit poles (i.e. drawing conclusion from sample of population).
+
+In galton board, when we throw balls,
+1) large balls form a perfect normal distribution
+2) the ND decreases with size of balls getting small till there is no normal distribution for the smallest set of balls.
+
+Conclusions:
+1) Independent samples when plotted gives a normal distribution.
+2) dependent samples (i.e. samples having considerable bias) when plotted DO NOT give a normal distribution.
+
+example, while determining the per-capita income of India:
+1) Sample if collected only from states in Northen India/Southern india will have a large amound of bias thus small balls
+2) Samples if distributed from states in different directions from North, South, East, West will have less bia and thus Large balls.
+ 
+"Wisdom of crowd" method is the action of collecting data (enough samples) from crowd. ex: companies call their employees to predict the share price of the company.
+
+Standard Error: is measure of how much bias will creep into the sample.
+
+SE = SD for population/square root(size of sample)
+OR
+SE = sample estimate of SD/square root(size of sample)
+
+difference b/w Sample variance and standard error?
+Sample Variance							|	Standard Error
+variance in a sample available          |   accuracy of the sample wrt population.i.e. determine whether you took right sample or not.
+
+however SE comes from SV as Sample SD = sq root(Sample Variance)
+
+Confidence Interval: 
+1) If Population SD is known:
+	CI = (sample mean) +/- [z* * SE] #z* multiplied by SE and +/-: plus, minus
+	   = (sample mean) +/- [z* * {SD for population/square root(size of sample)}]
+	   
+2) If Sample SD is known:
+	CI = (sample mean) +/- [z* * SE] #z* multiplied by SE and +/-: plus, minus
+	   = (sample mean) +/- [z* *{sample estimate of SD/square root(size of sample)}]
+	   
+	Here, z*values (z-table) of CI are
+	CI			z* value
+	80%			1.28 
+	90%			1.645
+	95%			1.96
+	98%			2.33
+	99%			2.58
+	
+example,
+in order to determine average experience of students in Data Science batch. The institute has sample data only (i.e. possible set of values)
+
+dss_exp = np.array[12,15,13,20,19,20.........,15,16,18,13]
+
+#parameters for sampling
+n = 10    #size of the sample from dss_exp (population)
+NUM_TRIALS = 1000   #iterations i.e. how many times I will take samples.
+
+#one iteration
+samp = np.random.choice(dss_exp,size = n,replace = True)  #replace implies that the sample taken in this iteration will be replaced in the DS and not removed from the DS
+														  #so in next iteration, some of the values from this sample will be replaced.
+print(samp)                                               # [ 4 18 16 11 13 19 6 3 18 19 ]  NOTE: each run will create a random sample.
+samp_mean = samp.mean()									  # 12.7
+samp_sd = samp.std()									  # 6.034
+print("Samp_mean = {:4.3f}", format(samp_mean,samp_sd))
+
+# draw the samples 1000 times and compute mean each time.
+np.random.seed(100)
+mn_array = np.zeros(NUM_TRIALS)
+sd_array = np.zeros(NUM_TRIALS)
+
+for i in range(NUM_TRIALS):
+	samp = np.random.choice(dss_exp,size = n,replace = True)
+	mn_array[i] = samp.mean()            #means of 1000 iterations
+print(mn_array)
+#single number which will show us the result in one variable. i.e. mean of means
+mn = mn_array.mean()
+sd = mn_array.std()
+x5_pct = np.percentile(mn_array,5.0)    //calculates the 5 percentile
+x95_pct = np.percentile(mn_array,95.0)  //calculates the 95 percentile. This is used when plotting box-chart.
+
+
+NOTE: This process is called central limit theorm. 
+
+------------------------------------------------------------------------
+Exploratory data analysis (EDA):
+EDA is used to test business assumptions, generate hypothesis for further analysis.
+EDA is used for data profiling i.e. summarizing dataset with descriptive statistics.
