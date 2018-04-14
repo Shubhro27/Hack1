@@ -1,0 +1,357 @@
+Exploratory data analysis (EDA):
+EDA is used to test business assumptions, generate hypothesis for further analysis.
+EDA is used for data profiling i.e. summarizing dataset with descriptive statistics.
+
+EDA comes before machine learning.
+
+Raw data collected ----> data is processed ----> clean dataset ----> EDA ----> Models and Algorithms ----> decision making
+								|____________<________________________|             
+
+
+Difference between Hypothesis and conclusion? 
+Hypothesis is assumption and conclusion is evaluating the hypothesis (i.e. ageeing/disagreeing).
+
+there are 2 types of data analysis:
+1) confirmatory DA: form a hypothesis and confirm it.
+2) Exploratory DA : discover patterns
+
+2 methods of exploration:
+1) Univariate analysis
+2) bivariate analysis
+
+most important aspect of EDA is Outlier analysis/determination. Others include
+Trenda, Distribution, Mean, Median, correlations, spread measurement, Hypothesis testing, Visual exploration.
+
+objectives of EDA:
+1) Discover patterns. ex, in retail,whenever lux is promoted in festive season, Medimix sales drop.
+2) Spot Anomalies     ex, lux is top selling brand in all cities of chennai except in Annagar (where medimix leads).
+3) Frame Hypothesis   ex, correlation between trade spend and sales uplift in certain retail outlets.
+4) Check Assumptions  ex, every Diwali, sales of Ghee go up by 10%.
+								
+#####################################################################################
+#Tuberclosis data set
+#####################################################################################
+STEP-1: urllib.request is a package which can be used to load datasets from web and then placed in any local desktop dir.
+
+import urllib.request
+
+tb_deaths_url_csv = 'https://docs.google.com/spreadsheets/d/12uWVH_IlmzJX_75bJ3IH5E-Gqx6-zfbDKNvZqYjUuso/pub?gid=0&output=CSV'
+tb_existing_url_csv = 'https://docs.google.com/spreadsheets/d/1X5Jp7Q8pTs3KLJ5JBWKhncVACGsg5v4xu6badNs4C7I/pub?gid=0&output=csv'
+tb_new_url_csv = 'https://docs.google.com/spreadsheets/d/1Pl51PcEGlO9Hp4Uh0x2_QM0xVb53p2UDBMPwcnSjFTk/pub?gid=0&output=csv'
+
+local_tb_deaths_file = your_local_path+'tb_deaths_100.csv'
+local_tb_existing_file = your_local_path+'tb_existing_100.csv'
+local_tb_new_file = your_local_path+'tb_new_100.csv'
+
+#Copy the network objects denoted by URLs to local files
+urllib.request.urlretrieve(tb_deaths_url_csv, local_tb_deaths_file)
+urllib.request.urlretrieve(tb_existing_url_csv, local_tb_existing_file)
+urllib.request.urlretrieve(tb_new_url_csv, local_tb_new_file)							                                                       
+
+-------------------------------------------------------------------------------------------
+STEP-2: create dataframes from the csv files:
+
+import pandas as pd
+import numpy as np
+# index_col=0 we're explicitly stating to treat the first column as the index.
+#If we pass index_col=False we get the same result as above due to False evaluating to 0.
+#thousands= ',' will treat a number as number even if it has "," in between. ex, 100,000
+#index_col=None we get the same behaviour as when we didn't pass this param.
+deaths_df = pd.read_csv(local_tb_deaths_file, index_col = 0, thousands=',').T  #transpose to make country names as columns not index
+#
+existing_df = pd.read_csv(local_tb_existing_file, index_col = 0, thousands=',').T
+#
+new_df = pd.read_csv(local_tb_new_file, index_col = 0, thousands=',').T
+#
+existing_df.head()
+
+o/p:
+TB prevalence, all forms (per 100 000 population per year)	Afghanistan	Albania	Algeria	American Samoa	Andorra	Angola	Anguilla	Antigua and Barbuda	Argentina	Armenia	...	Uruguay	Uzbekistan	Vanuatu	Venezuela	Viet Nam	Wallis et Futuna	West Bank and Gaza	Yemen	Zambia	Zimbabwe
+1990																436	42		45		42		 39		514			38	16			96								52		...	35		114			278		46			365	126		55	265	436	409
+.
+.
+.
+
+5 rows * 207 columns
+
+----------------------------------------------------------------------------------------------
+STEP-3: summarize the data for each country
+
+df_summary = existing_df.describe()
+df_summary
+
+o/p:
+TB prevalence, all forms (per 100 000 population per year)	Afghanistan	Albania	Algeria	American Samoa	Andorra	Angola	Anguilla	Antigua and Barbuda	Argentina	Armenia	Australia	Austria	Azerbaijan	Bahamas	Bahrain	Bangladesh	Barbados	Belarus	Belgium	Belize	Benin	Bermuda	Bhutan	Bolivia	Bosnia and Herzegovina	Botswana	Brazil	British Virgin Islands	Brunei Darussalam	Bulgaria	Burkina Faso	Burundi	Cambodia	Cameroon	Canada	Cape Verde	Cayman Islands	Central African Republic	Chad	Chile	China	Colombia	Comoros	Congo, Rep.	Cook Islands	Costa Rica	Croatia	Cuba	Cyprus	Czech Republic	Cote d'Ivoire	Korea, Dem. Rep.	Congo, Dem. Rep.	Denmark	Djibouti	Dominica	Dominican Republic	Ecuador	Egypt	El Salvador	Equatorial Guinea	Eritrea	Estonia	Ethiopia	Fiji	Finland	France	French Polynesia	Gabon	Gambia	Georgia	Germany	Ghana	Greece	Grenada	Guam	Guatemala	Guinea	Guinea-Bissau	Guyana	Haiti	Honduras	Hungary	Iceland	India	Indonesia	Iran	Iraq	Ireland	Israel	Italy	Jamaica	Japan	Jordan	Kazakhstan	Kenya	Kiribati	Kuwait	Kyrgyzstan	Laos	Latvia	Lebanon	Lesotho	Liberia	Libyan Arab Jamahiriya	Lithuania	Luxembourg	Madagascar	Malawi	Malaysia	Maldives	Mali	Malta	Mauritania	Mauritius	Mexico	Micronesia, Fed. Sts.	Monaco	Mongolia	Montserrat	Morocco	Mozambique	Myanmar	Namibia	Nauru	Nepal	Netherlands	Netherlands Antilles	New Caledonia	New Zealand	Nicaragua	Niger	Nigeria	Niue	Northern Mariana Islands	Norway	Oman	Pakistan	Palau	Panama	Papua New Guinea	Paraguay	Peru	Philippines	Poland	Portugal	Puerto Rico	Qatar	Korea, Rep.	Moldova	Romania	Russian Federation	Rwanda	Saint Kitts and Nevis	Saint Lucia	Saint Vincent and the Grenadines	Samoa	San Marino	Sao Tome and Principe	Saudi Arabia	Senegal	Seychelles	Sierra Leone	Singapore	Slovakia	Slovenia	Solomon Islands	Somalia	South Africa	Spain	Sri Lanka	Sudan	Suriname	Swaziland	Sweden	Switzerland	Syrian Arab Republic	Tajikistan	Thailand	Macedonia, FYR	Timor-Leste	Togo	Tokelau	Tonga	Trinidad and Tobago	Tunisia	Turkey	Turkmenistan	Turks and Caicos Islands	Tuvalu	Uganda	Ukraine	United Arab Emirates	United Kingdom	Tanzania	Virgin Islands (U.S.)	United States of America	Uruguay	Uzbekistan	Vanuatu	Venezuela	Viet Nam	Wallis et Futuna	West Bank and Gaza	Yemen	Zambia	Zimbabwe
+count	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.00000	18.000000	18.000000	18.000000	18.00000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000	18.000000
+mean
+std
+min
+25%
+50%
+75%
+max
+
+----------------------------------------------------------------------------------------------
+STEP-3: compare 2 or more countries to determine trend:
+
+#In order to access individual columns
+df_summary[['Spain','United Kingdom']]
+
+TB prevalence, all forms (per 100 000 population per year)	Spain	United Kingdom
+count														18.000000	18.000000
+mean														30.666667	9.611111
+std															6.677442	0.916444
+min															23.000000	9.000000
+25%															25.250000	9.000000
+50%															29.000000	9.000000
+75%															34.750000	10.000000
+max															44.000000	12.000000
+
+#If you want to check percentage change in existing cases over the years
+tb_pct_change = existing_df.pct_change()
+tb_pct_change
+
+#Let us look at curious case of Spain. What do you infer?
+tb_pct_change_spain = existing_df['Spain'].pct_change()
+tb_pct_change_spain
+tb_pct_change_spain.argmin()
+o/p:
+1990         NaN      #1st is NaN, coz there is no previous year to calculate percentage with.
+1991   -0.045455
+1992   -0.047619
+1993   -0.075000
+1994   -0.054054
+1995   -0.028571
+1996   -0.029412
+1997   -0.090909
+1998    0.000000
+1999   -0.066667
+2000   -0.035714
+2001   -0.037037
+2002    0.000000
+2003   -0.038462
+2004   -0.040000
+2005    0.000000
+2006    0.000000
+2007   -0.041667
+
+1997
+
+existing_df['United Kingdom'].pct_change()
+existing_df['United Kingdom'].pct_change().max()
+existing_df['United Kingdom'].pct_change().argmax()
+
+1990         NaN
+1991    0.000000
+1992    0.111111
+1993    0.000000
+1994   -0.100000
+1995    0.000000
+1996    0.000000
+1997    0.000000
+1998    0.000000
+1999    0.000000
+2000    0.000000
+2001    0.000000
+2002    0.000000
+2003    0.111111
+2004    0.000000
+2005    0.100000
+2006    0.000000
+2007    0.090909
+
+0.11111111111111116
+1992
+
+----------------------------------------------------------------
+STEP- : How to detrmine outliers from data:
+1) calculate row-wise mean
+	command: deaths_by_country_mean = deaths_df.mean()
+	
+	o/p:
+	TB mortality, all forms (per 100 000 population per year)
+	Afghanistan                          41.388889
+	Albania                               4.166667
+	Algeria                               2.000000
+	American Samoa                        1.722222
+	Andorra                               2.833333
+
+2) calculate the summary of the mean.
+	command: deaths_by_country_mean_summary = deaths_by_country_mean.describe()
+	
+	o/p:
+	count    207.000000
+	mean      27.659420
+	std       38.687307
+	min        0.000000
+	25%        2.972222
+	50%        9.666667
+	75%       41.333333
+	max      222.166667
+	
+3) determine outliers.
+	command: 
+	deaths_outlier = deaths_by_country_mean_summary['50%'] * 1.5 #i.e. median * 1.5  
+	outlier_countries_by_deaths_index = deaths_by_country_mean > deaths_outlier
+	print (sum(outlier_countries_by_deaths_index))
+	
+	o/p:
+	14.5
+	TB mortality, all forms (per 100 000 population per year)
+	Afghanistan                          True
+	Albania                             False
+	Algeria                             False
+	American Samoa                      False
+	Andorra                             False
+	Angola                               True
+	.
+	.
+	.
+	82
+	
+	we can further finetune the outliers to reduce them further,
+	deaths_outlier = deaths_by_country_mean_summary['50%'] * 5 #i.e. median * 5  
+	outlier_countries_by_deaths_index = deaths_by_country_mean > deaths_outlier
+	print (sum(outlier_countries_by_deaths_index))
+	
+	o/p:
+	48.33
+	TB mortality, all forms (per 100 000 population per year)
+	Afghanistan                         False
+	Albania                             False
+	Algeria                             False
+	American Samoa                      False
+	Andorra                             False
+	Angola                               True
+	.
+	.
+	.
+	45
+	
+	This can be done across all data sets i.e. existing, death, new csvs
+	
+	generally 15-20% data are outliers (although not always), but jusually if it is >15-20%, then there is a problem.
+	
+--------------------------------------------------------------------
+STEP- : remove the outliers from the datasets
+
+deaths_df.head()  #Here countries are the columns and years are index
+deaths_df.T.head() #here countries become index, so we can now apply criteria.
+
+deaths_df.T[ outlier_countries_by_deaths_index ]
+
+o/p:
+															1990	1991	1992	1993	1994	1995	1996	1997	1998	1999	2000	2001	2002	2003	2004	2005	2006	2007
+TB mortality, all forms (per 100 000 population per year)																		
+Afghanistan													50	49	48	47	47	46	46	45	43	43	41	39	36	37	34	33	31	30
+Angola														60	60	61	62	63	64	66	48	56	53	75	49	34	30	37	39	29	33
+.
+.
+
+outlier_deaths_df = deaths_df.T[ outlier_countries_by_deaths_index ].T # to have countries as columns
+
+o/p: outlier_deaths_df[['Afghanistan','Angola']]
+TB mortality, all forms (per 100 000 population per year)	Afghanistan	Angola . . . . .
+													1990	50	60
+													1991	49	60
+													1992	48	61
+													1993	47	62
+													1994	47	63
+													1995	46	64
+													1996	46	66
+													1997	45	48
+													1998	43	56
+													1999	43	53
+													2000	41	75
+													2001	39	49
+													2002	36	34
+													2003	37	30
+													2004	34	37
+													2005	33	39
+													2006	31	29
+													2007	30	33	
+--------------------------------------------------------------
+STEP-: Plot outlier countries vs better world (falls within normal distribution) countries:
+
+1) Caclulate the mean of deaths 
+	average_outlier_country = outlier_new_df.mean(axis=1)
+average_outlier_country	
+
+outlier_deaths_df = deaths_df.T[ outlier_countries_by_deaths_index ].T
+average_death_outlier_country = outlier_deaths_df.mean(axis=1)
+print(average_death_outlier_country)
+#
+average_death_better_wrld_country = deaths_df.T[ - outlier_countries_by_deaths_index].T.mean(axis=1)
+print(average_death_better_wrld_country)
+#
+%matplotlib inline
+two_world_death_df = pd.DataFrame({ 
+            'Average Better World Country death': average_death_better_wrld_country,
+            'Average Outlier Country death' : average_death_outlier_country},
+        index = deaths_df.index)
+print(two_world_death_df)
+#
+%matplotlib inline
+two_world_death_df.plot(title="Estimated TB death cases per 100K",figsize=(12,8))
+
+o/p,
+average_death_outlier_country,
+1990     66.666667
+1991     70.600000
+1992     73.666667
+1993     77.711111
+1994     80.844444
+1995     84.000000
+1996     83.177778
+1997     85.844444
+1998     86.488889
+1999     94.977778
+2000     96.822222
+2001    101.222222
+2002     96.866667
+2003    100.488889
+2004    100.022222
+2005    101.733333
+2006     99.600000
+2007    102.044444
+
+average_death_better_wrld_country,
+1990    11.962963
+1991    11.919753
+1992    11.598765
+1993    11.574074
+1994    11.314815
+1995    11.574074
+1996    10.858025
+1997    11.080247
+1998    10.950617
+1999    11.111111
+2000    10.259259
+2001    10.141975
+2002    10.586420
+2003     9.660494
+2004     9.512346
+2005     9.092593
+2006     9.018519
+2007     8.734568
+
+two_world_death_df,
+Average Better World Country death	Average Outlier Country death
+1990	11.962963	66.666667
+1991	11.919753	70.600000
+1992	11.598765	73.666667
+1993	11.574074	77.711111
+1994	11.314815	80.844444
+1995	11.574074	84.000000
+1996	10.858025	83.177778
+1997	11.080247	85.844444
+1998	10.950617	86.488889
+1999	11.111111	94.977778
+2000	10.259259	96.822222
+2001	10.141975	101.222222
+2002	10.586420	96.866667
+2003	9.660494	100.488889
+2004	9.512346	100.022222
+2005	9.092593	101.733333
+2006	9.018519	99.600000
+2007	8.734568	102.044444
