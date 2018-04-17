@@ -1,0 +1,84 @@
+pig_T20_data.xls
+
+T20_data = LOAD 'pig_T20_data.xls' USING PigStorage(',') AS (ball:chararray, team:int, overs: float, teamBating:chararray, batsmen1:chararray, batsmen2:chararray, bowler:chararray,runs:int, other:int, result: chararray, playerOut:chararray);
+
+--------------------------------------------------
+How many runs did David Warner score in the match?
+
+T20_data_david = FILTER T20_data BY batsmen1 MATCHES 'DA Warner'; 
+T20_data_david_grp = GROUP T20_data_david BY batsmen1;
+T20_data_david_runs = FOREACH T20_data_david_grp GENERATE SUM(T20_data_david.runs);
+
+Total: 93
+--------------------------------------------------
+How many wickets did DJ Bravo take in match?
+
+T20_data_bravo_ball = FILTER T20_data BY bowler MATCHES 'DJ Bravo' AND playerOut IS NOT NULL;
+T20_data_bravo_wkt = FOREACH (GROUP T20_data_bravo_ball BY bowler) GENERATE COUNT($1);
+
+wkts: 2
+--------------------------------------------------
+How many runs did Praveen Kumar concede in the match?
+
+T20_data_praveenk_ball = FILTER T20_data BY bowler MATCHES 'P Kumar' AND (runs !=0 OR other !=0);
+T20_data_praveenk_runs = FOREACH T20_data_praveenk_ball GENERATE bowler,(runs + other) as totRuns;
+T20_data_praveenk_totRuns = FOREACH (GROUP T20_data_praveenk_runs BY bowler) GENERATE SUM(T20_data_praveenk_runs.totRuns);
+
+Runs: 33
+
+--------------------------------------------------
+How many extras were bowled in the match?
+
+T20_data_extras = FILTER T20_data BY other != 0;
+T20_data_tot_extras = FOREACH (GROUP T20_data_extras BY ball) GENERATE SUM(T20_data_extras.other);
+
+Extras: 7
+--------------------------------------------------
+What is the final score of Gujarat Lions?
+
+T20_data_GL_inn = FILTER T20_data BY teamBating MATCHES 'Gujarat Lions';
+T20_data_GL_inn_format = FOREACH T20_data_GL_inn GENERATE teamBating, (runs+other) as totRuns;
+T20_data_GL_inn_totRuns = FOREACH (GROUP T20_data_GL_inn_format ALL) GENERATE SUM(T20_data_GL_inn_format.totRuns);
+
+total Runs: 162
+--------------------------------------------------
+How many balls were faced by Bb McCullum in the match?
+
+T20_data_mcCull = FILTER T20_data BY teamBating MATCHES 'Gujarat Lions' AND batsmen1 MATCHES 'BB McCullum';
+T20_data_mcCull_bfaced = FOREACH (GROUP T20_data_mcCull BY batsmen1) GENERATE SUM(T20_data_mcCull.team);
+
+balls faced = 31
+
+
+####################################################################################################################
+#
+####################################################################################################################
+movie_data = LOAD 'pig_movies_data.csv' USING PigStorage(',') AS (srNo:int, mName:charArray, mYear:int, mRate:float, mDuration:int);
+--------------------------------------------------------
+Highest rating per year:
+
+movie_data_yearRate = FOREACH (GROUP movie_data BY mYear) GENERATE $0,MAX(movie_data.mRate);
+
+--------------------------------------------------------
+longest movie duration:
+movie_data_dur = FOREACH (GROUP movie_data ALL) GENERATE MAX(movie_data.mDuration);
+
+Ans: 28813
+--------------------------------------------------------
+oldest movie:
+
+movie_data_oldest = LIMIT (ORDER movie_data BY mYear) 1;
+
+Ans: (42665,Fantômas I: In the Shadow of the Guillotine,1913,2.9,3268)
+--------------------------------------------------------
+newest movie:
+
+movie_data_newest = LIMIT (ORDER movie_data BY mYear DESC) 1;
+
+Ans: (49561,The Square (Trailer),2014,3.6,154)
+--------------------------------------------------------
+movie with the highest rating:
+
+movie_rate_high = LIMIT(ORDER movie_data BY mRate DESC) 1;
+
+Ans: (37138,Orange Is the New Black: Season 1,2013,4.5,)
