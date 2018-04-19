@@ -1,0 +1,233 @@
+Moving Average (also called rolling mean):
+it is an average of any subset of numbers. The moving average is extremely useful for forecasting long-term trends.
+example, 
+1) if you have sales data for a twenty-year period, you can calculate a five-year moving average, a four-year moving average, a three-year moving average and so on.
+2) Stock market analysts will often use a 50 or 200 day moving average to help them see trends in the stock market and (hopefully) forecast where the stocks are headed.
+
+Sample Problem:Calculate a five-year moving average from the following data set,
+Year	Sales ($M)
+2003	4
+2004	6
+2005	5
+2006	8
+2007	9
+2008	5
+2009	4
+2010	3
+2011	7
+2012	8
+
+The mean (average) sales for the first five years (2003-2007) is calculated by finding the mean from the first five years. i.e.
+Year	Sales ($M)
+2003	4
+2004	6
+2005	5
+2006	8
+2007	9
+
+so,
+moving average for 2005 is, (4M + 6M + 5M + 8M + 9M) / 5 = 6.4M
+average sales for the second subset of five years (2004 – 2008), centered around 2006, is (6M + 5M + 8M + 9M + 5M) / 5 = 6.6M
+average sales for the third subset of five years (2005 – 2009), centered around 2007, is (5M + 8M + 9M + 5M + 4M) / 5 = 6.2M
+
+calculating Moving Average with Python Pandas:
+mov_avg = pd.rolling_mean(aapl.Volume,5)  #here, 1st argument is the column in the dataframe for which rolling mean has to be applied.
+										  #5 is the Size of the moving window i.e. number of observations used for calculating.
+
+NOTE: by default rolling looks for n-1 prior rows of data to aggregate, where n is the window size. 
+If that condition is not met, it will return NaN for the window. This is what's happening at the first row. 
+In the fourth and fifth row, it's because one of the values in the sum is NaN.
+i.e.
+if DF is like,
+				Open	High	Low		Close	Volume
+	Date					
+	2016-09-01	791.98	792.89	786.33	791.40	1303460
+	2016-09-02	795.27	797.10	793.26	796.87	1347368
+	2016-09-06	798.39	810.89	795.43	808.02	1989537
+	2016-09-07	807.93	810.60	803.72	807.99	1145724
+	2016-09-08	805.22	808.42	801.01	802.84	1177660
+
+mov_avg = pd.rolling_mean(aapl.Volume,5) will give,
+	Date
+	2016-09-01           NaN
+	2016-09-02           NaN
+	2016-09-06           NaN
+	2016-09-07           NaN
+	2016-09-08     1392749.8
+	
+NOTE: rolling mean returns a Series you only have to add it as a new column of your DataFrame.
+
+-------------------------------------------------------------------------------------------------------------
+Probability Density Function (PDF):
+
+PDF is a statistical expression that defines probability distribution for a continuous random variable (does not include discrete random variable).
+When the PDF is graphically portrayed, the area under the curve will indicate the interval in which the variable will fall. 
+The total area in this interval of the graph equals the probability of a continuous random variable occurring.
+
+PDF calculates the probability of a range of outcomes.On a PDF graph, the probability of a single outcome is always zero. 
+This is because a single outcome is represented by a line, which has no area under a curve.
+
+PDF most commonly follows a normal distribution (Gaussian).
+
+NOTE: The easiest way to think about the difference between discrete vs. continuous variables 
+	  is that discrete ones can be counted (i.e., the number is finite and typically takes the form of an integer) and 
+	  continuous ones cannot (i.e., infinite values are possible).
+
+example,
+the probability that today's temperature will be 80 degrees - and 80 degrees exactly - is measured by PMF; 
+the probability that the temperature will be between 80 and 85 degrees is measured by PDF.
+probability that gross domestic product (GDP) growth will land between 1% and 1.5% this quarter 
+
+df = pd.DataFrame(np.random.randn(5000))
+df.hist(normed = True)
+
+NOTE: when plotting the PDF, you need to specify normed=True in your call to .hist(), and when plotting the CDF, you need to specify cumulative=True in addition to normed=True.
+-------------------------------------------------------------------------------------------------------------
+kernal distribution method:
+
+The aim of Kernel Density Estimation(KDE) is:
+given a set of N samples from a random variable, X, possibly multivariate and continuous, estimate the random variables probability density function(pdf).
+
+to plot using pandas,
+df['year_as_float']d.plot(kind='kde')
+
+############################################################################# MATPLOTLIB
+vertical & horizontal lines in matplotlib:
+1) Add a horizontal line across the axis:
+	syntax: axhline(y=0, xmin=0, xmax=1, **kwargs)
+	where,
+	y    : scalar, optional, default: 0; y position in data coordinates of the horizontal line.
+	xmin : scalar, optional, default: 0; Should be between 0 and 1, 0 being the far left of the plot, 1 the far right of the plot.
+    xmax : scalar, optional, default: 1; Should be between 0 and 1, 0 being the far left of the plot, 1 the far right of the plot.
+	kwargs: are various parameters like linestyle = ‘solid’ | ‘dashed’, ‘dashdot’, ‘dotted’ .....
+                                        linewidth, dashes etc.
+										
+	example,
+	axhline(linewidth=4, color='r')      #draw a thick red hline at ‘y’ = 0 that spans the xrange
+	axhline(y=1)                         #draw a default hline at ‘y’ = 1 that spans the xrange
+	axhline(y=.5, xmin=0.25, xmax=0.75)  #draw a default hline at ‘y’ = .5 that spans the middle half of the xrang
+	
+	import matplotlib.pyplot as plt
+	plt.axhline(y=0.5, color='r', linestyle='-')
+	plt.show()
+	
+2) add a vertical line across axis:
+	same as horizontal line.
+	
+	example,
+	axvline(x=1) 						  #raw a default vline at x = 1 that spans the yrange
+	axvline(x=.5, ymin=0.25, ymax=0.75)   #draw a default vline at x = .5 that spans the middle half of the yrange
+	
+################################################################################## PANDAS
+Selecting a range from a series or dataframe:
+This can be done via :
+	df.loc[:5]
+	df.ix[:5]
+	df.iloc[:5]
+
+position-based and label-based indexing:
+a) position-based: will find for an item using its position in the series/dataframe.
+b) label-based: will find for an item using its label in the series/dataframe.
+
+Methods:
+loc  : gets rows (or columns) with particular labels from the index. 
+iloc : gets rows (or columns) at particular positions in the index (so it only takes integers).
+ix   : usually tries to behave like loc but falls back to behaving like iloc if a label is not present in the index. 
+
+example-1,
+	s = pd.Series(np.nan, index=[49,48,47,46,45, 1, 2, 3, 4, 5])
+
+	o/p: 
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+	2    NaN
+	3    NaN
+	4    NaN
+	5    NaN
+
+	s.iloc[:3] # slice the first three rows
+	49   NaN
+	48   NaN
+	47   NaN
+
+	s.loc[:3] # slice up to and including label 3
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+	2    NaN
+	3    NaN
+
+	s.ix[:3] # the integer is in the index so s.ix[:3] works like loc
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+	2    NaN
+	3    NaN
+	
+example-2: if label that isn't in the index (say 6),
+	s.iloc[:6]
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+
+	s.loc[:6]
+	KeyError: 6
+
+	s.ix[:6]
+	KeyError: 6
+	
+example-3: if index was of mixed type,
+	s2 = pd.Series(np.nan, index=['a','b','c','d','e', 1, 2, 3, 4, 5])
+
+	o/p:
+	s2.ix[:6] # now behaves like iloc given integer
+	a   NaN
+	b   NaN
+	c   NaN
+	d   NaN
+	e   NaN
+	1   NaN
+
+	however, ix can still accept non-integers and behave like loc
+	s2.ix[:'c'] # behaves like loc given non-integer
+	a   NaN
+	b   NaN
+	c   NaN
+
+example-4, using dataframe
+	df = pd.DataFrame(np.nan,index=list('abcde'),columns=['x','y','z', 8, 9])
+
+	o/p:
+		x   y   z   8   9
+	a NaN NaN NaN NaN NaN
+	b NaN NaN NaN NaN NaN
+	c NaN NaN NaN NaN NaN
+	d NaN NaN NaN NaN NaN
+	e NaN NaN NaN NaN NaN
+	
+	df.ix[:'c', :4]
+		x   y   z   8
+	a NaN NaN NaN NaN
+	b NaN NaN NaN NaN
+	c NaN NaN NaN NaN
+	
+	df.iloc[:df.index.get_loc('c') + 1, :4]
+		x   y   z   8
+	a NaN NaN NaN NaN
+	b NaN NaN NaN NaN
+	c NaN NaN NaN NaN
+	
+	Here, get_loc() is an index method meaning "get the position of the label in this index".
