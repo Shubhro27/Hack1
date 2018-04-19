@@ -1,0 +1,250 @@
+from numpy import array
+
+Let us look at the example of percent change calculation where we pull company stock price data from Yahoo Finance website and apply percent change method on it. Pandas provides a number of web interfaces such as Yahoo Finance, Google Finance, St. Louis FED, Ken French data library, World Bank. Here, we look at example of Yahoo Finance. Later, we will look at other options. To extract data from these websites, you need to use pandas.io.data
+
+# conda install -c anaconda pandas-datareader=0.4.0
+import pandas_datareader as pdr
+#from pandas_datareader import data, wb
+import pandas_datareader.data as web
+import datetime
+start = datetime.datetime(2016, 5, 1)
+end = datetime.datetime(2017, 10, 1)
+
+##
+aapl = web.DataReader('AAPL','google', start, end)
+
+
+aapl=aapl.ix['2016-09-01':'2017-10-01']
+#aapl.to_csv('apple.csv')
+
+google = web.DataReader('GOOGL','google', start, end)
+google=google.ix['2016-09-01':'2017-10-01']
+#google.to_csv('google.csv')
+microsoft = web.DataReader('MSFT','google', start, end)
+microsoft = microsoft.ix['2016-09-01':'2017-10-01']
+#microsoft.to_csv('microsoft.csv')
+ibm = web.DataReader('IBM','google', start, end)
+ibm = ibm.ix['2016-09-01':'2017-10-01']
+#ibm.to_csv('ibm.csv')
+
+#
+print(google)
+
+o/p:
+			Open	High	Low		Close	Volume
+Date					
+2016-09-01	791.98	792.89	786.33	791.40	1303460
+2016-09-02	795.27	797.10	793.26	796.87	1347368
+2016-09-06	798.39	810.89	795.43	808.02	1989537
+2016-09-07	807.93	810.60	803.72	807.99	1145724
+2016-09-08	805.22	808.42	801.01	802.84	1177660
+
+#
+print(ibm.head())
+
+o/p:
+			Open	High	Low		Close	Volume
+Date					
+2016-09-01	158.32	159.62	158.10	159.54	2358385
+2016-09-02	159.88	160.57	159.15	159.55	2315366
+2016-09-06	159.88	160.86	159.11	160.35	2994056
+2016-09-07	160.19	161.76	160.00	161.64	2867257
+2016-09-08	160.55	161.21	158.76	159.00	3963164
+
+# Compute 5 days moving average
+import pandas as pd
+mov_avg = pd.rolling_mean(aapl.Volume,5)
+mov_avg
+
+o/p:
+Date
+2016-09-01           NaN
+2016-09-02           NaN
+2016-09-06           NaN
+2016-09-07           NaN
+2016-09-08    35056625.2
+2016-09-09    39027717.4
+2016-09-12    42819299.8
+2016-09-13    49878459.6
+2016-09-14    63873657.6
+2016-09-15    71395887.8
+2016-09-16    78061873.2
+......
+
+# Compute lead and lag
+aapl
+aapl['lag1'] = aapl.Close.shift(1)
+aapl['lead1'] = aapl.Close.shift(-1)
+aapl.head()
+
+o/p:
+			Open	High	Low		Close	Volume	    lag1	lead1
+Date							
+2016-09-01	106.14	106.80	105.62	106.73	26701523	NaN		107.73
+2016-09-02	107.70	108.00	106.82	107.73	26334858	106.73	107.70
+2016-09-06	107.90	108.30	107.51	107.70	26880391	107.73	108.36
+2016-09-07	107.83	108.76	107.07	108.36	42364328	107.70	105.52
+2016-09-08	107.25	107.27	105.24	105.52	53002026	108.36	103.13
+
+#
+aapl.pct_change()*100
+
+o/p:
+			Open	High	Low	Close	Volume	lag1	lead1
+Date							
+2016-09-01	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+2016-09-02	1.469757	1.123596	1.136148	0.936944	-1.373199	NaN	-0.027847
+2016-09-06	0.185701	0.277778	0.645946	-0.027847	2.071524	0.936944	0.612813
+2016-09-07	-0.064875	0.424746	-0.409264	0.612813	57.603094	-0.027847	-2.620893
+2016-09-08	-0.537884	-1.369989	-1.709162	-2.620893	25.110036	0.612813	-2.264973
+
+#
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+% matplotlib inline
+
+mov_avg.plot(label='Mov Avg')
+aapl.Volume.plot(label='Volume')
+plt.legend()
+plt.show()
+
+o/p: plot
+
+
+#Concatenate the tech dataframes together to a single data frame called tech_stocks.
+tech_stocks = pd.concat([aapl, google, microsoft, ibm], axis=1, keys=ticker)
+tech_stocks.head()
+
+o/p:
+			AAPL	GOOGL	MSFT	IBM
+			Open	High	Low	Close	Volume	Open	High	Low	Close	Volume	Open	High	Low	Close	Volume	Open	High	Low	Close	Volume
+Date																				
+2016-09-01	106.14	106.80	105.62	106.73	26701523	791.98	792.89	786.33	791.40	1303460	57.01	57.82	57.01	57.59	26075363	158.32	159.62	158.10	159.54	2358385
+2016-09-02	107.70	108.00	106.82	107.73	26334858	795.27	797.10	793.26	796.87	1347368	57.67	58.19	57.42	57.67	18900489	159.88	160.57	159.15	159.55	2315366
+.....
+
+#
+alldata = []
+for company in ['GOOG','AAPL','CSCO','DIS','MSFT']:
+    data=web.DataReader(company,'google', start, end)
+    data=data.ix['2017-09-01':'2017-10-01']
+    data['Firm'] = company
+    alldata.append(data)
+    
+data =pd.concat(alldata)
+print (type(alldata))
+print (type(data))
+data
+
+#Create a DataFrame consisting of the closing price of these stocks,
+stocks = pd.DataFrame({"AAPL": aapl["Close"],
+                      "MSFT": microsoft["Close"],
+                      "GOOG": google["Close"],
+                      "IBM":ibm["Close"]})
+ 
+stocks.head()
+
+o/p:
+			AAPL	GOOG	IBM	MSFT
+Date				
+2016-09-01	106.73	791.40	159.54	57.59
+2016-09-02	107.73	796.87	159.55	57.67
+2016-09-06	107.70	808.02	160.35	57.61
+2016-09-07	108.36	807.99	161.64	57.66
+2016-09-08	105.52	802.84	159.00	57.43
+
+#Plot all stocks in the dataframe
+stocks.plot(grid = True)
+stocks.plot(secondary_y = ["AAPL", "MSFT", "IBM"], grid = True)
+
+# df.apply(arg) will apply the function arg to each column in df, and return a DataFrame with the result
+# Recall that lambda x is an anonymous function accepting parameter x; in this case, x will be a pandas Series object
+stock_return = stocks.apply(lambda x: x / x[0])
+stock_return.head()
+
+			AAPL	GOOG	IBM	MSFT
+Date				
+2016-09-01	1.000000	1.000000	1.000000	1.000000
+2016-09-02	1.009369	1.006912	1.000063	1.001389
+2016-09-06	1.009088	1.021001	1.005077	1.000347
+2016-09-07	1.015272	1.020963	1.013163	1.001215
+2016-09-08	0.988663	1.014455	0.996615	0.997222
+
+# Let's use NumPy's log function, though math's log function would work just as well
+import numpy as np
+ 
+stock_change = stocks.apply(lambda x: np.log(x) - np.log(x.shift(1))) # shift moves dates back by 1.
+stock_change.head()
+
+o/p:
+			AAPL	GOOG	IBM	MSFT
+Date				
+2016-09-01	NaN	NaN	NaN	NaN
+2016-09-02	0.009326	0.006888	0.000063	0.001388
+2016-09-06	-0.000279	0.013895	0.005002	-0.001041
+2016-09-07	0.006109	-0.000037	0.008013	0.000868
+2016-09-08	-0.026559	-0.006394	-0.016467	-0.003997
+
+#What is the max Close price for each bank's stock throughout the time period
+tech_stocks.loc[:, pd.IndexSlice[:, 'Close']].max()
+#tech_stocks.loc[:,]
+
+o/p:
+AAPL   Close    156.10
+GOOGL  Close    996.17
+MSFT   Close     70.41
+IBM    Close    181.95
+dtype: float64
+
+#Calculate the returns for the stocks
+#returns=(Today’s close price - Yesterday’s close price)/ Yesterday’s close price
+#We can use pandas pct_change() method
+
+returns = pd.DataFrame()
+for i in ticker:
+    returns[i + ' Return'] = tech_stocks.xs((i, 'Close'), axis=1).pct_change()
+
+returns.dropna(inplace=True)
+print(returns)
+
+o/p:
+			AAPL Return	GOOGL Return	MSFT Return	IBM Return
+Date				
+2016-09-02	0.009369	0.006912	0.001389	0.000063
+2016-09-06	-0.000278	0.013992	-0.001040	0.005014
+2016-09-07	0.006128	-0.000037	0.000868	0.008045
+2016-09-08	-0.026209	-0.006374	-0.003989	-0.016333
+2016-09-09	-0.022650	-0.017887	-0.021243	-0.020818
+
+#Find out the day the worst returns occured. Notice that two companies have that on the same day.Why?¶
+returns.idxmin()
+
+o/p:
+AAPL Return    2017-05-17
+GOOGL Return   2016-11-10
+MSFT Return    2017-05-17
+IBM Return     2017-04-19
+dtype: datetime64[ns]
+
+# Best Single Day Gain
+returns.idxmax()
+
+o/p:
+AAPL Return    2017-02-01
+GOOGL Return   2017-04-28
+MSFT Return    2016-10-21
+IBM Return     2016-11-10
+
+Take a look at the standard deviation of the returns, which stock would you classify as the riskiest over the entire time period?
+returns.std()
+
+o/p:
+AAPL Return     0.010756
+GOOGL Return    0.009673
+MSFT Return     0.009170
+IBM Return      0.009593
+
+#Which would you classify as the riskiest for the year 2017?
+returns.loc['2017-01-01':'2018-01-20'].std().idxmax()
+
+o/p: 'AAPL Return'
