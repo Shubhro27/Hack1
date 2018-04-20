@@ -734,8 +734,8 @@ Types of SH:
 2)Alternative Hypothesis (H1/Ha): hypothesis that sample observation are influenced by some non-random cause.
 	This is exactly opposite of H0.
 	
-For HT, we calculate the P-Value.
-P-Value of a test is probability of seeing a result as close as the one we saw assuming H0 as true.
+For HT, we calculate the P-Value 
+(P-value is a statistical measure that helps scientists determine whether or not their hypotheses are correct)
 
 In order to calculate P-Value:
 1) compute T-statistic value i.e. calculate 2 sided t-test
@@ -773,6 +773,34 @@ we use 2 sided t-test since t<-2.747 and t>2.747 are both considered extreme.
 	
 	NOTE: 5% depends on the scenario of comparision, it depends on person. High level of confidence requires greater %.
 
+In Python, I can calculate p value as:
+example-1,
+	from scipy.stats import ttest_ind_from_stats
+	n1 = 13
+	mean1 = 24.0
+	std1 = 2.3
+	n2 = 16
+	mean2 = 26.5
+	std2 = 2.9
+	tstat, pvalue = ttest_ind_from_stats(mean1, std1, n1, mean2, std2, n2)
+
+	o/p:
+	pvalue
+	0.017694241930792689
+	
+example-2,
+	from scipy.stats import ttest_ind
+	data = {'Category': ['cat2','cat1','cat2','cat1','cat2','cat1','cat2','cat1','cat1','cat1','cat2'], 'values': [1,2,3,1,2,3,1,2,3,5,1]}
+	my_data = DataFrame(data)
+	#
+	cat1 = my_data[my_data['Category']=='cat1']
+	cat2 = my_data[my_data['Category']=='cat2']
+	#
+	ttest_ind(cat1['values'], cat2['values'])   #returns the t-statistic & the p-value
+
+	o/p:
+	(1.4927289925706944, 0.16970867501294376)   
+	
 T-score vs Z-score:
 
 							do u know population STD
@@ -1259,12 +1287,33 @@ for i in range(NUM_TRIALS):
 df = pd.DataFrame(np.column_stack((samp_mn_vec,lower_5pct,upper_95pct, flag_true_mean_within_ci)), columns = ['samp_mean', 'lower_5pct', 'upper_95pct', 'flag_true_mean_within_ci' ])    
 #df.to_csv('expt_n{}_iters{}.csv'.format(n, NUM_TRIALS)) 
 
-
------------------------------------------------------------------------
-
-
 -----------------------------------------------------------------------
 Frequency distribution:
+
+histogram is a graphical representation of the frequency distribution of data. 
+
+how to calculate frequency (Y-axis)
+STEP-1: sort the array (grouped values)
+        5	5	11	20	22	27	31	43	51	54	55	56	73	79	87
+STEP-2: determine the bins i.e. from above program [0,20,40,60,80,100]. 
+		This can be grouped into following categories,
+		0-20
+		20-40
+		40-60
+		60-80
+		80-100
+STEP-3: now count which elements in the array (STEP-1) fall in these categories,
+		0-20	3
+		20-40	4
+		40-60	5
+		60-80	2
+		80-100	1
+STEP-4: so [3,4,5,2,1] are the frequencies.
+
+More on Frequency distribution: https://www.mathsisfun.com/data/frequency-distribution-grouped.html
+								Detailed: https://math.tutorvista.com/statistics/frequency-distribution.html
+								
+Frequency Distribution is usually plotted via Bar-graph, Histogram, pie-chart.
 
 in Python,
 from collections import Counter
@@ -1366,3 +1415,11 @@ given a set of N samples from a random variable, X, possibly multivariate and co
 
 to plot using pandas,
 df['year_as_float']d.plot(kind='kde')
+
+-------------------------------------------------------------------------------------------------------------
+Degrees of freedom:
+Are a measure the amount of variability involved in the research, which is determined by the number of categories you are examining. 
+The equation for degrees of freedom is Degrees of freedom = n-1, where "n" is the number of categories or variables being analyzed in your experiment. 
+example,
+Experiment has two categories of results: one for red cars and one for blue cars. 
+Thus, in our experiment, we have 2-1 = 1 degree of freedom. If we had compared red, blue, and green cars, we would have 2 degrees of freedom, and so on.
