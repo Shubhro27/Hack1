@@ -1,12 +1,22 @@
 Link-1: https://www.dezyre.com/article/pig-interview-questions-and-answers-for-2018/244
-
+Link-2: https://intellipaat.com/interview-question/pig-interview-questions/
+Link-3: https://mindmajix.com/apache-pig-interview-questions
 -------------------------------------------------------------------------------------------------
 Modes of Execution for Apache Pig:
 1) Local Mode   : pig -x local
 2) Cluster Mode : pig
 
+Interviewer may also expect,
+1) grunt shell mode.
+2) batch/script mode.
+3) embedded mode.
+
 Pig programming is done via pig latin. To execute a statement, Pig requires an execution engine. So
 Pig Engine (converts statements into MapReduce jobs) -> map Reduce Engine then executes this set of Map-reduce jobs.
+
+Is Pig Latin strongly typed?
+If we have defined a schema for the data item, Pig will expect the data to come in the same format as defines, So strongly typed
+If however, we skip the schema, PIG allows semi structured data to be processed, but it is coder's overhead to remember and maintain the positioning of data. 
 
 Difference between Pig and Hive:
 Pig								 		Hive
@@ -15,6 +25,9 @@ Pig is a dataflow language.				Hive supports a data warehouse architecture.
 Pig resides on client machine.   		Hive resides on server machine.
 Pig supports semi structured format		Hive is strictly structured.
 Pig implements DAG						Hive executes the code at run time
+PLatin is procedural					HiveQL is declarative language
+PLatin does not require a schema		HiveQL requires a Schema
+PLatin has nested relational model		HiveQL has flat relational Model
 
 Difference between Pig and Mapreduce:
 Pig										MR
@@ -30,6 +43,42 @@ PIG implements DAG, scripting language					SQL is compiled language
 Pig built-in can split a data processing stream			SQL cannot
 Pig build in allows loading the data for operations		SQL requires interrogating the DB for every transaction.
 --------------------------------------------------------------------------------------------------
+Comments in PIG can be put in "/*.....*/
+
+Pig single line and multiline commands:
+Single line: if we have a single line command, PIG will directly execute it.
+Multi line : we will have to store it in a pig script and execute it via,
+			 pig -x mapreduce *.pig  //for cluser mode
+			 pig -x local *.pig      //for local mode 
+--------------------------------------------------------------------------------------------------
+What are the execution plans in PIG:
+Pig scripts are based on interpreter checking.
+1) Logical Plan  : is produced after semantic checking and basic parsing but no data processing takes place during creation of this plan.
+				   Each statement in the script has its own logical plan which is formed after syntax checking on the operators. If an issue is encountered,
+				   an exception is thrown.
+2) Physical Plan : A physical plan is a series of map-reduce jobs, although it does not have any reference on the execution path.
+				    Load and store functions usually get resolved in the physical plan.
+					
+Interesting Fact:
+During the creation of physical plan, cogroup logical operator is converted into 3 physical operators namely –Local Rearrange, Global Rearrange and Package.
+--------------------------------------------------------------------------------------------------
+Operators In Pig:
+
+1) Arithmetic Operators:  Addition, substraction, multiplication, modulus, division etc. Operates on 2 atoms in a tuple or bag.
+2) Comparision Operators: ==, >, <......
+3) Type Construction Operator: Used to construct a complex data type  from scalar data types
+	a) Tuple constructor operator: (). ex, (Raju, 30)
+	b) Bag constructor operator: {}  . ex, {(Raju, 30), (Mohammad, 45)}
+	c) Map constructor operator: []  . ex, [name#Raja, age#30]
+4) Relational Operators: it takes an expression and applies them to all the records in the data item. example, foreach, order by, group, distinct, Filter etc.
+	Categories,
+	a) Loading and Storing
+	b) Filtering: FILTER, DISTINCT, FOREACH
+	c) Grouping and joining: JOIN, GROUP, COGROUP, CROSS
+	d) Sorting: ORDER, LIMIT
+	e) Combining/Splitting: UNON, SPLIT
+	f) Diagnostic: DESCRIBE, EXPLAIN.......
+--------------------------------------------------------------------------------------------------
 Mapfile and bloomsMapFile in Hadoop:
 
 mapFile: is a directory which comprises of 2 sequential files: data file and index file. It appends key-Value pairs as key and offset as index.
@@ -39,8 +88,8 @@ BloomMapFile: is a class which extends MapFile. It uses HBASE table format and e
 --------------------------------------------------------------------------------------------------
 Complex datatypes in PIG:
 1) Maps (KeyValue pairs separated by #)
-2) Tuples (uneditable array of heterogeneous elements)
-3) Bag (group of tuples) 
+2) Tuples (uneditable array of heterogeneous elements). Encapsulated within ()
+3) Bag (group of tuples): encapsulated within {}
 
 Map in more details:
 Usually maps are not preferred in PIG. Limitation is one can not lookup variable key in the Map in Pig i.e. key needs to be constant.
@@ -182,7 +231,7 @@ with run, the statements from the script are available in the command history.
 ------------------------------------------------------------------------
 What are Pig diagnostic operators:
 
-By diagnostic operators, we mean operators which verify the result of a LOAD command.
+By diagnostic operators (also called exception handling operators), we mean operators which verify the result of a LOAD command.
 there are 4 operators as such,
 1) Dump operator
 2) Describe operator : view the schema of a relation.
@@ -191,6 +240,20 @@ there are 4 operators as such,
 						  LogicalPlanOptimizer, "New Logical Plan", "Physical Plan", "map-Reduce Plan".
 4) Illustration operator : "illustrate student;" provides step-by-step execution of a sequence of statements.
 
+When is Explain utility used and when is Illustrate Preferred?
+Explain Utility: to debug error or optimize PigLatin scripts. Explain can be applied to an alias of a script or complete script in grunt shell.
+
+Illustrate Utility: if a script has a join or filter operation,illustrate takes a sample from the data and whenever it comes across operators like join or filter 
+					that remove data, it ensures that only some records pass through and some do not.
+					illustrate just shows the output of each stage but does not run any MapReduce task.
+
+Explain plan format:
+EXPLAIN [-script pigscript] [-out path] [-brief] [-dot] [-paramparam_name = param_value] [-param_filefile_name] alias;
+out   : Used to specify the output path (directory)
+brief :Does not expand nested plans
+dot   : utility which will generate a directed-acyclic-graph (DAG) of the plans in any supported format (.gif, .jpg …).
+Alias : name of a relation.
+paramparam_name = param_value : used to see the parameters					
 -------------------------------------------------------------------------
 What are the kind of joins available in Pig:
 1) self join
@@ -361,5 +424,13 @@ Embedding Pig Script from Unix Shell, Java and Python:
 	
 3) Python: pig -embedded jython myjob.py OR USE Python UDFs from within PIG.
 		   also check https://www.safaribooksonline.com/library/view/programming-pig/9781449317881/ch09.html
-		   
+
+----------------------------------------------------------------------------------------------------
+What are all stats classes in the org.apache.pig.tools.pigstats package?
+PigStats encapsulates the statistics collected from a running script.
+Stat classes are in the package,
+PigStats
+JobStats
+OutputStats
+InputStats.		   
 		   
