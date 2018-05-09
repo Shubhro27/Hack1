@@ -78,7 +78,7 @@ Operators In Pig:
 	b) Filtering: FILTER, DISTINCT, FOREACH
 	c) Grouping and joining: JOIN, GROUP, COGROUP, CROSS
 	d) Sorting: ORDER, LIMIT
-	e) Combining/Splitting: UNON, SPLIT
+	e) Combining/Splitting: UNION, SPLIT
 	f) Diagnostic: DESCRIBE, EXPLAIN.......
 --------------------------------------------------------------------------------------------------
 Mapfile and bloomsMapFile in Hadoop:
@@ -278,6 +278,54 @@ Split will split the content of a relation into 2 or more relations based on a c
 example, SPLIT Relation1_name INTO Relation2_name IF (condition1), Relation2_name (condition2),
 		 SPLIT student_details into student_details1 if age<23,student_details2 if (22<age and age>25);
 		 
+
+		 
+What are the Optimizations developer can use during joins?
+OR
+What are the specialized joins supported by Pig?
+
+There are a number of simple joins across all procedural or declarative languages like: self join, inner join, outer joins
+Specialized joins in pig include:
+1) replicated join
+2) skewed join
+3) merge join
+
+1) replicated join: used in scenarios where we have to join between a large dataset and a small dataset.
+				    So instead of sorting the big file and then applying reduce method on each row/record, it is preferrable to
+					broadcast the small file to all the nodes and apply the join with the part big file thus creating a replicated file.
+					This is thus a map side join.
+					
+				example,
+					Big file: file containing the land line numbers of people across all cities in India
+	                Small File: file containing the STD codes (3 digit numbers) for each city in India
+					Case: STD code number has to be prefixed to the respective city for each number in the bigger file
+				
+				a) Load the 2 files.
+				b) repicated join as,
+					joined_std = JOIN big_file BY ip_address, small_file BY ip_address USING 'replicated';
+					
+2) skewed join: Data skew is a situation in distributed processing environment when the data is not evenly divided 
+				causing a particular value will be repeated many times. So, the particular reducer will be overloaded and it will take a lot of time.
+				So, Pig identifies keys which have data that is skewed (in SAMPLING PHASE). 
+				The skewed data will be automatically split the set across multiple reducers, then in a second MapReduce job, it does the actual join.
+				example,
+				big = LOAD 'big_data' AS (b1,b2,b3);
+				massive = LOAD 'massive_data' AS (m1,m2,m3);
+				C = JOIN big BY b1, massive BY m1 USING "skewed";
+				
+3) Merge join: In this join scenario, users data is stored in such a way where both input files are totally sorted on the join key and 
+			   then join operation can be performed in the map phase of the Map Reduce job.
+			   This provides a significant progress in performance over shuffle and sorting process.
+			   example,
+			    STEP-1: sort the data in linux box:
+						sort -k1 ds1 > ds1_sorted
+						sort -k1 ds2 > ds2_sorted
+				
+			    STEP-2: load the data in shell
+				
+				STEP-3: join using Merge join
+						JOIN ds1_sorted BY key1,ds_sorted BY key2 USING "merge";
+		 
 ------------------------------------------------------------------------
 What is difference between COUNT() and COUNT_STAR()
 	COUNT() ignores NULL elements but COUNT_STAR() considers NULL elements (tuples).
@@ -433,30 +481,30 @@ Embedding Pig Script from Unix Shell, Java and Python:
 
 ----------------------------------------------------------------------------------------------------
 What are all stats classes in the org.apache.pig.tools.pigstats package?
-PigStats encapsulates the statistics collected from a running script.
-Stat classes are in the package,
-PigStats
-JobStats
-OutputStats
-InputStats.		
+	PigStats encapsulates the statistics collected from a running script.
+	Stat classes are in the package,
+	PigStats
+	JobStats
+	OutputStats
+	InputStats.		
 
 ----------------------------------------------------------------------------------------------------
 various types of UDF’s in Java supported by Apache Pig:
-1) EVAL functions like AVG, COUNT, DIFF, MAX etc
-2) FILTER functions etc.
+	1) EVAL functions like AVG, COUNT, DIFF, MAX etc
+	2) FILTER functions etc.
 
-While writing UDF in pig, you have to override the method exec() and the base class can be different, 
-while writing filter UDF, you will have to extend FilterFunc and for evaluate UDF, 
-you will have to extend the EvalFunc.EvaluFunc is parameterized and must provide the return type also.
+	While writing UDF in pig, you have to override the method exec() and the base class can be different, 
+	while writing filter UDF, you will have to extend FilterFunc and for evaluate UDF, 
+	you will have to extend the EvalFunc.EvaluFunc is parameterized and must provide the return type also.
 
-the different UDF's in Pig?
-UDF can be processed based on the number of rows. UDF's are divided into two types:
+	the different UDF's in Pig?
+	UDF can be processed based on the number of rows. UDF's are divided into two types:
 
-1) UDF's that take one record at a time. For example, Filter and Eval.
+	1) UDF's that take one record at a time. For example, Filter and Eval.
 
-2) User Defined Aggregate Function (UDAFs) that take multiple records at a time. For example, Avg and Sum.
+	2) User Defined Aggregate Function (UDAFs) that take multiple records at a time. For example, Avg and Sum.
 
-Also, pig gives you the facility to write your own UDF's for load/store the data.
+	Also, pig gives you the facility to write your own UDF's for load/store the data.
 
 ------------------------------------------------------------------------------------------------------
 Can we compare 2 bags.
@@ -497,4 +545,37 @@ example,
 			({(4,Sara,25,40000,sales),(4,Alia,25,50000,admin)}) 
 			({}) 
 			({(6,Maggy,22,35000,sales),(6,Omar,30,30000,admin)})
-		   
+	
+-------------------------------------------------------------------------------
+
+Access Hive table from Pig Program:
+	This can be done via hcatalog. There is a UDF -useHCatalog which can be used as,
+
+	A = LOAD '<hive table name>' USING org.apache.hive.hcatalog.pig.HCataLoader();  //Will load the Hive table into Pig relation. All the schema of the records 
+																					//and the data types will be automatically preserved.
+	B = FILTER A by <condition>  
+	STORE B into '<hive table name>' USING org.apache.hive.hCatalog.pig.HCatStorer(); //Will store to Hive table.
+						
+Access HBASE from Pig Program:
+	a) To load the data from HBase table to a PIG relation,HBaseStorage() is used.
+	b) To store pig relation into HBase table, HbaseStorage () is used.
+
+	data = LOAD 'hbase://employee' USING org.apache.pig.backend.hadoop.hbase.HbaseStorage('personal:*, professional:*','-loadkey true') 
+		   as (id:CHARARRAY,personal:MAP[],professional:MAP[]); 
+
+	result = FOREACH data GENERATE id, personal#'name', professional#'exp'	   
+	STORE T into 'bulk_pig' USING org.apache.pig.backend.hadoop.hbase.HbaseStorage ('cf1:name,cf1:exp'); 
+
+-------------------------------------------------------------------------------------
+Macros in PIG:
+is kind of functions in PIG to make it modular.
+example,
+	Suppose you have to count the number of tuples in a relation, then use the following code:
+		DEFINE row_count (X) RETURNS Z 
+		{
+		  Y = group $X all; 
+		 $Z = foreach Y generate COUNT($X);
+		}
+		
+	Z will be returned from the macro.
+	new_relation = row_count (existing_relation)
