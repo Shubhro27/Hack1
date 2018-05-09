@@ -1,6 +1,8 @@
 Link-1: https://www.dezyre.com/article/pig-interview-questions-and-answers-for-2018/244
 Link-2: https://intellipaat.com/interview-question/pig-interview-questions/
 Link-3: https://mindmajix.com/apache-pig-interview-questions
+Link-4: https://www.edureka.co/blog/interview-questions/hadoop-interview-questions-pig/
+***Link-5: https://acadgild.com/blog/top-12-pig-interview-questions-in-2017/
 -------------------------------------------------------------------------------------------------
 Modes of Execution for Apache Pig:
 1) Local Mode   : pig -x local
@@ -85,6 +87,10 @@ mapFile: is a directory which comprises of 2 sequential files: data file and ind
 		 This allows for a fast lookup, as instead of scanning all the records till a key is found, we scan the index, which has lesser entries.
 		 
 BloomMapFile: is a class which extends MapFile. It uses HBASE table format and expedites the search for a file/block than mapFile.
+--------------------------------------------------------------------------------------------------
+What is PigStorage?
+It is the default storage when no explicit storage has been defined.
+It will load and store relations in a field delimited text format.
 --------------------------------------------------------------------------------------------------
 Complex datatypes in PIG:
 1) Maps (KeyValue pairs separated by #)
@@ -432,5 +438,63 @@ Stat classes are in the package,
 PigStats
 JobStats
 OutputStats
-InputStats.		   
+InputStats.		
+
+----------------------------------------------------------------------------------------------------
+various types of UDF’s in Java supported by Apache Pig:
+1) EVAL functions like AVG, COUNT, DIFF, MAX etc
+2) FILTER functions etc.
+
+While writing UDF in pig, you have to override the method exec() and the base class can be different, 
+while writing filter UDF, you will have to extend FilterFunc and for evaluate UDF, 
+you will have to extend the EvalFunc.EvaluFunc is parameterized and must provide the return type also.
+
+the different UDF's in Pig?
+UDF can be processed based on the number of rows. UDF's are divided into two types:
+
+1) UDF's that take one record at a time. For example, Filter and Eval.
+
+2) User Defined Aggregate Function (UDAFs) that take multiple records at a time. For example, Avg and Sum.
+
+Also, pig gives you the facility to write your own UDF's for load/store the data.
+
+------------------------------------------------------------------------------------------------------
+Can we compare 2 bags.
+
+using DIFF operator (an empty tuple if the records in emp_bonus and emp_sales match. In other cases, it will hold tuples from both the relations (tuples that differ).)
+example,
+	emp_sales.txt
+	1,Robin,22,25000,sales 
+	2,BOB,23,30000,sales 
+	3,Maya,23,25000,sales 
+	4,Sara,25,40000,sales 
+	5,David,23,45000,sales 
+	6,Maggy,22,35000,sales 
+
+	emp_bonus.txt
+	1,Robin,22,25000,sales 
+	2,Jaya,23,20000,admin 
+	3,Maya,23,25000,sales 
+	4,Alia,25,50000,admin 
+	5,David,23,45000,sales 
+	6,Omar,30,30000,admin 
+
+	Code:
+	1) Load the files
+	2) cogroup_data = COGROUP emp_sales by sno, emp_bonus by sno;
+		o/p:
+			(1,{(1,Robin,22,25000,sales)},{(1,Robin,22,25000,sales)}) 
+			(2,{(2,BOB,23,30000,sales)},{(2,Jaya,23,20000,admin)}) 
+			(3,{(3,Maya,23,25000,sales)},{(3,Maya,23,25000,sales)}) 
+			(4,{(4,Sara,25,40000,sales)},{(4,Alia,25,50000,admin)}) 
+			(5,{(5,David,23,45000,sales)},{(5,David,23,45000,sales)}) 
+			(6,{(6,Maggy,22,35000,sales)},{(6,Omar,30,30000,admin)})
+	3) diff_data = FOREACH cogroup_data GENERATE DIFF(emp_sales,emp_bonus);
+		o/p:
+			({}) 
+			({(2,BOB,23,30000,sales),(2,Jaya,23,20000,admin)}) 
+			({}) 
+			({(4,Sara,25,40000,sales),(4,Alia,25,50000,admin)}) 
+			({}) 
+			({(6,Maggy,22,35000,sales),(6,Omar,30,30000,admin)})
 		   

@@ -1,0 +1,1543 @@
+A Pointer is a variable that holds address of another variable of same data type.
+
+Advantages,
+1) Pointer allows references to function and thereby helps in passing of function as arguments to other function.
+2) It reduces length of the program and its execution time.
+3) It allows C to support dynamic memory management.
+
+int i = 10; 
+here, 
+i   -> name of location
+80f -> address in memory
+10  -> value.
+
+The variable that holds memory address are called pointer variables.Value of pointer variable will be stored in another memory location.
+
+syntax, data-type *pointer_name;
+Data type of a pointer must be same as the data type of a variable to which the pointer variable is pointing. void type pointer works with all data types, but is not used often used.
+
+In C language address operator & is used to determine the address of a variable.
+example,
+int a = 10 ;
+int *ptr ;        //pointer declaration
+ptr = &a ;        //pointer initialization
+or,
+int *ptr = &a ;      //initialization and declaration together
+
+float a;
+int *ptr;
+ptr = &a;    //ERROR, type mismatch.
+
+A pointer which is assigned a NULL value is called a null pointer.
+
+To access the value of variable, pointer is dereferenced, using the indirection operator "*".
+example,
+int a,*p;
+a = 10;
+p = &a;   
+printf("%d",*p);    //this will print the value of a. 
+printf("%d",*&a);   //this will also print the value of a.
+printf("%u",&a);    //this will print the address of a.
+printf("%u",p);     //this will also print the address of a.
+printf("%u",&p);    //this will print the address of p.
+
+When one pointer variable stores the address of another pointer variable, it is known as Pointer to Pointer variable.
+syntax, int **p1;
+we have used two indirection operator(*) that stores and points to the address of a pointer variable i.e, int *. If we want to store the address of this variable p1, then the syntax would be,
+int ***p2;
+
+example,
+   int  a=10;
+   int  *p1;  //this can store the address of variable a
+   int  **p2; /*this can store the address of pointer variable p1 only. It cannot store the address of variable a */
+
+   p1 = &a;
+   p2 = &p1;
+
+   printf("Address of a = %u\n",&a);      //address of a
+   printf("Address of p1 = %u\n",&p1);    //address of p1
+   printf("Address of p2 = %u\n\n",&p2);  //address of p2
+   printf("Value at the address stored by p2 = %u\n",*p2); //this will give the address of a i.e. value stored in p1 address
+   printf("Value at the address stored by p1 = %d\n\n",*p1); // this will give value of a i.e. 10.
+   printf("Value of **p2 = %d\n", **p2); //read this *(*p2)  // this will give 10 i.e. *[*(&p1)]
+   
+Note: p2 = &a; //not allowed, it will give a compiler time error.
+--------------------------------------------------------------------------
+pointers and arrays
+
+Base address of an array is address of the first element of the array.
+example, int arr[5]={ 1, 2, 3, 4, 5 };
+here, variable "arr" will give the base address, which is a constant pointer pointing to the element, arr[0].
+i.e.arr is equal to &arr[0] //by default.
+
+int *p;
+p = arr;  or p = &arr[0];  //both the statements are equivalent
+p++;  //to move from one element to another.
+
+Note: You cannot decrement a pointer once incremented. p-- won't work.
+example,
+		int i;
+		int a[5] = {1, 2, 3, 4, 5};
+		int *p = a;  // same as int *p = &a[0]
+		for (i=0; i<5; i++)
+		{
+			printf("%d", *p);
+			p++;
+		}
+
+more details,
+printf("%d", a[i]);    //prints values of the array i.e. 1,2,3,4,5.
+printf("%d", i[a]);    //prints values of the array i.e. 1,2,3,4,5.
+printf("%d", a+i);     //prints address of the array like 1000,1002,1004...
+printf("%d", *(a+i));  //prints values in the array i.e.1,2,3,4,5.
+printf("%d", *a);      //prints value in the base address i.e. 1.
+a++;                   //compilation error as base address cannot be incremented.
+
+Note, 
+1) the generalized form for using pointer with single dimensional arrays is *(a+i) {same as a[i]}
+2) the generalized form for using pointer with multi dimensional arrays is *(*(a+i) + j)  {same as a[i][j]}
+
+---------------------------------------
+pointers and character strings
+Pointer variables of char type are treated as string.example, char *str = "Hello";
+here, pointer str now points to the first character of the string "Hello" i.e. "H"
+
+string created using char pointer can be assigned a value at runtime.
+i.e.,
+char *str;
+str = "hello";   //this is Legal
+
+to display content of the string,
+printf("%s", str);
+puts(str);
+
+NOTE: str is pointer to the string, it is also name of the string. Therefore we do not need to use indirection operator *.
+----------------------------------------
+arrays of pointers:
+Pointers can be used for handling character array with rows of varying length. example,
+char *name[3] = { "Adam", "chris", "Deniel" }; //i.e. will point to the 1st character of their respective strings.
+is similar to,
+char name[3][20] = { "Adam", "chris", "Deniel" }; //in this, memory wastage is more
+----------------------------------------
+pointer to structures:
+there can be 2 instances of using pointers to structures,
+1) pointers of structure type i.e. pointer to an Array of structure variables.
+2) pointer to a single structure variable.
+
+example,
+		struct Book
+		{
+		 char name[10];
+		 int price;
+		}
+		int main()
+		{
+		 struct Book a;       //Single structure variable
+		 struct Book* ptr;    //Pointer of Structure type
+		 ptr = &a;
+		 
+		 struct Book b[10];     //Array of structure variables
+		 struct Book* p;        //Pointer of Structure type
+		 p = &b;    
+		}
+		
+In order to access Structure Members with Pointer,
+1) members of structure with structure variable, we used the dot . operator.
+2) pointer of structure type, we use arrow -> to access structure members.
+
+example of structure type,
+		int main()
+		{
+			struct my_structure {
+			char name[20];
+			int number;
+			int rank;
+		};
+
+		struct my_structure variable = {"StudyTonight",35,1};
+
+		struct my_structure *ptr;
+		ptr = &variable;
+
+		printf("NAME: %s\n",ptr->name);
+		printf("NUMBER: %d\n",ptr->number);
+		printf("RANK: %d",ptr->rank);
+
+		return 0;
+		}
+		
+	o/p:
+		NAME: StudyTonight
+		NUMBER: 35
+		RANK: 1
+-------------------------------------------
+pointer arithmetic:
+
+
+1) In a 16 bit machine:
+	NOTE: In a 16 bit machine, size of all types of pointer, be it int*, float*, char* or double* is always 2 bytes.
+
+	But,
+	when we perform any arithmetic function like increment on a pointer, changes occur as per the size of their primitive data type.
+	i.e.
+	Type				Size(bytes)
+	int or signed int	2
+	char				1
+	long				4
+	float				4
+	double				8
+	long double			10
+	
+	example,
+	int* i; //pointer will be of 2 bytes
+	i++;    //it will increment by 2 bytes because int is also of 2 bytes
+	
+	float* i;  //pointer is still 2 bytes
+	i++;       // it will increment by 4 bytes because float is of 4 bytes.
+	
+	double* i; //size of pointer is still 2 bytes
+	i++;       //it will increment by 8 bytes because its data type is double.
+
+2) In a 32 bit Machine:
+	NOTE: Pointer in 32 bit machine is of 4 bytes
+	Type				Size(bytes)
+	int or signed int	4
+	char				2
+	long				8
+	float				8
+	double				16
+	
+	Note: We cannot add two pointers. This is because pointers contain addresses, adding two addresses makes no sense, because you have no idea what it would point to.But we can subtract two pointers.This is because difference between two pointers gives the number of elements of its data type that can be stored between the two pointers.
+	
+		int main()
+		{
+			int m=5,n=10,o=0;
+
+			int *p1;    
+			int *p2;
+			int *p3;
+
+			p1 = &m;    //printing the address of m 
+			p2 = &n;    //printing the address of n
+
+			printf("p1 = %d\n",p1);  //  2680016
+			printf("p2 = %d\n",p2);  //  2680012
+
+			o = *p1+*p2;
+			printf("*p1+*p2 = %d\n",o); // 15 i.e.value of m & n.
+
+			p3 = p1-p2;
+			printf("p1 - p2 = %d\n",p3); // 1. address of(p1 - p2)/size of int ptr datatype i.e. 4 = 1
+										 //i.e. number of elements of integer data type that can be stored within it.
+			p1++;
+			printf("p1++ = %d\n",p1); // 2680016 + 4 = 2680020
+
+			p2--;
+			printf("p2-- = %d\n",p2); // 2680012 - 4 = 2680008
+
+			printf("p1+p2 = %d\n",p1+p2); //will give error as addition not allowed
+
+			return 0;
+		}
+
+-----------------------------------------
+function basic concepts and pointer with functions:
+2 types of function,
+1) library functions. example, scanf, printf.
+2) user defined functions.
+
+formal and actual arguments:
+example,
+		main{
+			int a,b,sum;
+			sum = calsum(a,b);  //a, b are called actual arguments. 
+		}
+		calsum (int x, int y)   //x, y are called formal arguments.
+		{
+			int d;
+			d = x + y;
+			return d;
+		}
+		
+function calling convention:
+In C, arguments are passed from right to left. This info matters in some cases like,
+1) func (a,b,c,d)  does not matter in this case.
+2) printf ("%d%d%d",a, ++a, a++) the value although assumed to be 1,2,3 is incorrect. This returns 1,3,3
+   i.e. a++ = 1, ++a = 3 and a = 3 (i.e. right to left).
+
+function declarations: by default, C function returns an int value. example,
+main()
+{
+	float a,b;
+	b = square(1.5);
+}
+square(float x)
+{
+	float y;
+	y = x * x;
+	return y;
+}   
+   
+o/p: 2.
+
+mixed calls i.e. formal arguments contain both pointers and variables.
+example,
+main
+{
+	int radius = 10;
+	areaperi(radius, &area, &perim)
+}
+void areaperi (int r,float *a,float *p)
+{
+	*a = r * r * 3.14;
+	*p = 2 * 3.14 * r;
+}  
+
+recursive calls: function calls which call itself. 
+   
+1) Pointer as a function parameter list is use to hold address of argument passed during function call. i.e.call by reference
+	example,
+			int main()
+			{
+				int m=10, n=20;
+				printf("m = %d\n",m);
+				printf("n = %d\n\n",n);
+
+				swap(&m,&n); //passing address of m and n to the swap function
+				printf("After Swapping:\n\n");
+				printf("m = %d\n",m);
+				printf("n = %d",n);
+				return 0;
+			}
+
+			void swap(int *a, int *b)//pointer a and b holds and points to the address of m and n
+			{
+				int temp;
+				temp = *a;
+				*a = *b;
+				*b = temp;
+			}
+			
+2) function returning pointer:
+			int* larger(int*, int*);
+			void main()
+			{
+			 int a=15;
+			 int b=92;
+			 int *p;
+			 p=larger(&a, &b);
+			 printf("%d is larger",*p);
+			}
+
+			int* larger(int *x, int *y)
+			{
+			 if(*x > *y)
+			  return x;
+			 else
+			  return y;
+			}
+			
+	NOTE: local variables of function doesn't live outside the function.Hence if you return a pointer connected to a local variable, that pointer be will pointing to nothing when function ends.
+	so, some alternatives to handle suc scenarios are,
+	1) use argument with functions, as they are declared inside the calling function.
+	2) use static local variables inside the function and return it as static variables have a lifetime until main() exits.
+	
+3) Pointer to functions i.e.declare a pointer pointing to a function which can then be used as an argument in another function.
+	syntax for pointer to a function, type (*pointer-name)(parameter);
+	example,
+		int (*sum)();   //legal declaration of pointer to function
+		int *sum();   //This is not a declaration of pointer to function
+		
+	
+	better example,
+		int sum(int, int);
+		int (*s)(int, int);
+		s = sum;    //s is a pointer to a function sum
+		s (10, 20); //sum called using function pointer s with the list of parameter.  
+	
+	example,
+	int sum(int x, int y)
+	{
+	 return x+y;
+	}
+
+	int main( )
+	{
+	 int (*fp)(int, int);
+	 fp = sum;
+	 int s = fp(10, 15);
+	 printf("Sum is %d",s);
+	 getch();
+	 return 0;
+	}
+	
+	Output : 25
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+structures:
+user-defined data type to combine different data types thus creating a record.
+
+difference between array and structures? Array is a collection of similar data types while structures can store multiple data types.
+
+Syntax:
+	struct structure_name
+	{
+	 //declaration of different data types
+	};
+	
+example,
+	struct Book
+	{
+	 char name[15];
+	 int price;
+	 int pages;
+	};
+	
+NOTE: The fields within a structure are called structure elements or members. example, name, price, pages are structure elements.
+
+Declaring structure variables: i.e. variables of structure type  
+a) Declaring Structure variables separately : 
+	example,
+		struct Student
+		{
+		 char[20] name;
+		 int age;
+		 int rollno; 
+		} ;
+		struct Student S1 , S2;   //declaring variables of Student
+		
+b) Declaring Structure Variables with Structure definition: 
+	example,
+		struct Student
+		{
+		 char[20] name;
+		 int age;
+		 int rollno; 
+		} S1, S2 ;
+		
+	************** this approach is not much recommended.
+
+Accessing Structure Members: Structure member has no meaning independently. member name must be linked with the structure variable using period (".") 
+	example,
+		struct Book
+		{
+		 char name[15];
+		 int price;
+		 int pages;
+		} b1 , b2 ;
+		b1.price=200;      //b1 is variable of Book type and price is member of Book
+
+Structure Initialization: 2 ways
+1) Initializing the entire structure itself,
+	example,
+		struct Patient
+		{
+		 float height;
+		 int weight;  
+		 int age; 
+		};
+		struct Patient p1 = { 180.75 , 73, 23 };    //initialization
+
+2) Initializing structure variables,
+	example,
+		struct patient p1;
+		p1.height = 180.75;     //initialization of each member separately
+		p1.weight = 73;
+		p1.age = 23;
+		
+Array of Structure: i.e. each element of the array represents a structure variable. example, struct employee emp[5]; 
+	In order to access the array elements, we can use format like emp[i].sal
+	
+Nesting of Structures: 
+	example,
+			struct student
+			{
+			 char[30] name;
+			 int age;
+			   struct address
+				{
+				 char[50] locality;
+				 char[50] city;
+				 int pincode;		
+				};
+			}; 
+
+Structure as function arguments:
+example,
+			struct student
+			{
+			 char name[10];
+			 int roll;
+			};
+			void show(struct student st);
+			void main()
+			{
+			 struct student std;
+			 clrscr();
+			 printf("\nEnter student record\n");
+			 printf("\nstudent name\t");
+			 scanf("%s",std.name);
+			 printf("\nEnter student roll\t");
+			 scanf("%d",&std.roll);
+			 show(std);
+			 getch();
+			}
+			void show(struct student st)
+			{
+			 printf("\nstudent name is %s",st.name);
+			 printf("\nroll is %d",st.roll);
+			}		
+------------------------------------------------------
+------------------------------------------------------
+typedef: 
+to assign alternative names to existing types. It is mostly used with user defined data types.
+Syntax, typedef existing_name alias_name
+example, typedef unsigned long ulong;
+		 ulong i, j ;
+		 
+typedef and structures: can be done in 2 ways,
+1) 
+	syntax,
+			typedef struct
+			{
+			  type member1;
+			  type member2;
+			  type member3;
+			} type_name ;
+			
+	to declare a variable of this stucture type, type_name t1, t2 ;
+	
+	example,
+			typedef struct employee
+			{
+			 char  name[50];
+			 int   salary;
+			} emp ;
+			void main( )
+			{
+			 emp e1;
+			 printf("\nEnter Employee record\n");
+			 printf("\nEmployee name\t");
+			 scanf("%s",e1.name);
+			 printf("\nEnter Employee salary \t");
+			 scanf("%d",&e1.salary);
+			 printf("\nstudent name is %s",e1.name);
+			 printf("\nroll is %d",e1.salary);
+			 getch();
+			}
+		
+2)
+	syntax,
+			struct struct_name
+			{
+			  type member1;
+			  type member2;
+			  type member3;
+			};
+			typedef struct struct_name struct_Rec;	
+
+	to declare, struct_Rec REC1, REC2;
+	
+	we can access the structure the elements as, REC1.member1, REC1.member2
+	
+typedef and Pointers: typedef can be used to give an alias name to pointers also.
+	example,
+			int* x, y ; //this will declare x as an integer pointer but y will be declared as integer only.
+		typedef can help like,
+			typedef int* IntPtr;
+			IntPtr x, y, z;   //all x, y, z will be declared as pointers.
+			
+-------------------------------------------------
+-------------------------------------------------
+Unions in C:
+Unions are conceptually similar to structures.
+
+difference,
+Structure										Unions
+each member has its own storage location.       uses a single shared memory location which is 
+												equal to the size of its largest data member.
+												
+example,										example,
+struct emp 										union emp
+{												{
+	char X;											char X;
+	float Y;										float Y;
+}e;												}e;
+	
+this will consume 5 bytes						this will only consume 4 bytes i.e. 4 for float	
+i.e. 1 for char and 4 for float.	            thus allowing memory sharing.  
+
+												although a union may contain many members of different types, it cannot handle all the members at same time.
+												
+example of a Union,
+		union item
+		{
+		 int m;
+		 float x;
+		 char c;
+		}It1;
+This union contains three members each with a different data type. However only one of them can be used at a time. 
+This is due to the fact that only one location is allocated for a union variable, irrespective of its size. 
+
+Accessing a Union Member: is similar to accessing a structure member.
+	example,
+			union test
+			{
+			 int a;
+			 float b;
+			 char c;
+			}t;
+			t.a ;     //to access members of union t 
+			t.b ;     
+			t.c ;  
+			
+Union Example,
+			#include <stdio.h>
+			#include <conio.h>
+			union item
+			{
+			 int a;
+			 float b;
+			 char ch;
+			};
+			int main( )
+			{
+			 union item it;
+			 it.a = 12;
+			 it.b = 20.2;
+			 it.ch='z';
+			 clrscr();
+			 printf("%d\n",it.a);
+			 printf("%f\n",it.b);
+			 printf("%c\n",it.ch);
+			 getch();
+			 return 0;
+			}
+			
+		o/p:
+			-26426      
+			20.1999     
+			z
+		i.e., the values of a and b get corrupted and only variable c prints the expected result.
+		
+	In order to retain values:
+			#include <stdio.h>
+			#include <conio.h>
+			union item
+			{
+			 int a;
+			 float b;
+			 char ch;
+			};
+			int main( )
+			{
+			 union item it;
+			 it.a = 12;
+			 printf("%d\n",it.a);
+			 it.b = 20.2;
+			 printf("%f\n",it.b);
+			 it.ch='z';
+			 printf("%c\n",it.ch);
+			 clrscr();
+			 getch();
+			 return 0;
+			}
+			
+		o/p:
+			12
+			20.2
+			z
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+Dynamic Memory Allocation:
+process of allocating memory at runtime.
+
+Library routines known as "memory management functions":
+Function		Description
+malloc() 		allocates requested size of bytes and returns a void pointer pointing to the first byte of the allocated space 
+calloc() 		allocates space for an array of elements, initialize them to zero and then returns a void pointer to the memory 
+free 			releases previously allocated memory 
+realloc 		modify the size of previously allocated space 
+
+Memory Allocation Process:
+Local Variables			//stored in a memory area called Stack.
+Free Memory				//heap space between stack and permanent storage. This is used for dynamic memory allocation during execution of the program. 
+global Variable			//get their memory in permanent storage. 
+Program Instructions	//get their memory in permanent storage.
+static Variable         //get their memory in permanent storage.
+
+Allocating block of Memory:
+a) malloc() function: allocates block of memory at runtime. malloc reserves a block of memory of given size and returns a pointer of type void i.e. 
+					  we can assign it to any type of pointer using typecasting. 
+					  If it fails to allocate enough space as specified, it returns a NULL pointer.
+					  
+					syntax: void* malloc(byte-size)
+					example,
+							int *x;
+							x = (int*)malloc(50 * sizeof(int));    //memory space allocated to variable x
+							free(x);                    //releases the memory allocated to variable x
+							
+					other example,
+								char* x;
+								char str[10];
+								strcpy(str,"Shubhro B");
+								x = (char*) malloc(strlen(str)+1);
+								printf("value of str is %s\n",str);
+								strcpy(x,str);
+								printf("value of x is %s\n", x);
+								free(x);
+								
+b) calloc() function: also allocates memory at runtime. Used for allocating memory to derived data types such as arrays and structures.
+					  If it fails to allocate enough space as specified, it returns a NULL pointer.
+					  
+					syntax is: void *calloc(number of items, element-size)	
+					example,
+							struct employee
+							{
+							 char *name;
+							 int salary;
+							};
+							typedef struct employee emp;
+							emp *e1;
+							e1 = (emp*)calloc(30,sizeof(emp));
+							
+					detailed example,
+									int main()
+									{
+										int i, n;
+										int *element;
+
+										printf("Enter total number of elements: ");
+										scanf("%d", &n);
+
+										element = (int*) calloc(n,sizeof(int)); 
+
+										if(element == NULL)//If it fails to allocate enough space as specified, it returns a NULL pointer.
+										{
+											printf("Error.Not enough space available");
+											exit(0);
+										}
+
+										for(i=0;i<n;i++)
+										   scanf("%d",element+i); //storing elements from the user in the allocated space
+
+										for(i=1;i<n;i++)
+										{
+										   if(*element > *(element+i))
+											   *element = *(element+i);
+										}
+										printf("Smallest element is %d",*element);
+										return 0;
+									}
+									
+						output, 
+								Enter total number of elements: 5
+								4 2 1 5 3
+								Smallest element is 1
+								
+c) realloc() function: changes memory size that is already allocated dynamically to a variable.
+					syntax: void* realloc(pointer, new-size)
+					example,
+							int *x;
+							x=(int*)malloc(50 * sizeof(int));
+							x=(int*)realloc(x,100); //allocated a new memory to variable x
+							
+					other example,
+							ptr=(int*)malloc(sizeof(int));
+							ptr1=(int*)realloc(ptr,count*sizeof(int));
+							if(ptr1==NULL)          //reallocated pointer ptr1
+							{       
+								printf("\nExiting!!");
+								free(ptr);
+								exit(0);
+							}
+							else
+							{	
+								ptr=ptr1;           //deallocation using free has been done assuming that ptr and ptr1 do not point to the same address                     
+							}
+
+					NOTE: reallocated pointer points to a same block of memory. i.e. ptr1 will point to ptr's memory.
+						  realloc will return the same address to ptr if it have enough space to extend the actual chunk of memory pointed by ptr. 
+						  Otherwise, it will move the data to the new chunk and free the old chunk. You can not rely on ptr1 being different to ptr
+							
+Difference between malloc() and calloc():
+calloc()													malloc()
+calloc() initializes the allocated memory with 0 value. 	malloc() initializes the allocated memory with garbage values. 
+Number of arguments is 2 									Number of argument is 1 
+
+-------------------------------------------------
+-------------------------------------------------
+File Handling
+file in C is a sequence of bytes stored in permanent storage of data.
+
+In order to declare a file, we use a pointer of file type. i.e. syntax is FILE *fp;
+
+basic file operations include,
+Function			description
+fopen() 			create a new file or open a existing file 
+fclose() 			closes a file 
+getc() 				reads a character from a file 
+putc() 				writes a character to a file 
+fscanf() 			reads a set of data from a file 
+fprintf() 			writes a set of data to a file 
+getw() 				reads a integer from a file 
+putw() 				writes a integer to a file 
+fseek() 			set the position to desire point 
+ftell() 			gives current position in the file 
+rewind() 			set the position to the begining point 
+
+Opening a File or Creating a File: done by fopen() function. Syntax: *fp = FILE *fopen(const char *filename, const char *mode);
+
+mode			description
+r 				opens a text file in reading mode 
+w 				opens or create a text file in writing mode. 
+a 				opens a text file in append mode 
+r+,w+,a+		opens a text file in both reading and writing mode 
+rb 				opens a binary file in reading mode 
+wb 				opens or create a binary file in writing mode 
+ab 				opens a binary file in append mode 
+rb+,wb+,ab+	    opens a binary file in both reading and writing mode 
+
+Closing a File: done by fclose() function. Syntax: int fclose( FILE *fp );
+function closes the file and 
+a) returns zero on success OR
+b) EOF if there is an error in closing the file. EOF is defined in stdio.h.
+
+Input/Output operation on File using getc() and putc() functions:
+example,
+			#include<stdio.h>
+			#include<conio.h>
+			main()
+			{
+			 FILE *fp;
+			 char ch;
+			 fp = fopen("one.txt", "w");
+			 printf("Enter data");
+			 while( (ch = getchar()) != EOF) {
+				putc(ch,fp);
+			 }
+			 fclose(fp);
+			 fp = fopen("one.txt", "r");
+			 
+			 if( fp == NULL )
+			 {
+				puts("cannot open file");
+				exit 1;
+			 }
+			 
+			 while( (ch = getc(fp)! = EOF)
+				printf("%c",ch);
+				
+			 fclose(fp);
+			} 
+ 
+Reading and Writing from File using fprintf() and fscanf():
+if we desire to read/write combination of numbers, strings, chars, we want to organize them in structure and write to file.
+
+example,
+		#include<stdio.h>
+		#include<conio.h>
+		struct emp
+		{
+		   char name[10];
+		   int age;
+		};
+
+		void main()
+		{
+		   struct emp e;
+		   FILE *p,*q;
+		   p = fopen("one.txt", "a");
+		   q = fopen("one.txt", "r");
+		   printf("Enter Name and Age");
+		   scanf("%s %d", e.name, &e.age);
+		   fprintf(p,"%s %d", e.name, e.age);
+		   fclose(p);
+		   do
+		   {
+			  fscanf(q,"%s %d", e.name, e.age);
+			  printf("%s %d", e.name, e.age);
+		   }
+		   while( !feof(q) );
+		   getch();
+		}
+		
+	Note: 2 pointers are pointing to the same file but in different modes.
+	
+Append and Write Mode: when a file does not exist, both append and write mode function same i.e. creating a new file
+					   when a file exist, write mode resets the file  resulting in deletion of any data already present in the file.
+										  while, append add data to the existing data of file
+										  
+Reading and Writing in a Binary File: Binary file contains large numerical data otherwise similar to text file.
+
+Counting file content: 
+example for count chars, spaces, tabs and newlines
+		int main()
+		{
+			FILE *fp;
+			char ch;
+			int nol=0,not=0,nob=0,noc=0;
+			fp =fopen("PR1.c","r");
+			while ((ch = fgetc(fp))!= EOF)
+			{
+				noc++
+				if (ch == ' ')
+				{ nob++; }
+				if (ch == '\n')
+				{ nol++; }
+				if (ch == '\t')
+				{ not++; }
+			}
+			fclose(fp);
+			//display all the contents
+		}
+		
+copy file content:
+			int main ()
+			{
+				FILE *fs, *ft;
+				char ch;
+				
+				fs = fopen("PR1.c","r");
+				ft = fopen("PR2.c","w");
+				
+				while ((ch = fgetc("fs")) != EOF)
+				{
+					fputc(ch,ft);
+				}
+				fclose(fs);
+				fclose(ft);	
+			}
+			
+fputs() and fgets() function: 
+1) fputs()  writes strings to a file.
+		    note: fputs writes array content to a file but does not add a newline char automatically to the string.
+				  This has to be done explicitely using fputs(fp,"\n")
+
+			example,
+					main()
+					{
+						file *fp;
+						char s[80];
+						
+						fp = fopen("PR1.txt","w");
+						printf("Enter few lines\n");
+						gets(s);
+						while (strlen(gets(s)) > 0)
+						{
+							fputs(s,fp);
+							fputs("\n",fp);
+						}
+						fclose(fp);
+					}
+					
+			o/p: 
+			Enter few lines:
+			abd fhfhgjfdhjfd qwkjwkjwqkjwq
+			sdfdkndsk aslmsdlms
+			dslnlds
+			<hit enter to end>
+			
+			difference between fputs and fputc
+			fputc									fputs
+			takes an unsigned char as the first 	takes string as 1st argument and file 
+			argument and the file pointer 			pointer as second argument.
+			as the second argument.
+			
+			It writes a character to the file		writes a string indicated to by str to  
+			The character is written at the 		the specified stream. The null terminator is
+			current position of the fp and 			not written.
+			then advance one char.
+			
+			It returns the character written		On success, the fputs() function returns 
+			 if successful or EOF if an error		non negative value. If error occurs it returns EOF.
+			 
+2) fgets(): this function reads s string from a file. syntax, fgets(string variable,max size allowed,filepointer);
+			example, fgets(str,40,fp);
+			Note: 2nd argument is the max length allowed and it prevents fgets to read a long string and overflow the array.
+			fgets() returns NULL once the string is over.
+			
+			example,
+					main()
+					{
+						FILE *fp;
+						char s[80];
+						
+						fp = fopen("PR1.txt","r");
+						
+						while (fgets(s,79,fp)!=NULL)
+						{
+							printf("%s",s);
+						}
+						fclose(fp);
+					}
+					
+			difference between fgetc and fgets:
+			fgetc									fgets
+			reads the character indicated by		read characters/a line from stream and store them
+			file pointer and then moves to the		in string pointed by str.
+			next available char and returns it 
+			as an integer.
+			
+			if error occurs returns EOF				 On success, the function returns the same str parameter
+			An errno is set if an error occurs.		 If end-of-file arises before any characters have been read,
+													 fgets returns null pointer.
+			Your routine can assign fget()'s 		 If an error happens at any time during the read process,
+			return value to a char.					 fgets returns null pointer.
+			
+			end of file is reached it returns EOF	 It stops reading when either 1) (n-1) characters are read
+													 2) '\0' is appended to str (after any newline character)
+													 3) the newline character is read
+													 4) end-of-file is reached
+													 
+			another example,
+							int main()
+							{
+							 char colour[20];
+							 printf("Enter your favorite colour\n");
+							 fgets(colour,20,stdin);  /* reading from console*/
+							 printf("My favorite colour is %s.\n",name);
+							 return(0);
+							}
+					
+					
+Reading an writing to a binary file: usually of the format of .exe, music file. The content of this file is unreadable to humans.
+We use fread() and fwrite() functions are used to read and write is a binary file.
+
+main difference between text file and binary file are,
+1) Handling of newlines: in text file, newline is converted to \r\n(carriage return linefeed combination), however in binary file this conversion does not take place.
+2) representation if EOF: in text mode, EOF (ASCII value 26) is inserted at end of file automatically.
+In Binary mode, files keep track of the EOF from the number of characters present in directory entry of the file.
+Thus the 2 modes are not compatible. 
+3) storage of numbers: In text mode, the numbers are stored as string of chars and only fprintf allows storing numbers. Thus numbers with more digits will require more space thus storing large numbers in trext mode is inefficient.
+Binary mode stores numbers in binary format.
+
+fread() and fwrite() functions are used to read and write is a binary file.
+1) fwrite(): is used to write to a binary file
+			syntax: fwrite(data-element-to-be-written, size_of_elements, number_of_elements, pointer-to-file);
+			example,
+					const char *mytext = "The quick brown fox jumps over the lazy dog";   
+					FILE *bfp= fopen("test.txt", "wb");   
+					if (bfp) {     
+					   fwrite(mytext, sizeof(char), strlen(mytext), bfp) ;     
+					   fclose(bfp) ;   
+					} 
+					
+			other example is,
+						int main()
+						{
+							FILE *fp;
+							struct emp
+							{
+								char name[40];
+								int age;
+								float salary;
+							};
+							struct emp e;
+							
+							fp = fopen ("EMP.DAT","wb");
+							e = {"Shubhro", 31, 1000.50};
+							
+							fwrite(&e,sizeof(e)+1,1,fp);
+							fclose(fp);
+						}	
+	
+2) fread(): is used to read from a binary file
+	syntax: fread(data-element-to-be-written, size_of_elements, number_of_elements, pointer-to-file);
+	example,
+			int main()
+			{
+				FILE *fp;
+				struct emp
+				{
+					char name[40];
+					int age;
+					float salary;
+				};
+				struct emp e;
+				
+				fp = fopen("EMP.DAT","rb");
+				
+				while(fread(&e,sizeof(e)+1,1,fp) == 1)
+				{
+					printf("\n%s%d%f",e.name,e.age,e.salary);
+				}
+				fclose(fp)
+			}
+
+fseek(), ftell() and rewind() functions: 
+fseek() - It is used to move the reading control to different positions i.e. moves the pointer from one record to another. We can go to previous records   
+          from the current position.
+		  syntax: int fseek(FILE *stream, long int offset, int whence)
+		  stream -> file pointer
+		  offset -> number of bytes to offset from whence.
+		  whence -> position from where offset is added. Specified by one of the contents:		
+					Constant	Description
+					SEEK_SET    Beginning of file 
+					SEEK_CUR    Current position of the file pointer 
+					SEEK_END    End of file 
+		  This function returns zero if successful, or else it returns a non-zero value.
+		  
+		example,
+				#include <stdio.h>
+				int main ()
+				{
+				   FILE *fp;
+
+				   fp = fopen("file.txt","w+");
+				   fputs("This is tutorialspoint.com", fp);
+				  
+				   fseek( fp, 7, SEEK_SET );
+				   fputs(" C Programming Language", fp);
+				   fclose(fp);
+				   
+				   return(0);
+				}
+			o/p: This is C Programming Language
+
+
+ftell() -   It tells the byte location of current position of cursor in file pointer.
+			syntax: long int ftell(FILE *stream)
+			returns the current value of the position indicator. If an error occurs, -1L is returned, and the global variable errno is set to a positive 
+			value.
+			example,
+					#include <stdio.h>
+					int main () {
+					   FILE *fp;
+					   int len;
+					   fp = fopen("file.txt", "r");
+					   fseek(fp, 0, SEEK_END);
+					   len = ftell(fp);
+					   fclose(fp);
+					   printf("Total size of file.txt = %d bytes\n", len);  
+					   return(0);
+					}
+					
+			so if file.txt had "This is tutorialspoint.com"
+			o/p will be: Total size of file.txt = 27 bytes.
+
+rewind() - It moves the control to beginning of the file irrespective of wgere the cursor is present.
+			syntax: void rewind(FILE *stream)
+			This function does not return any value.
+			
+------------------------
+example to Print names of all Files present in a Directory:
+		#include<stdio.h>
+		#include<dirent.h>
+		int main(void)
+		{
+			DIR *d;
+			struct dirent *dir;
+			d = opendir(".");
+			if (d)
+			{
+				while ((dir = readdir(d)) != NULL)
+				{
+					printf("%s\n", dir->d_name);
+				}
+				closedir(d);
+			}
+			return(0);
+		}
+	
+	o/p: will be all the files in the current directory.
+------------------------------
+example to find size of a file:
+		#include<stdio.h>
+		#include<conio.h>
+		void main()
+		{
+			FILE *fp;
+			char ch;
+			int size = 0;
+		 
+			fp = fopen("MyFile.txt", "r");
+			if (fp == NULL)
+			{
+				printf("\nFile unable to open ");
+			}
+			else
+			{ 
+				printf("\nFile opened ");
+			}
+			fseek(fp, 0, SEEK_END);    /* file pointer at the end of file */
+			size = ftell(fp);   /* take a position of file pointer in size variable */
+			printf("The size of given file is : %d\n", size);    
+			fclose(fp);
+		}
+----------------------------------------
+----------------------------------------
+Command line argument: command line arguments are passed to main() method.
+syntax: int main( int argc, char *argv[]){ }
+		here,
+			argc counts the number of arguments on the command line.
+			argv[ ] is a pointer array which holds pointers of type char which points to the arguments passed to the program. 
+			
+		NOTE: If no argument is supplied, argc will be one.
+			
+example,
+		#include <stdio.h>
+		#include <conio.h>
+		int main( int argc, char *argv[] )
+		{
+		  int i;
+		  if( argc >= 2 )
+		   {
+			printf("The arguments supplied are:\n");
+			for(i=1;i< argc;i++)
+			{
+			 printf("%s\t",argv[i]);
+			}
+		   }
+		   else
+		   {
+			 printf("argument list is empty.\n");
+		   }
+		 getch();
+		 return 0;
+		}
+
+
+---------------------------------------------------------------
+---------------------------------------------------------------
+Arrays revisited:
+
+passing array elements into a function:
+1) one element of the araay passed to the function at a time
+	example, (of passing by value)
+			int main()
+			{
+				int i;
+				int marks[]={10,20,30,40};
+				
+				for (i=0;i<5;i++)
+				{
+					display(marks[i]);
+				}
+			}
+			display(int m)
+			{
+				printf("marks is %d\n",m);
+			}
+			
+			
+	example, (of passing by reference)
+			int main()
+			{
+				int i, *j;
+				int marks[]={10,20,30,40};
+					
+				for (i=0;i<5;i++)
+				{
+						display(&marks[i]);
+				}
+			}
+			display(int *m)
+			{
+				printf("marks is %d\n",*m);
+			}
+
+2) passing entire array to a function.
+	example,
+			void main()
+			{
+				int num[] = {10,20,30,40,50,60};
+				display(&num[0],6)
+			}
+			void display(int *n, i)
+			{
+				int j;
+				for (j =0;j<=i-1;j++)
+				{
+					printf("%d\n",*n);
+					n++;
+				}
+			}
+
+
+
+3) 2-D arrays and pointers: <data-type> arr-name[row][column]. example, stud[4][2]
+	int stud[4][2] represents 4 students each having 2 columns(both int, ex, roll number, marks )
+	NOTE: in memory 2 dimensional arrays are stored in consecutive positions.
+	int stud[4][2] = {
+						{1234, 56},
+						{1212, 33},
+						{1434, 80},
+						{1312,78}						
+					 };
+					 
+	or, int stud[4][2] =	{1234, 56, 1212, 33, 1434, 80, 1312, 78};
+	address will look like  [02,   04,   06, 08,   10, 12,   14, 16]
+	
+	using pointers for 2-D array,
+	a 2-D array (ex, int s[5][2]) can be though as setting up an array of 5 elements, each being a 1-D array.
+	so, to refer, s[2][1] -> (s[2]+1) -> *(s[2]+1) -> *(*(s+2)+1)
+	
+		int main
+		{
+			int s[5][2] = {
+							{1234,56},
+							{1212,34},
+							{1434,80},
+							{1312,78}
+						};
+						
+			int (*p)[2];
+			int i,j,*pint;
+			
+			for(i=0;i<=3;i++)
+			{
+				p = &s[i];
+				pint = p;
+				printf("\n");
+				for (j=0;j<=1;j++)
+				{
+					printf("%d",*(pint + j);
+				}
+			}
+		}
+	
+4) Passing 2-D arrays to functions: 
+	example,
+	int a[3][4] = {
+					1,2,3,4,
+					5,6,7,8,
+					9,0,1,6
+				};
+			
+	a)  display(a,3,4)
+		display(int *q,int row,int col)
+		{
+			int i,j;
+			
+			for (i=0;i<row;i++)
+			{
+				for (j=0;j<col;j++)
+				{
+					printf("%d",*(q+i*col+j);
+					printf("\n");
+				}
+				printf("\n");
+			}
+		}
+		
+	b) display(a,3,4)
+		display(int (*q)[4],int row,int col)
+		{
+			int i,j;
+			int *p;
+			for (i=0;i<row;i++)
+			{
+				p = q + i;
+				for (j=0;j<col;j++)
+				{
+					printf("%d",*(p+j));
+					printf("\n");
+				}
+				printf("\n");
+			}
+		}
+		
+	c) display(a,3,4)
+		display(int q[][4],int row,int col)
+		{
+			int i,j;
+			for (i=0;i<row;i++)
+			{
+				for(j=0;j<col;j++)
+				{
+					printf("%d",q[i][j]);
+					printf("\n");
+				}
+			}
+			printf("\n");
+		}
+		
+5) array of pointers.
+	example,
+			main()
+			{
+				static int a[] = {0,1,2,3,4};
+				int *p[] = {a,a+1,a+2,a+3,a+4};
+				printf("%u,%u,%d\n",p,*p,*(*p));
+				int *b = a;
+				printf("%u,%u,%d\n",b,*b);
+			}
+
+	result will be : (address of p, address of a, value of a[0] i.e. 0) i.e. (3703349280,2135859264,0)
+					 (address of b , value of a[0]) i.e. (2135859264,0)
+					  NOTE *(*b) will give compilation error.
+				 
+-----------------------------------
+-----------------------------------
+Srings revisited:
+1) gets and puts:
+	gets is same as scanf, but scanf does not accept spaces while gets can.
+	example, 
+	char n[5];
+	scanf("%s",n);
+	gets(n);    /*allows multi words. example "Shubhro Banerjee".*/
+				/*gets can only receive one string at a time*/
+	
+	puts places the cursor in next line while printf does not.
+
+2) strlen() and xstrlen():
+	char arr[] = "Shubhro Banerjee";
+	int len1 = strlen(arr);  /* does not count \0* */
+	int len2 = xstrlen(arr); /* counts characters till \0 */
+	
+3) const keyword: ensures that the program does not inadvertently alter the variable (as it is supposed to be constant)
+	example,
+	
+	char *p = "Hello";
+	*p = 'M';	/*Valid*/
+	p = "Bye";  /*Valid*/
+	
+	const char *p = "Hello"; 
+	*p = 'M';	/*error*/
+	p = "Bye";  /*Valid*/
+
+	char const *p = "Hello"; 
+	*p = 'M';	/*error*/
+	p = "Bye";  /*Valid*/
+	
+	char* const p = "Hello"; 
+	*p = 'M';	/*valid*/
+	p = "Bye";  /*error*/
+	
+	const char* const p = "Hello"; 
+	*p = 'M';	/*error*/
+	p = "Bye";  /*error*/
+	
+4) Array of pointers to strings:
+	The details can be seen in book (pg 344-353)
+	there is one limitation of using Array of pointers to strings. When using array of pointers, we cannot receive 
+	strings from keyboard using scanf();
+	example,
+			main()
+			{
+				char* names[5];
+				int i;
+				
+				for (i=0;i<=5;i++)
+				{
+					printf("Enter name\n");
+					scanf("%s",names[i]);
+				}
+			}
+		/* This program will error out*/
+		
+		an alternative can be,
+		char *names[5];
+		char n[50];
+		int len, i;
+		char *p;
+		for (i=0;i<=5;i++)
+		{
+			printf("enter name\n");
+			scanf("%s",n);
+			len = strlen(n);
+			p = malloc(len+1);
+			strcpy(p,n);
+			names[i]=p;
+		}
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+CASE control structure (switch)
+switch is usually faster than if-else coz compiler generates a jump table to execute which case is satisfied.
+if-elses are slower because they are evaluated at execution time.
+a switch with 10 cases would work faster than equivalent if-else. However 2 cases, would work slower than if-else.
+
+------------------------------------------------------------
+------------------------------------------------------------
+getch(), getche(), getchar(), fgetchar():
+
+getch(): similar to scanf(), but no need to hit "Enter".
+getche(): similar to getch() but displays the character that has been typed.
+getchar(): Is a macro. similar to getche() but need to hit enter.
+fgetchar(): Is a function. but same as getchar().
+
+	main()
+	{
+		char ch;
+		printf("\npress enter to continue");
+		getch();
+		
+		printf("\n type any character");
+		getche();
+		
+		printf("\n type any character");
+		getchar();
+		
+		printf("\n Continue Y/N");
+		fgetchar();
+	}
+		
+	o/p:
+	press enter to continue
+	type any character B
+	type any character W
+	Continue Y/N Y
+	
+putch(), putchar(), fputchar(): all 3 are same.
+								limitation of all 3  is that they can o/p only one character at a time.
+
+	main()
+	{
+		char ch = 'A';
+		
+		putch(ch);
+		putchar(ch);
+		fputchar(ch);
+		putch('Z');
+		putchar('Z');
+		fputchar('Z');
+	}
+
+	O/p: AAAZZZ
+	
+gets() and puts():
+a) gets() receives string from keyboard. It is used to overcome the shortcoming of scanf i.e. scanf terminates the string 
+	when it receives a BLANK (i.e. spaces or tabs).
+	gets on the other hand is terminated when an enter key is hit thus spaces and tabs are preserved.
+	also, get replaces the \n(Enter key hit) with a \0;
+	NOTE: gets (unlike scanf) is used to read only one string at a time.
+	
+	example,
+			main()
+			{
+				char n[50], m[50];
+				printf("\n Enter name1");
+				scanf("%s",&n);
+				printf("\n Enter name2");
+				gets (m);
+				
+				printf("name1 is %s\n",n);
+				printf("name2 is %s\n",m);
+			}
+
+	o/p: Enter name1: Jonty Rhodes
+		 Enter Name2: Shubhro Banerjee
+		 name1 is Jonty
+		 name2 is Shubhro Banerjee.
+
+b) puts() : outputs string on the screen. Puts (Unlike printf) can output only one string at a time.
+
+	example,
+			main()
+			{
+				char FB[40];
+				
+				puts("Enter Name");
+				gets(FB);
+				puts("name is");
+				puts(FB);
+			}
+
+			o/p:
+				Enter Name
+				Shubhro Banerjee
+				name is
+				Shubhro Banerjee
