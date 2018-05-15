@@ -1,0 +1,181 @@
+Reference: spark.apache.org is better for documentation.
+		    Databricks has the best documentation on Spark.	
+
+-------------------------------------
+SPARK Architecture:
+
+Spark is a programming engine/framework, Hadoop is file storage mechanism
+
+---- BRIEF History
+Spark was created in 2009-2011. 
+
+Spark is a accidental byproduct of Mesos (cluster management framework). Spark was created to test the power of Mesos
+
+Mesos power was supersceded by YARN and mesos was taken over by Apache. Databricks company was created by founders of Spark and till date, Databricks are leader.
+
+NOTE: major releases of spark starts from 1. Version 1.6.3 is being used by majority of orgs and major changes in Version 2.x is present in 1.6.3
+      in spark version 2.x, major difference in performance, not in programming.
+
+-------------------------------------
+Why is SPARK the next gen i.e. reason for SPARK USP:
+1. In memory computing i.e. the computation happens in RAM.
+	The common myth is that SPARK operates only on RAM, but SPARK can operate on HDD also, though SPARK's performance is enhanced if RAM availability is High.
+	SPARK can read data from any file system ( RDBMS, Local mode, file systems like HDFS, Mesos, Spark Standalone cluster )
+	and works on data without intermediate read and write to hard disk unlike MR which has to store intermediate results to HDFS before reusing it.
+2. Easy to programming i.e. Spark has been buit on Scala which has a rich library for data processing.
+3. Unified engine for all kinds of workload i.e. 
+	hadoop came in 2004 and since then the BD world was on top of Hadoop. The problem was that it had only map-reduce programming workload which was batch processing 
+	(slow and no real time result)
+	so, workload which required realtime processing (interactive processing) i.e. Machine learning and streaming (realtime data processing)
+	Spark can handle batch as well as realtime processing. i.e. SPARK is lightweight map reduce. True power of SPARK is in-buit libs for streaming, graph processing, ML etc
+4. Most active open source project.
+5. Spark jobs can be.
+	a) Scheduled (via OOZY or SPARK Built in) 
+	b) Monitored (SPARK UI)
+	c) Distributed (i.e. supports distributed processing)
+6. SPARK is fault tolerant (achieved via DAG).
+	
+NOTE: SPARK is to replace MR, it does not work on map-reduce. 
+      BOTH SPARK and HADOOP are data processing platforms, have cluster computing environments but they DO NOT work on different file systems.
+	
+-------------------------------------
+Spark has a competitor i.e. flink, spark is compact map-reduce which gives near real-time processing (i.e. microbatch processing) and flink almost real-time.
+-------------------------------------
+
+
+																					   |---------> Worker Node1 (contains Executer) 	
+DRIVER (contains SPARK Context) -----> Cluster Manager (can be YARN, MESOS, AWS) ------|---------> Worker Node2 (contains Executer) 	
+																					   |---------> Worker Node3 (contains Executer)
+
+SPARK architecture is based on 2 abstractions:
+a) RDD (Resilient Distributed Datasets): a pointer to the Dataset stored in worker nodes' memory/RAM and split into partitions.
+										 In SPARK you store/represent data as RDD (i.e. RDD is pointer to a Data)
+										 NOTE: RDD is immutable, so to do data manipulation, a new RDD has to be created.
+b) DAG (Directed Acyclic Graph): a sequence of computations performed on data where each node is a RDD partition and edge is a transformation on top of data. 
+
+Apache Spark follows a master/slave architecture with two main daemons and a cluster manager –
+i. Master Daemon – (Master/Driver Process) : there is a single master where driver program runs
+ii.Worker Daemon –(Slave Process) : there can be a number of workers (which can be scaled up) where executor program runs
+
+Components of a SPARK Architecture:
+a) Drivers: Runs on Master node
+			entry point of the Spark Shell (Scala, Python, and R) and spark context (is entry point to spark library). 
+			Spark Driver contains various components – DAGScheduler, TaskScheduler, BackendScheduler and BlockManager 
+			responsible for the translation of spark user code into actual spark jobs executed on the cluster.
+			Drivers are responsible for,
+			1) schedules job execution and interacts with cluster manager
+			2) stores meta data on RDDs and their partitions
+			3) converts User application into execution units (called TASKS) which are then executed on executors (1 task per executer).
+			4) translates the RDD’s into the execution graph and splits the graph into multiple stages.
+			
+			In Leyman terms: driver is a program which starts with main() method and ends with main method.
+			When u start spark shell, shell itself becomes driver program
+			
+b) Executor: resides on worker nodes and are responsible for execution of TASKS. In leyman terms, resources to run program i.e. HDD+vcore
+			 Executors perform,
+			 1) all the data processing.
+			 2) Reads from and Writes data to external sources.
+			 3) Executor stores the computation results data in-memory, cache or on hard disk drives.
+			 4) Interacts with the storage systems.
+																			   
+c) Cluster manager: this is external service which acquires resources on the spark cluster and allocating them to a spark job.	
+					3 major cluster managers are: YARN, MESOS, spark cluster manager
+					
+					
+What happens when a Spark Job is submitted?
+1) the driver implicitly converts the code containing transformations and actions into a logical directed acyclic graph (DAG). 
+2) the driver program also performs certain optimizations like pipelining transformations and then it converts the logical DAG into physical execution plan with set of stages.
+3) Driver, creates small physical execution units (i.e. tasks) while creating physical execution plan.
+4) These tasks created in STEP-3 are sent to cluster manager (YARN)
+
+5) The cluster manager then launches executors on the worker nodes on behalf of the driver.
+6) The driver sends tasks to the cluster manager based on data placement
+7) Executors start executing the various tasks assigned by the driver program. 
+   At any point of time when the spark application is running, the driver program will monitor the set of executors that run.
+
+8) When driver programs main () method exits, it will terminate all the executors and release the resources from the cluster manager. 
+			
+---------------------
+
+SPARK Ecosystem will look like this:
+
+Spark SQL, Spark Streaming, Spark GraphX, MLLib <-> Spark Core (comprised of language support API's like Python, Scala, R, Java 8)	<-> Cluster manager (YARN, MESOS, Spark cluster) <-> HDFS, NoSQL DB (HBASE, MongoDB, Neo4J etc), RDBMS etc file systems or DB
+
+SPARK Core is language API used for programming. It is the Lowest level of abstraction. It uses RAM or harddisk of cluster machines and operates on RDD. SC is responsible for,
+1) basic I/O functionalities.
+2) Scheduling and monitoring the jobs on spark clusters.
+3) Task dispatching.
+4) Networking with different storage systems.
+5) fault recovery.
+6) efficient memory management.
+
+
+SPARK SQL, streaming, GraphX, MlLib: Libraries on top of Apache Spark core
+i.e. these libraries sit on top of core and comes with the SPARK installation.
+
+Spark Partitions : 
+https://qubole.zendesk.com/hc/en-us/articles/217111026-Reference-Relationship-between-Partitions-Tasks-Cores
+Spark partitioning methods: hash partitioning and range partitioning: https://acadgild.com/blog/partitioning-in-spark/
+																	  https://www.edureka.co/blog/demystifying-partitioning-in-spark
+																	  
+Partitions in SPARK: number of blocks where data (RDD) is stored. SPARK allows user to control the number of partitions used for a RDD (i.e. user can shrink or expand partitions).
+i.e. RDD is subdivided into partitions which are distributed across different worker nodes' RAMs of spark/hadoop cluster.
+	 Any transitions can be executed on all partitions is performed in parallel.
+	 Partitions are created on the nodes where data is loaded (i.e. action is triggered), replicas are spared from partitioning.
+
+whenever Transformations are hit on RDD, a DAG is created (NOTE: DAG is created by Spark Core), when an Action is called, the DAG runs and the results are calculated.
+This is called lazy evaluation.
+
+Once the action has been executed, the data is removed from RAM. If a new action is generated for same DAG, the entire DAG (i.e all transformations on RDDs) will be rerun.
+Intermediate RDDs (i.e. new RDDS created for transformations) can be cached/persisted, so when a DAG is initiated via action, it can restart from the cached RDD.
+However, NOTE, caching is only available till the program execution is active, RAM is released once the program execution is complete. 
+
+
+--------------------
+stages, tasks and Job in Spark:
+Job:   is complete program including action part. i.e. whatever executes after u hit action.
+	   it will create a DAG/Lineage i.e. highest level of abstraction.
+	   
+Stage: Job is divided into stages. 
+	   All the narrow transformations will be grouped in one stage. narrow => transformations with no data movement
+	   between partitions i.e. map, filter, flatmap etc.
+		
+	   for wide transformations it will be grouped in other stage.wide => transformations where there is data movement 
+	   between partitions. ex, reduceByKey, groupByKey, coalesce, repartition etc.
+	   Wide trans are costly and slower than narrow transformations.
+		
+	   ****can be seen in Spark UI DAG visualization.
+		
+task: executable unit. Internal to Spark.
+
+so it is Job => Stage => task
+
+--------------------
+lineage vs DAG: lineage may contain multiple DAGs. but in simplicity, lineage and DAG are similar.
+
+--------------------
+client vs cluster deployment:  (MORE in SPARK Core.txt file)
+when  deploying application in YARN, 
+1) --deploy-mode client: the driver will be running on ur machine(i.e. where command is run) 
+						 and program will be running in cluster.
+						if PC is shutdown, the entire application will fail.
+						
+2) --deploy-mode cluster: the driver will start on one of cluster machine and program will run in other machines of cluster.
+						PC can be shutdown without causing application to fail.
+						
+--------------------
+Apart from cloudera, hortonworks' cloudx, we can also use Databricks cloud to do so.
+
+https://databricks.com
+databricks has its own cloud platform -> TRY DATABRICKS -> go for COMMUNITY EDITION -> START TODAY
+-> login -> hit "Clusters" -> Create Cluster -> cluster Name -> choose Rutime Version (Spark 1.6.3 Hadoop 2 version)
+-> NO COMMAND LINE -> databricks -> create Notebook via New Notebook -> give a name -> choose language as Scala -> create
+start coding.
+
+To upload a notebook:
+workspace -> Users -> Notebook Names -> Import Button ->  drag and drop -> hit "Import" -> check Detach and attach this
+notebook to cluster.
+
+Upload data to data bricks
+data icon -> database (created by dataBricks) -> tables -> create new table -> drag and drop the file ->
+copy the location and paste it in ur notebook.
