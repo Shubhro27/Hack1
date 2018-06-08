@@ -1,0 +1,44 @@
+Map Reduce, blocks and input splits:
+
+first thing to know is that blocks are physical storage unit and input splits are logical storage unit.
+
+In ideal scenario (and mostly) Input split size is = block size.
+
+Input split is based on end of line indicators.
+
+In case a particular record size spans over multiple lines, size of input split > block size
+
+block size in cloudera is 128MB, so if a record does not logically end at the last bit of 128MB block size, it may get spilled to the next block.
+
+NOTE:::::::::: block size is physical division taken care by HDFS (and replicated as per replication factor). As this point MR has not started.
+               Input splits will be calculated when MR kicks in.
+			   
+In case, the input split is != block size, the remaining part of the logical record is moved to a consecutive block. 
+So when we fire up a MR code, it checks for a good record, so when it hits the end of current block but sees that the record line it is processing has not ended,
+it goes to the next block to fetch the remaining part and complete the record line.
+
+NOTE: the number of mappers is equal to the number of input splits.
+
+Input splits are user defined (so the default value can be changed)
+
+Size of the input split is calculated by the following formula:
+max[min split size configured for mapred,min(max split size configured for mapred, dfs block size)
+example,
+if min split defined = 128 MB
+if max split defined = 256 MB
+block size = 64 MB
+so input split size = max[128, min(256,64)] = max[128,64] = 128 MB
+
+if the i/p file is 256 MB
+number of blocks = 256/64 = 4
+number of mappers = number of input splits = [file size/input split size] = [256/128] = 2
+
+The mapred input split properties are configured in mapred.xml, parameters being:
+mapreduce.input.fileinputformat.split.minsize
+mapreduce.input.fileinputformat.split.minsize
+
+By default:
+mapreduce.input.fileinputformat.split.minsize < dfs.blocksize < ...maxsize
+so if blosk size is 128 MB, input split size can be  recommended: 105MB (minsize) and 270MB (maxsize)
+
+check reference: https://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/
