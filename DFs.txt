@@ -1,0 +1,110 @@
+https://www.tutorialspoint.com/spark_sql/spark_sql_dataframes.htm
+https://docs.databricks.com/spark/latest/dataframes-datasets/introduction-to-dataframes-scala.html
+https://www.analyticsvidhya.com/blog/2016/10/spark-dataframe-and-operations/
+
+dataframe is a distributed collection of rows under named columns i.e. conceptually equivalent to relational tables.
+DFs are,
+1) Immutable
+2) Supports Lazy evaluation i.e. task is executed only when an  action triggers
+3) Distributed
+
+consider employee.json as,
+{"EmployeeID":10,"FirstName":"Andrew","Title":"Manager","State":"DE","Laptop":"PC"}
+{"EmployeeID":11,"FirstName":"Arun","Title":"Manager","State":"NJ","Laptop":"PC"}
+{"EmployeeID":12,"FirstName":"Harish","Title":"Sales","State":"NJ","Laptop":"MAC"}
+
+
+DF operations include:
+1) val dfs = sqlContext.read.json("file:///home/shubhro2705854012/sparkLocal/employee.json") to read JSON document
+
+2) dfs.show to show the data i.e. sysnonymous to RDD collect
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        10|   Andrew|    PC|   DE|Manager|
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        12|   Harish|   MAC|   NJ|  Sales|
+	+----------+---------+------+-----+-------+
+	
+3) select method:
+	dfs.select("FirstName","EmployeeID").show
+	O/p:
+	+---------+----------+
+	|FirstName|EmployeeID|
+	+---------+----------+
+	|   Andrew|        10|
+	|     Arun|        11|
+	|   Harish|        12|
+	+---------+----------+	
+	
+4) filter method:
+	a) dfs.filter(dfs("EmployeeID") > 9).show
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        10|   Andrew|    PC|   DE|Manager|
+		|        11|     Arun|    PC|   NJ|Manager|
+		|        12|   Harish|   MAC|   NJ|  Sales|
+		+----------+---------+------+-----+-------+
+		
+	b) dfs.filter(dfs("Laptop") === "PC").show
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        10|   Andrew|    PC|   DE|Manager|
+		|        11|     Arun|    PC|   NJ|Manager|
+		+----------+---------+------+-----+-------+
+		
+		OR
+		dfs.filter($"laptop" === "PC").show()
+		
+	c) 	dfs.filter(dfs("Laptop") === "PC" && dfs("State") === "NJ").show   NOTE: single & does not work. OR is represented by ||.
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        11|     Arun|    PC|   NJ|Manager|
+		+----------+---------+------+-----+-------+
+		
+	d) Using filter and select together:
+		dfs.filter(dfs("Laptop") === "PC" && dfs("State") === "NJ").select("EmployeeID","FirstName").show
+		O/p:
+		+----------+---------+
+		|EmployeeID|FirstName|
+		+----------+---------+
+		|        11|     Arun|
+		+----------+---------+
+		
+	e) negation of a condition using filter:
+		dfs.filter(not(dfs("Laptop") === "PC")).show OR dfs.filter(not($"Laptop" === "PC")).show 
+		O/p:
+		+----------+---------+------+-----+-----+
+		|EmployeeID|FirstName|Laptop|State|Title|
+		+----------+---------+------+-----+-----+
+		|        12|   Harish|   MAC|   NJ|Sales|
+		+----------+---------+------+-----+-----+
+		
+	f) pattern matching with filter:
+		dfs.filter($"state" like "N%").show.  NOTE: dfs.filter($"state" like "N*").show DOES NOT WORK
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        11|     Arun|    PC|   NJ|Manager|
+		|        12|   Harish|   MAC|   NJ|  Sales|
+		+----------+---------+------+-----+-------+
+
+5) groupBy method:
+	dfs.groupBy("Laptop").count().show()
+	O/p:
+	+------+-----+
+	|Laptop|count|
+	+------+-----+
+	|   MAC|    1|
+	|    PC|    2|
+	+------+-----+
+	
+	
