@@ -1,6 +1,12 @@
 sreeram hive json blog on google.
+DF docs to be further referred:
+https://docs.databricks.com/spark/latest/dataframes-datasets/introduction-to-dataframes-scala.html
+Py-Spark:  https://www.analyticsvidhya.com/blog/2016/10/spark-dataframe-and-operations/
+https://www.tutorialspoint.com/spark_sql/spark_sql_dataframes.htm
 
--------
+if possible: 
+https://mapr.com/blog/using-apache-spark-dataframes-processing-tabular-data/
+-----------------------------------------------------------------------------
 SPARK SQL is not DB. SS is a library to process spark data objects using SQL statements (i.e follows mySQL based sql syntax).
 
 SPARK in general has 4 context,
@@ -11,6 +17,12 @@ SQL context : i.e. using this context we can process spark objects using select 
 Hive context: i.e. using this context,we can integrate spark with hive 
 					i.e. we can access hive env from spark and use HQL queries.
 					
+----------------------------------------------------------------------------
+dataframe is a distributed collection of rows under named columns i.e. conceptually equivalent to relational tables.
+DFs are,
+1) Immutable
+2) Supports Lazy evaluation i.e. task is executed only when an  action triggers
+3) Distributed			
 ----------------------------------------------------------------------------
 creating Dataframe from Sequence:
 This can be tried with 2 options,
@@ -32,6 +44,22 @@ b) creating a schema using case class, mapping data to the case class and then a
 	 val df2 = list1_map.toDF()
 	 df2.show()
 	 
+	O/p:
+	+------+------+
+	|single|double|
+	+------+------+
+	|     1|     2|
+	|     2|     4|
+	|     3|     6|
+	|     4|     8|
+	|     5|    10|
+	|     6|    12|
+	|     7|    14|
+	|     8|    16|
+	|     9|    18|
+	|    10|    20|
+	+------+------+
+	 
 //example 2:
 	val a = List(("ironman",3),("kabali",2),("bhahubali",5))
 	val rating = a.toDF("movie","rating")
@@ -48,7 +76,48 @@ b) creating a schema using case class, mapping data to the case class and then a
 
 	df.show
 	
---------
+----------------------------------------------------------------------------
+creating Dataframe from Sequence (EXTENDED):
+
+1) from RDD using toDF:
+	example,
+	a) val people_list = List(("Ankit",25),("Jalfaizy",22),("saurabh",20),("Bala",26))
+	b) val people_rdd = sc.parallelize(people_list)
+	c) val people1 = people_rdd.map( x => (x._1,x._2) )
+	d) val schemaPeople = people1.toDF("Name","Age")
+	e) schemaPeople.show
+	
+	O/p:
+	+--------+---+
+	|    Name|Age|
+	+--------+---+
+	|   Ankit| 25|
+	|Jalfaizy| 22|
+	| saurabh| 20|
+	|    Bala| 26|
+	+--------+---+
+	
+2) from RDD to structType to toDF
+	a) import org.apache.spark.sql.{SQLContext,Row}
+	   import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType, FloatType}
+	b) val people_list1 = List(("Ankit",25),("Jalfaizy",22),("saurabh",20),("Bala",26))
+	c) val people_rdd1 = sc.parallelize(people_list1)
+	d) val people2 = people_rdd1.map( x => Row(x._1,x._2) )
+	e) val people2_schema = StructType(Array(StructField("name",StringType,true),StructField("age",IntegerType,true)))
+	f) val people2_df = sqlContext.createDataFrame(people2,people2_schema)
+	g) people2_df.show
+	
+	O/p:
+	+--------+---+
+	|    name|age|
+	+--------+---+
+	|   Ankit| 25|
+	|Jalfaizy| 22|
+	| saurabh| 20|
+	|    Bala| 26|
+	+--------+---+
+	
+----------------------------------------------------------------------------
 From Spark 1.6 onwards, SQL context is by default available in spark shell.
 However, if creating a program, we will have to,
 a) import org.apache.spark.sql.SqlContext
@@ -937,6 +1006,311 @@ val counts = words.groupBy(._toLowerCase).map( w => w._1,w._2.size)   //i.e. RDD
 
 val counts = words.groupBy(._toLowerCase).count()   //i.e. dataset style of grouping aggregation.
 
+------------------------------------------------------------------
+DF operations (EXTENDED):
+
+consider employee.json as,
+{"EmployeeID":10,"FirstName":"Andrew","Title":"Manager","State":"DE","Laptop":"PC"}
+{"EmployeeID":11,"FirstName":"Arun","Title":"Manager","State":"NJ","Laptop":"PC"}
+{"EmployeeID":12,"FirstName":"Harish","Title":"Sales","State":"NJ","Laptop":"MAC"}
+
+
+DF operations include:
+1) val dfs = sqlContext.read.json("file:///home/shubhro2705854012/sparkLocal/employee.json") to read JSON document
+
+2) dfs.show to show the data i.e. sysnonymous to RDD collect
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        10|   Andrew|    PC|   DE|Manager|
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        12|   Harish|   MAC|   NJ|  Sales|
+	+----------+---------+------+-----+-------+
+	
+3) select method:
+	dfs.select("FirstName","EmployeeID").show
+	O/p:
+	+---------+----------+
+	|FirstName|EmployeeID|
+	+---------+----------+
+	|   Andrew|        10|
+	|     Arun|        11|
+	|   Harish|        12|
+	+---------+----------+	
+	
+4) filter method:
+	a) dfs.filter(dfs("EmployeeID") > 9).show
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        10|   Andrew|    PC|   DE|Manager|
+		|        11|     Arun|    PC|   NJ|Manager|
+		|        12|   Harish|   MAC|   NJ|  Sales|
+		+----------+---------+------+-----+-------+
+		
+	b) dfs.filter(dfs("Laptop") === "PC").show
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        10|   Andrew|    PC|   DE|Manager|
+		|        11|     Arun|    PC|   NJ|Manager|
+		+----------+---------+------+-----+-------+
+		
+		OR
+		dfs.filter($"laptop" === "PC").show()
+		
+	c) 	dfs.filter(dfs("Laptop") === "PC" && dfs("State") === "NJ").show   NOTE: single & does not work. OR is represented by ||.
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        11|     Arun|    PC|   NJ|Manager|
+		+----------+---------+------+-----+-------+
+		
+	d) Using filter and select together:
+		dfs.filter(dfs("Laptop") === "PC" && dfs("State") === "NJ").select("EmployeeID","FirstName").show
+		O/p:
+		+----------+---------+
+		|EmployeeID|FirstName|
+		+----------+---------+
+		|        11|     Arun|
+		+----------+---------+
+		
+	e) negation of a condition using filter:
+		dfs.filter(not(dfs("Laptop") === "PC")).show OR dfs.filter(not($"Laptop" === "PC")).show 
+		O/p:
+		+----------+---------+------+-----+-----+
+		|EmployeeID|FirstName|Laptop|State|Title|
+		+----------+---------+------+-----+-----+
+		|        12|   Harish|   MAC|   NJ|Sales|
+		+----------+---------+------+-----+-----+
+		
+	f) pattern matching with filter:
+		dfs.filter($"state" like "N%").show.  NOTE: dfs.filter($"state" like "N*").show DOES NOT WORK
+		O/p:
+		+----------+---------+------+-----+-------+
+		|EmployeeID|FirstName|Laptop|State|  Title|
+		+----------+---------+------+-----+-------+
+		|        11|     Arun|    PC|   NJ|Manager|
+		|        12|   Harish|   MAC|   NJ|  Sales|
+		+----------+---------+------+-----+-------+
+
+5) groupBy method:
+	dfs.groupBy("Laptop").count().show()
+	O/p:
+	+------+-----+
+	|Laptop|count|
+	+------+-----+
+	|   MAC|    1|
+	|    PC|    2|
+	+------+-----+
+	
+6) sort method:
+	dfs.sort(dfs("EmployeeID").asc).show
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        10|   Andrew|    PC|   DE|Manager|
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        12|   Harish|   MAC|   NJ|  Sales|
+	+----------+---------+------+-----+-------+
+	
+	dfs.sort(dfs("EmployeeID").desc).show
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        12|   Harish|   MAC|   NJ|  Sales|
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        10|   Andrew|    PC|   DE|Manager|
+	+----------+---------+------+-----+-------+
+	
+7) where clause (is same as filter)
+	dfs.where(dfs("Title") === "Manager").sort($"EmployeeID".desc).show
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        10|   Andrew|    PC|   DE|Manager|
+	+----------+---------+------+-----+-------+
+	
+8) handling Null values in dataframe.
+	JSON file:
+	{
+	   {"id" : "1201", "name" : "satish", "age" : "25"}
+	   {"id" : "1202", "name" : "krishna", "age" : "28"}
+	   {"id" : "1203", "name" : "amith", "age" : null}
+	   {"id" : "1204", "name" : "javed", "age" : "23"}
+	   {"id" : "1205", "name" : "prudvi", "age" : "23"}
+	}
+	 
+	val empN_DF = sqlContext.read.json("file:///home/shubhro2705854012/sparkLocal/emp_new.json")
+
+	empN_DF.select("id","name","age").show
+
+		O/p:
+		+----+-------+----+
+		|  id|   name| age|
+		+----+-------+----+
+		|null|   null|null|
+		|1201| satish|  25|
+		|1202|krishna|  28|
+		|1203|  amith|null|
+		|1204|  javed|  23|
+		|1205| prudvi|  23|
+		|null|   null|null|
+		+----+-------+----+
+	 
+	get NULL values and fill null values across all columns in a dataframe:
+	val emp_na = empN_DF.na   // emp_na will be a org.apache.spark.sql.DataFrameNaFunction
+	val notNull_emp = emp_na.fill("--") // will be a dataframe
+	notNull_emp.show
+
+		O/p:
+		+---------------+---+----+-------+
+		|_corrupt_record|age|  id|   name|
+		+---------------+---+----+-------+
+		|              {| --|  --|     --|
+		|             --| 25|1201| satish|
+		|             --| 28|1202|krishna|
+		|             --| --|1203|  amith|
+		|             --| 23|1204|  javed|
+		|             --| 23|1205| prudvi|
+		|              }| --|  --|     --|
+		+---------------+---+----+-------+
+	 
+	replace NULL values with a specific value in dataframe:
+	val emp_na2 = empN_DF.na.fill("23",Seq("age"))
+
+		O/p:
+		+---------------+---+----+-------+
+		|_corrupt_record|age|  id|   name|
+		+---------------+---+----+-------+
+		|              {| 23|null|   null|
+		|           null| 25|1201| satish|
+		|           null| 28|1202|krishna|
+		|           null| 23|1203|  amith|
+		|           null| 23|1204|  javed|
+		|           null| 23|1205| prudvi|
+		|              }| 23|null|   null|
+		+---------------+---+----+-------+
+
+	NOTE: multiple columns can be done as empN_DF.na.fill("23",Seq("age")).na.fill("Shubhro",Seq("Name")	
+	
+9) Drop data in dataframe:
+   a) Drop columns in a dataframe.
+	  we will have to select all columns and then drop the columns to be dropped as
+	  emp_na2.select("_corrupt_record","age","id","name").drop("_corrupt_record").show
+	
+		O/p:
+		+---+----+-------+
+		|age|  id|   name|
+		+---+----+-------+
+		| 23|null|   null|
+		| 25|1201| satish|
+		| 28|1202|krishna|
+		| 23|1203|  amith|
+		| 23|1204|  javed|
+		| 23|1205| prudvi|
+		| 23|null|   null|
+		+---+----+-------+
+	
+	b) Drop rows: we can just filter the dataframe and store it into a different dataframe or same dataframe name.
+	
+10) aggregation functions in a dataframe:
+	agg() and countDistinct()
+	a) remove null and unwanted columns
+	   val emp_na3 = emp_na2.select("_corrupt_record","age","id","name").drop("_corrupt_record").filter($"name" !== "")
+	   O/p:
+		+---+----+-------+
+		|age|  id|   name|
+		+---+----+-------+
+		| 25|1201| satish|
+		| 28|1202|krishna|
+		| 23|1203|  amith|
+		| 23|1204|  javed|
+		| 23|1205| prudvi|
+		+---+----+-------+	   
+	
+	b) aggregate
+		emp_na3.select("age").agg(countDistinct("age") as "dist_age_cnt").show
+		
+		O/p:
+		+------------+
+		|dist_age_cnt|
+		+------------+
+		|           3|
+		+------------+
+      		
+	    emp_na3.select("age","id","name").groupBy("age").agg(countDistinct("age") as "dist_age_cnt").show
+		OR
+		emp_na3.groupBy("age").agg(countDistinct("age") as "dist_age_cnt").show
+		
+		O/p:
+		+---+------------+
+		|age|dist_age_cnt|
+		+---+------------+
+		| 23|           1|
+		| 25|           1|
+		| 28|           1|
+		+---+------------+
+	
+11) head: to find the top n rows in the data frame
+	emp_na3.head(3)
+	
+	O/p:
+	Array[org.apache.spark.sql.Row] = Array([25,1201,satish], [28,1202,krishna], [23,1203,amith]) 
+	
+	To see the result in more interactive manner (rows under the columns),
+	emp_na3.show(2)
+	
+	O/p:
+	+---+----+-------+
+	|age|  id|   name|
+	+---+----+-------+
+	| 25|1201| satish|
+	| 28|1202|krishna|
+	+---+----+-------+	
+	
+12) describe method will give the general statistics of a particular row
+	emp_na3.describe("age").show()
+
+	O/p:
+	+-------+------------------+
+	|summary|               age|
+	+-------+------------------+
+	|  count|                 5|
+	|   mean|              24.4|
+	| stddev|1.9595917942265797|
+	|    min|                23|
+	|    max|                28|
+	+-------+------------------+
+
+--------------
+The physical plan of getting a result via DF or SQL query can be seen by explain command. Ideally the physical plan is almost same b/w DF and query.
+example,
+scala> emp_na3.explain
+18/06/19 08:34:17 INFO MemoryStore: ensureFreeSpace(314712) called with curMem=1027485, maxMem=278019440
+18/06/19 08:34:17 INFO MemoryStore: Block broadcast_32 stored as values in memory (estimated size 307.3 KB, free 263.9 MB)
+18/06/19 08:34:17 INFO MemoryStore: ensureFreeSpace(26561) called with curMem=1342197, maxMem=278019440
+18/06/19 08:34:17 INFO MemoryStore: Block broadcast_32_piece0 stored as bytes in memory (estimated size 25.9 KB, free 263.8 MB)
+18/06/19 08:34:17 INFO BlockManagerInfo: Added broadcast_32_piece0 in memory on localhost:55584 (size: 25.9 KB, free: 265.0 MB)
+18/06/19 08:34:17 INFO SparkContext: Created broadcast 32 from explain at <console>:26
+18/06/19 08:34:17 INFO MemoryStore: ensureFreeSpace(307136) called with curMem=1368758, maxMem=278019440
+18/06/19 08:34:17 INFO MemoryStore: Block broadcast_33 stored as values in memory (estimated size 299.9 KB, free 263.5 MB)
+18/06/19 08:34:17 INFO MemoryStore: ensureFreeSpace(26634) called with curMem=1675894, maxMem=278019440
+18/06/19 08:34:17 INFO MemoryStore: Block broadcast_33_piece0 stored as bytes in memory (estimated size 26.0 KB, free 263.5 MB)
+18/06/19 08:34:17 INFO BlockManagerInfo: Added broadcast_33_piece0 in memory on localhost:55584 (size: 26.0 KB, free: 265.0 MB)
+18/06/19 08:34:17 INFO SparkContext: Created broadcast 33 from explain at <console>:26
+== Physical Plan ==
+Project [coalesce(age#1,23) AS age#4,id#2,name#3]
+ Filter NOT (name#3 = )
+  Scan JSONRelation[file:/home/shubhro2705854012/sparkLocal/emp_new.json][age#1,id#2,name#3] 	
 -----------------------
 //dealing parquet files
 val baby_names_df = sqlContext.read.parquet("/user/cloudera/datasets/baby_names.parquet")
@@ -969,17 +1343,6 @@ b) Save(path String): Save DF in provided location.
 c) SaveAsTable(table String): default save is as Hive table and DF will be saved to /hadoop/hive/<> i.e. hive location.
 
 
-
-
-
--------------------
-DF docs to be further referred:
-https://docs.databricks.com/spark/latest/dataframes-datasets/introduction-to-dataframes-scala.html
-https://www.analyticsvidhya.com/blog/2016/10/spark-dataframe-and-operations/
-https://www.tutorialspoint.com/spark_sql/spark_sql_dataframes.htm
-
-if possible: 
-https://mapr.com/blog/using-apache-spark-dataframes-processing-tabular-data/
 
 
 
