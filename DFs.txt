@@ -107,4 +107,115 @@ DF operations include:
 	|    PC|    2|
 	+------+-----+
 	
+6) sort method:
+	dfs.sort(dfs("EmployeeID").asc).show
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        10|   Andrew|    PC|   DE|Manager|
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        12|   Harish|   MAC|   NJ|  Sales|
+	+----------+---------+------+-----+-------+
 	
+	dfs.sort(dfs("EmployeeID").desc).show
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        12|   Harish|   MAC|   NJ|  Sales|
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        10|   Andrew|    PC|   DE|Manager|
+	+----------+---------+------+-----+-------+
+	
+7) where clause (is same as filter)
+	dfs.where(dfs("Title") === "Manager").sort($"EmployeeID".desc).show
+	O/p:
+	+----------+---------+------+-----+-------+
+	|EmployeeID|FirstName|Laptop|State|  Title|
+	+----------+---------+------+-----+-------+
+	|        11|     Arun|    PC|   NJ|Manager|
+	|        10|   Andrew|    PC|   DE|Manager|
+	+----------+---------+------+-----+-------+
+	
+8) handling Null values in dataframe.
+	JSON file:
+	{
+	   {"id" : "1201", "name" : "satish", "age" : "25"}
+	   {"id" : "1202", "name" : "krishna", "age" : "28"}
+	   {"id" : "1203", "name" : "amith", "age" : null}
+	   {"id" : "1204", "name" : "javed", "age" : "23"}
+	   {"id" : "1205", "name" : "prudvi", "age" : "23"}
+	}
+	 
+	val empN_DF = sqlContext.read.json("file:///home/shubhro2705854012/sparkLocal/emp_new.json")
+
+	empN_DF.select("id","name","age").show
+
+		O/p:
+		+----+-------+----+
+		|  id|   name| age|
+		+----+-------+----+
+		|null|   null|null|
+		|1201| satish|  25|
+		|1202|krishna|  28|
+		|1203|  amith|null|
+		|1204|  javed|  23|
+		|1205| prudvi|  23|
+		|null|   null|null|
+		+----+-------+----+
+	 
+	get NULL values and fill null values across all columns in a dataframe:
+	val emp_na = empN_DF.na   // emp_na will be a org.apache.spark.sql.DataFrameNaFunction
+	val notNull_emp = emp_na.fill("--") // will be a dataframe
+	notNull_emp.show
+
+		O/p:
+		+---------------+---+----+-------+
+		|_corrupt_record|age|  id|   name|
+		+---------------+---+----+-------+
+		|              {| --|  --|     --|
+		|             --| 25|1201| satish|
+		|             --| 28|1202|krishna|
+		|             --| --|1203|  amith|
+		|             --| 23|1204|  javed|
+		|             --| 23|1205| prudvi|
+		|              }| --|  --|     --|
+		+---------------+---+----+-------+
+	 
+	replace NULL values with a specific value in dataframe:
+	val emp_na2 = empN_DF.na.fill("23",Seq("age"))
+
+		O/p:
+		+---------------+---+----+-------+
+		|_corrupt_record|age|  id|   name|
+		+---------------+---+----+-------+
+		|              {| 23|null|   null|
+		|           null| 25|1201| satish|
+		|           null| 28|1202|krishna|
+		|           null| 23|1203|  amith|
+		|           null| 23|1204|  javed|
+		|           null| 23|1205| prudvi|
+		|              }| 23|null|   null|
+		+---------------+---+----+-------+
+
+	NOTE: multiple columns can be done as empN_DF.na.fill("23",Seq("age")).na.fill("Shubhro",Seq("Name")	
+	
+9) Drop columns in a dataframe.
+	we will have to select all columns and then drop the columns to be dropped as
+	emp_na2.select("_corrupt_record","age","id","name").drop("_corrupt_record").show
+	
+	O/p:
+	+---+----+-------+
+	|age|  id|   name|
+	+---+----+-------+
+	| 23|null|   null|
+	| 25|1201| satish|
+	| 28|1202|krishna|
+	| 23|1203|  amith|
+	| 23|1204|  javed|
+	| 23|1205| prudvi|
+	| 23|null|   null|
+	+---+----+-------+
+	
+	Drop rows???????
