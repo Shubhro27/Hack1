@@ -1,0 +1,128 @@
+References: https://data-flair.training/blogs/kafka-operations/
+-------------------------------------------------------
+Kafka is basically a Publish-Subscribe Messaging System. It can also be called a distributed streaming platform.
+As distributed streaming platform, Kafka facilitates communication between producers and consumers.
+
+What is a messaging system?
+system used to transfer data from one application to another. There are 2 kinds of messaging system:
+1) Point to Point Messaging System    : a) Messages are persisted in queues.
+										b) The message can be read by only one consumer (even if there are multiple consumers who can read a queue).
+										c) as soon as a consumer reads a message in the queue, it disappears from that queue. 
+
+2) Publish-Subscribe Messaging System : a) Messages are persisted in topics.
+									    b) There are message producers (also referred as publishers) and message consumers (who subscribe to 1 or more topics)
+										c) So, consumers can subscribe to one or more topics and consume all messages in those topics.
+
+
+Why use Kafka over conventional MQs?
+1) fast
+2) scalable: Data is replicated and partitioned over a cluster of machines that can grow and shrink transparently to the applications using the cluster. 
+3) fault tolerant: replicates data to multiple servers.
+4) High availability: i.e. it is resilient to node failures and supports automatic recovery.
+
+So Kafka is ideal for communication and integration between components of large scale data systems.
+
+Kafka is written in Java, however other languages support Kafka thru third party libraries.
+
+Kafka is in current scenario, being used in:
+1) Tracking web activities by storing/sending events for real time processing (storm or spark streaming)
+2) reporting the operational metrics.
+3) Transforming data into the standard format.
+4) Continuous processing of streaming data to the topics.
+
+Competitiors to Kafka : RabbitMQ, ActiveMQ, AWS Kinesis.
+
+Kafka vs Flume:
+Kafka										Flume
+is general purpose system.					is special purpose tool.
+supports multiple producers and consumers.	designed to send data to HDFS or HBASE.
+requires external stream processing 		can process data in-flight. Has interceptors for
+system for data in-flight.                  data masking/filtering
+Data replication supported.					data replication not supported.
+
+NOTE: kafka and flume can be used together. If your design requires streaming data from Kafka to Hadoop, using a Flume agent with Kafka source to read the data makes sense: 
+You don’t have to implement your own consumer, you get all the benefits of Flume’s integration with HDFS and HBase, you have Cloudera Manager monitoring the consumer 
+and you can even add an interceptor and do some stream processing on the way.
+
+Kafka vs RabbitMQ:
+Kafka										RabbitMQ
+is distributed.								is not distributed so replication, availability is less supported.
+high performance rate						less performance rate
+i.e. can process 100,000 messages/second.   i.e. 20,000 messages/second.
+In kafka, messages can be read				only supports FIFO
+asynchronously via message offset.
+
+Kafka's core abstraction comprises of:
+1) Kafka Topics   : is a storage unit which stores and organizes messages/collection of messages. 
+			       Topics can be replicated (i.e. multiple copies maintained in cluster) or partitioned.
+				   Kafka topics can be visualized as tables in RDBMS
+				   
+				   NOTE: a topic name has to be unique across kafka cluster. 
+				         Data in a topic id retained for a configurable period of time.
+						 (example, if Kafka is configured to keep messages for 24 hours and a consumer is down for time greater than 24 hours, the consumer will lose messages).
+						 Kafka doesn’t keep state on what consumers are reading from a topic.
+				   
+				   Lifecycle of a topic:
+				   1) A producer publishes data/message to a topic. Writes to a topic is sequencial to reduce number of harddisk seeks.
+				   2) Topic is then broken into ordered commit logs called partitions and distributed among brokers.
+				   3) Each message in a partition is assigned a sequential ID called offset.
+				   4) Consumer reads the data/message either from beginning or skip to any point in partition by giving offset value.
+				   
+				   Diagramatically, this can be represented as,
+											data source writes messages to partitions (1,2,3,4,5,6,7)
+				   _____________________________|_____
+				   |	1	2	3	4	5	6	7	 |
+				   _________|___________________|_____
+				            |                   |
+						offset-2			offset-7
+						consumer can read sequentially or from a particular offset.
+				   
+2) kafka Broker   : a node on the Kafka cluster, its use is to persist/store and replicate the data. A kafka cluster comprises of multiple brokers.
+                    kafka broker is stateless, so zookeeper is used to maintain cluster state.
+					
+3) Kafka Producer : pushes the message into the message container called the Kafka Topic which is sent to brokers.
+					producer sends messages as fast as the broker can handle, it doesn’t wait for acknowledgments from the broker.
+					So if a new broker starts in a cluster, producer will start sending messages to this new broker.
+					
+4) Kafka Consumer : pulls the message from the Kafka Topic.
+					by using partition offset the Kafka Consumer maintains that how many messages have been consumed because Kafka brokers are stateless.
+					In order to have a buffer of bytes ready to consume, the consumer issues an asynchronous pull request to the broker. 
+					NOTE: consumer can skip to any point in partition by providing the message offset.
+					
+5) Kafka zookeeper: kafka has been built to use zookeeper. Some important tasks involve,
+					a) electing controller: controller is one of the brokers and helps maintain a leader/worker relationship for all partitions,
+					   In case a node (a single computer) shuts down, controller will tell other replicas to become partition leader.
+					   Zookeeper maintains only one controller at a time, elects new if it crashes.
+					b) cluster membership: i.e. manages/keeps track of all alive brokers in a cluster.
+					c) Topic configuration: i.e. maintains topics, partitions each topic has, replicas of the topics, config overrides for each topic.
+					d) Zookeeper can also be used to control which producers and consumers are allowed.
+					
+					Diagramatically:
+					
+					             (push msg)					(pull msg)
+					Producer1,2,3 -----> 	Kafka cluster  <---------  Consumer1,2,3 
+							|			 	(Broker 1,2,3)              |
+					get Kafka broker ID	<->	(Zookeeper)		<->	 updates offset
+
+Kafka Architecture comprises of 4 core components:
+1) Producer API  : permits an application to publish a stream of records to one or more Kafka topics.
+2) Consumer API  : permits an application to subscribe in one or more topics and process the stream of records in the topics.
+3) Streams API   : permits an application to:
+				   a) transform input streams to output streams.
+				   b) consume an i/p stream from one or more i/p topics and produce o/p stream to one or more o/p topics.
+4) Connector API : is used by application to connect to other systems, either as an input that ingests data into Kafka or an output that passes data to an external system. 
+
+
+In Kafka replication takes place at partition level:
+Broker1 -> TopicA (partition0) is leader, TopicB (partition1) is replica -
+              |_______________________________							  |	
+											 |							  |	
+Broker2 -> TopicA (partition1) is leader, TopicA (partition0) is replica  |
+              |															  |	
+              |															  |
+Broker3 -> TopicA (partition1) is replica, TopicB (partition1) is leader <
+
+NOTE:
+For a given partition, only one broker can be a leader, at a time. Meanwhile, other brokers will have in-sync replica (ISR).
+It is not possible to have the number of replication factor more than the number of available brokers.
+
