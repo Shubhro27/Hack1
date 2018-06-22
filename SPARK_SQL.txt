@@ -1259,6 +1259,56 @@ DF operations include:
 		| 25|           1|
 		| 28|           1|
 		+---+------------+
+		
+		
+		example-2
+		I/p:
+		emp_sal.txt
+		101,aaa,70000,m,12
+		102,bbb,90000,f,12
+		103,ccc,10000,m,11
+		104,ddd,20000,f,13
+		105,eee,90000,f,14
+		106,fff,40000,m,15
+		107,iiii,60000,m,13
+		108,jjj,90000,f,15
+
+		val sal_rdd = sc.textFile("file:///home/shubhro2705854012/sparkLocal/emp_sal.txt")
+
+		case class sal_schema(empId:Integer, empName:String, empSal:Integer, empGen:String, empDept:Integer) 
+
+		val sal_rdd1 = sal_rdd.map { x =>
+		val arr = x.split(",")
+		val p0 = arr(0).toInt
+		val p1 = arr(1)
+		val p2 = arr(2).toInt
+		val p3 = arr(3)
+		val p4 = arr(4).toInt
+		sal_schema(p0,p1,p2,p3,p4)
+		}
+
+		val sal_df = sal_rdd1.toDF	
+
+		sal_df.groupBy("empGen").agg(expr("sum("empSal") as gensal")).show
+		
+		O/p:
+		+------+------+
+		|empGen|genSal|
+		+------+------+
+		|     f|290000|
+		|     m|180000|
+		+------+------+
+
+
+		sal_df.groupBy("empGen").agg(sum("empSal") as "genSal").agg(max("genSal")).show
+		
+		O/p:
+		+-----------+
+		|max(genSal)|
+		+-----------+
+		|     290000|
+		+-----------+
+		
 	
 11) head: to find the top n rows in the data frame
 	emp_na3.head(3)
