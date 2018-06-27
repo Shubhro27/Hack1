@@ -1,0 +1,31 @@
+1) Open a new terminal and type the following command −
+
+sudo /opt/kafka_2.11-0.9.0.0/bin/zookeeper-server-start.sh /opt/kafka_2.11-0.9.0.0/config/zookeeper.properties
+
+sudo /opt/kafka_2.11-0.9.0.0/bin/zookeeper-server-stop.sh /opt/kafka_2.11-0.9.0.0/config/zookeeper.properties
+
+2) To start Kafka Broker, type the following command −
+sudo /opt/kafka_2.11-0.9.0.0/bin/kafka-server-start.sh /opt/kafka_2.11-0.9.0.0/config/server.properties
+
+
+sudo /opt/kafka_2.11-0.9.0.0/bin/kafka-server-stop.sh /opt/kafka_2.11-0.9.0.0/config/server.properties
+
+3) type the command jps on ZooKeeper terminal and you would see the following response:
+821 QuorumPeerMain
+928 Kafka
+931 Jps
+
+two daemons running on the terminal where QuorumPeerMain is ZooKeeper daemon and another one is Kafka daemon.
+
+Single node single broker configuration
+1) create a Kafka Topic
+sudo /opt/kafka_2.11-0.9.0.0/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic Hello-Kafka 
+
+2) to get list of topics in kafka server
+sudo /opt/kafka_2.11-0.9.0.0/bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+3) Start Producer to Send Messages
+sudo /opt/kafka_2.11-0.9.0.0/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic Hello-Kafka
+
+4) Start Consumer to Receive Messages
+sudo /opt/kafka_2.11-0.9.0.0/bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic Hello-Kafka --from-beginning 
