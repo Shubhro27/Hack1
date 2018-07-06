@@ -1,0 +1,1508 @@
+https://career.guru99.com/top-50-oracle-interview-questions-and-answers/
+https://www.besanttechnologies.com/oracle-interview-questions-and-answers
+
+http://www.testingbrain.com/interview/oracle-interview-questions.html
+https://mindmajix.com/oracle-pl-sql-interview-questions
+https://mindmajix.com/sql-interview-questions
+#########################################################################################
+SQL: Structured Query Language is non-procedural language used for data retrieval, data update, insert or delete data from an database.
+
+different Oracle Database objects:
+Tables – set of elements organized in vertical and horizontal
+Views  – Virtual table derived from one or more tables
+Indexes – Performance tuning method for processing the records
+Synonyms – Alias name for tables
+Sequences – Multiple users generate unique numbers
+Tablespaces – Logical storage unit in Oracl
+
+What is DUAL?
+The DUAL table is owned by the user SYS and can be accessed by users. 
+It contains one column, DUMMY, and one row with the value X. 
+The DUAL table is useful when you want to return a value once only.
+for instance, the value of a constant, pseudocolumn, or expression that is not derived from a table with user data. 
+
+Comments in Oracle:
+-- for single line
+/*.....*/ for multi line
+
+SELECT DISTINCT(colname) from table_name to get DISTINCT values in the column.
+
+Data Manipulation Language (DML) is used to access and manipulate data in the existing objects. insert, select, update and delete.
+
+NULL value in oracle: is just a place holder for missing/unknown data.
+
+Describe <Table_Name> is used to get the field details.
+
+difference between $ORACLE_BASE and $ORACLE_HOME?
+Oracle base is the main or root directory of an oracle whereas ORACLE_HOME is located beneath base folder in which all oracle products reside.
+
+fastest query method to fetch data from the table?
+Using ROW ID is the fastest query method to fetch data from the table.
+
+display row numbers with the records? select rownum, <fieldnames> from table;
+
+How can we view last record added to a table? Select * from (select * from employees order by rownum desc) where rownum<2;
+
+How to display employee records who gets more salary than the average salary in the department? 
+Select * from employee where salary > (select avg(salary) from dept, employee where dept.deptno = employee.deptno);
+
+Oracle literals are strings (can have character, a number, or a date) which can included in SELECT statement along with column name
+ex, Select last_name||’is a’||job_id As “emp details” from employee; (Here “is a” is a literal).
+
+##################################################################################
+varchar and varchar2?
+varchar							varchar2
+can store up to 2000 bytes		can store up to 4000 bytes
+occupies SPACE for NULL			can accomodate NULL
+
+As of now both are used as synonyms regarding memory allocation & release. both r variable in length and occupies memory at runtime.
+In future, VARCHAR2, is supposed to, not distinguish between a NULL and empty string while VARCHAR will do,
+
+SELECT 
+    '"'||CAST('abc' AS VARCHAR2(10))||'"', 
+	'"'||CAST('abc' AS VARCHAR(10))||'"', 
+    '"'||CAST('abc' AS CHAR(10))||'"' 
+FROM dual;
+
+'"'||CAST('ABC'ASVARCHAR2(10))||'"' '"'||CAST('ABC'ASVARCHAR(10))||'"' '"'||CAST('ABC'ASCHAR(10))||'"'
+----------------------------------- -------------------------------    ------------------------------- 
+"abc"                               "abc" 							    "abc       "                   
+1 row selected.
+
+In case of a fixed length column (like postal code, SSN), har avoids the need to code an rpad() expression. 
+If you rely on empty string and NULL being the same thing, you should use VARCHAR2.
+
+##############################################################################
+RAW datatype? 
+used to store values in variable length binary data format OR byte string. 
+Maximum size for:
+PL/SQL declaration is 32767 bytes. 
+database columns is 255 bytes.
+
+syntax can be: VARIABLE RAW(precision)
+example,
+	CREATE TABLE T_RAW (HEX_CODE RAW(3));   	    // Here 16 implies 16 bytes. So if we try to insert data > 16 bytes, it will fail with "value error"
+	INSERT INTO T_RAW VALUES (HEXTORAW('414141'));  // Success
+	INSERT INTO T_RAW VALUES (HEXTORAW('414141F')); // will fail with "value error"
+	SELECT (RAWTOHEX(T_RAW)) FROM T_RAW;     
+
+##############################################################################
+Date / Time Arithmetic with Oracle?
+
+Date Data Types:
+1) Date: is used to store month, day, year, century, hours, minutes, and seconds. However, does not support doing arithmetic on the column.
+   example,
+   CREATE TABLE t(dob DATE);
+   INSERT INTO t(dob) VALUES(TO_DATE('17/12/2015', 'DD/MM/YYYY'));
+   SELECT dob,to_char(dob,'MMDDYYYY:HH24:MI:SS')dob1 FROM t;
+
+2) Timestamp: this is extension of Date and adds fractional seconds to the current date time format. TRUNC function will not work with a datatype of TIMESTAMP.
+              TIMESTAMP datatype should explicitly be used for date and times where a difference in time is of utmost importance.   
+			a) convert date field to timestamp.
+               SELECT CAST(date1 AS TIMESTAMP) "Date" FROM t;
+               O/p: (NOTE: there is a 000000 field due to empty time on original date field)
+				Date
+				-----------------------------------------------------
+				20-JUN-03 04.55.14.000000 PM			   
+   
+            b) Inserting TIMESTAMP value into table
+				1) insert into tablename (timestamp_value) values (TO_TIMESTAMP(:ts_val, 'YYYY-MM-DD HH24:MI:SS'));
+				2) CURRENT_TIMESTAMP, SYSTIMESTAMP, sysdate are Oracle reserved words
+				   INSERT INTO mytable (timestamp_field) VALUES(CURRENT_TIMESTAMP)
+				3) insert into the_table(the_timestamp_column) values (timestamp '2017-10-12 21:22:23');
+				
+	With timestamp, we can do time arithmetic,
+	SELECT time1,  time2,  (time2-time1) from date_table
+	
+Date time functions include:
+ADD_MONTHS: Adds the specified number of months to a date. 
+LAST_DAY: Returns the last day in the month of the specified date. 
+MONTHS_ BETWEEN: Calculates the number of months between two dates. 
+NEW_TIME: Returns the date/time value, with the time shifted as requested by the specified time zones.  
+NEXT_DAY: Returns the date of the first weekday specified that is later than the date.  
+ROUND: Returns the date rounded by the specified format unit. 
+SYSDATE: Returns the current date and time in the Oracle Server. 
+TRUNC: Truncates the specified date of its time portion according to the format unit provided.  
+
+You can refer: http://www.baskent.edu.tr/~tkaracay/etudio/ders/dbase/sql/pdfSQL/DateFunctions.pdf
+               https://www.databasejournal.com/features/oracle/article.php/2234501/A-Comparison-of-Oracles-DATE-and-TIMESTAMP-Datatypes.htm
+			   
+date and time data types are also called temporal datatypes. So we have 3 in oracle,
+Date
+TimeStamp
+Interval: are used to store periods of time. There are 2 types,
+	INTERVAL YEAR TO MONTH – stores intervals using of year and month.
+	INTERVAL DAY TO SECOND – stores intervals using days, hours, minutes, and seconds including fractional seconds.
+###########################################################
+ 
+Nested Table:
+is a table which supports columns containing multivalued attributes (i.e. table containing subtables)
+It is similar to VARRAY 
+Elements can be deleted or added anywhere in the nested table where as a VARRAY can only add or delete elements from the end of the array.
+
+NOTE: for details on VARRAY, refer to http://www.orafaq.com/wiki/VARRAY.	
+
+example-1,
+1) CREATE OR REPLACE TYPE my_tab_t AS TABLE OF VARCHAR2(30);
+2) CREATE TABLE nested_table (id NUMBER, col1 my_tab_t) NESTED TABLE col1 STORE AS col1_tab;
+3) Insert data as,
+	 INSERT INTO nested_table VALUES (1, my_tab_t('A'));
+	 INSERT INTO nested_table VALUES (2, my_tab_t('B', 'C'));
+	 INSERT INTO nested_table VALUES (3, my_tab_t('D', 'E', 'F'));
+	 COMMIT;
+	 
+4) SELECT * FROM nested_table;
+			ID COL1
+	---------- ------------------------
+			 1 MY_TAB_T('A')
+			 2 MY_TAB_T('B', 'C')
+			 3 MY_TAB_T('D', 'E', 'F')
+			 
+5) SELECT id, COLUMN_VALUE FROM nested_table t1, TABLE(t1.col1) t2;
+			ID COLUMN_VALUE
+	---------- ------------------------
+			 1 A
+			 2 B
+			 2 C
+			 3 D
+			 3 E
+			 3 F
+			 
+example-2,
+1) 
+	CREATE TYPE address_t AS OBJECT (
+	   street  VARCHAR2(30),
+	   city    VARCHAR2(20),
+	   state   CHAR(2),
+	   zip     CHAR(5) );
+   
+2) CREATE TYPE address_tab IS TABLE OF address_t;
+
+3) 
+	CREATE TABLE customers (
+	   custid  NUMBER,
+	   address address_tab )
+	NESTED TABLE address STORE AS customer_addresses;
+
+4) 
+	INSERT INTO customers VALUES (1,
+				address_tab(
+				  address_t('101 First', 'Redwood Shores', 'CA', '94065'),
+				  address_t('123 Maple', 'Mill Valley',    'CA', '90952')
+				)                );
+  
+5)	select c.custid, u.* from customers c, table (c.address) u;
+  
+#############################################################################
+COALESCE function:
+COALESCE function returns the first non-null expression in the list. The COALESCE function will compare each value in the list, one by one.
+Syntax is: COALESCE( expr1, expr2, ... expr_n ) where,
+			The expressions to test for non-null values. The expressions must all be the same datatype.
+			
+example,
+SELECT COALESCE( address1, address2, address3 ) result FROM suppliers;
+
+is equivalent to,
+IF address1 is not null THEN
+   result := address1;
+ELSIF address2 is not null THEN
+   result := address2;
+ELSIF address3 is not null THEN
+   result := address3;
+ELSE
+   result := null;
+END IF;
+
+In case of 2 arguments of same type COALESCE behaves similar to NVL.
+example,
+SELECT nvl(:column_name,'10') FROM table_name;
+SELECT coalesce(:column_name,'10') FROM table_name;
+
+However, they are implemented differently:
+NVL always evaluates both arguments
+COALESCE doesn't evaluate anything after it finds the first non-NULL argument
+
+###################################################################################
+BLOB datatype:
+Varying length binary string which is used to store two gigabytes memory. Length should be specified in Bytes for BLOB
+Blobs (binary large objects) are typically images, audio, video or other multimedia objects, though sometimes binary executable code is stored as a blob. 
+These datatypes came into existance when storage became cheap.
+ 
+We can store pictures in the database by Long Raw Data type. 
+This datatype is used to store binary data for 2 gigabytes of length. But the table can have only on Long Raw data type.
+###################################################################################
+difference between TRANSLATE and REPLACE?
+
+Translate is used for character by character substitution
+Replace is used substitute a single character with a word.
+
+TRANSLATE(STRING,IF,THEN):  looks at each character in 'STRING' and then check 'IF' to see if that character is there, 
+							if it is there then it notes the position in 'IF' where it found the character and then looks the same position in 'THEN'.
+							
+example,
+SELECT TRANSLATE('NOW VOWELS ARE UNDER ATTACK','TAEIOU','Taeiou') FROM dual;
+O/p:
+Result- NoW VoWeLS aRe uNDeR aTTaCK
+
+SELECT TRANSLATE(7671234,234567890,'BCDEFGHIJ') FROM dual;
+O/p:
+Result of the query above is- GFG1BCD
+
+
+SELECT REPLACE('ADAH','A','BLAH') FROM dual;
+O/p:
+Result: BLAHDBLAHH
+
+SELECT REPLACE('GEORGE','GE',NULL) FROM DUAL;
+O/p:
+Result: OR
+
+##################################################################################
+Merge statement:
+Selects data from one or more source tables and updates or inserts it into a target table. 
+Merge allows you to specify a condition to determine whether to update data from or insert data into the target table.
+You can add an optional DELETE WHERE clause to the MATCHED clause to clean up after a merge operation. However,
+you cannot delete rows that have not been updated by the merge command.
+
+
+syntax is:
+MERGE INTO target_table 
+USING source_table 
+ON search_condition
+    WHEN MATCHED THEN
+        UPDATE SET col1 = value1, col2 = value2,...
+        WHERE <update_condition>
+        [DELETE WHERE <delete_condition>]
+    WHEN NOT MATCHED THEN
+        INSERT (col1,col2,...)
+        values(value1,value2,...)
+        WHERE <insert_condition>;
+		
+example,
+	create table catalog1 (id number(3), item varchar2 (20), price number(6))
+	 
+	insert into catalog1 values(1, 'laptop', 800)
+	insert into catalog1 values(2, 'iphone', 500)
+	insert into catalog1 values(3, 'camera', 700)
+
+	select * from catalog1
+
+	O/p:
+	ID	ITEM	PRICE
+	1	laptop	800
+	2	iphone	500
+	3	camera	700
+
+	create table catalog2 (id number(3), item varchar2 (20), price number(6))
+	insert into catalog2 values(1, 'laptop', 899)
+	insert into catalog2 values(2, 'iphone', 599)
+	insert into catalog2 values(5, 'video camera', 799)
+
+	select * from catalog2
+
+	O/p:
+	ID	ITEM			PRICE
+	1	laptop			899
+	2	iphone			599
+	5	video camera	799
+
+	MERGE INTO catalog1 s1 USING catalog2 s2 ON (s1.id = s2.id) 
+	WHEN MATCHED THEN UPDATE SET s1.price = s2.price  
+	WHEN NOT MATCHED THEN INSERT (id, item, price) values (s2.id, s2.item, s2.price)
+
+	O/p:
+	ID	ITEM			PRICE
+	1	laptop			899
+	2	iphone			599
+	3	camera			700
+	5	video camera	799
+	
+example-2,
+	MERGE INTO member_staging x
+	USING (SELECT member_id, first_name, last_name, rank FROM members) y
+	ON (x.member_id  = y.member_id)
+	WHEN MATCHED THEN
+		UPDATE SET x.first_name = y.first_name, 
+							x.last_name = y.last_name, 
+							x.rank = y.rank
+		WHERE x.first_name <> y.first_name OR 
+			   x.last_name <> y.last_name OR 
+			   x.rank <> y.rank 
+	WHEN NOT MATCHED THEN
+		INSERT(x.member_id, x.first_name, x.last_name, x.rank)  
+		VALUES(y.member_id, y.first_name, y.last_name, y.rank);
+		
+example-3, (with delete)
+when matched then update set dummy=dummy
+    where a_value not in ('ace','afk')
+delete 
+    where a_value not in ('ace','afk')
+	
+##############################################################################################
+JOINS
+
+cross join: "Cartesian product of records from the tables present in the join"
+i.e. Cross join will produce result which combines each row from the first table with the each row from the second table. 
+example,
+	SELECT first_name, department_name FROM employees CROSS JOIN departments;
+	SELECT * FROM regions CROSS JOIN countries WHERE country_id='AU';
+	SELECT * FROM customer,supplier  
+refer: https://www.w3resource.com/sql/joins/cross-join.php for complete example
+
+where can cross join be used?
+cross join is used to "show all possible combinations"
+For example, say you are building an arbitrage (trading) application. 
+You have sellers offering products at a price and buyers asking for products at a cost. 
+You do a cross join on the product key (to match up the potential buyers and sellers), calculate the spread between cost and price, 
+then sort desc. on this to give you (the middleman) the most profitable trades to execute.
+
+##############################################################################################
+Key preserved table (obtained in joins):
+Students table(studentid,name,courseid) has a primary key on student ID (i.e. no duplicate values of studentid)
+(1,A,1A)
+(2,B,1A)
+(3,C,1B)
+(4,D,1A)
+
+Course table(courseid,coursename) has a primary key on course ID.
+(1A,10g)
+(1B,11g)
+
+so, when joined on courseid as, select * from t_students S, t_course C where S.courseid=C.courseid; 
+O/p:
+(1,A,1A,10g)
+(2,B,1A,10g)
+(3,C,1B,11g)
+(4,D,1A,10g)
+
+Conclusion,
+1) studentid is preserved   : The resulting data will have exactly the same number of rows as the Students table.
+   As There will be no duplicate values of studentid in the result set. 
+2) courseid is not preserved: Though the courseid is unique in course table, it will be repeated multiple times in the result set, 
+   as many students may have opted for the same course.
+
+With this example in place, you can come to a conclusion that:
+Every Key in the base table acts as the key to the resultant data after join(studentid)
+The rows from the base row appear in the resultant data AT MOST ONLY ONCE.(No duplicate rows)
+
+This is the concept of Key Preserved Tables.
+
+################################################################################################
+Views:
+is a virtual table created from querying a single table or query joining multiple tables.
+
+Create View: 
+	SYNTAX is:
+	CREATE VIEW view_name AS
+	SELECT columns
+	FROM tables
+	[WHERE conditions];
+
+	example,
+	CREATE VIEW sup_orders AS
+	SELECT suppliers.supplier_id, orders.quantity, orders.price
+	FROM suppliers
+	INNER JOIN orders
+	ON suppliers.supplier_id = orders.supplier_id
+	WHERE suppliers.supplier_name = 'Microsoft';
+	
+Update View: 
+	SYNTAX is:
+	CREATE OR REPLACE VIEW view_name AS
+	SELECT columns
+	FROM table
+	WHERE conditions;
+
+	example,
+	CREATE or REPLACE VIEW sup_orders AS
+	SELECT suppliers.supplier_id, orders.quantity, orders.price
+	FROM suppliers
+	INNER JOIN orders
+	ON suppliers.supplier_id = orders.supplier_id
+	WHERE suppliers.supplier_name = 'Apple';
+  
+Delete/Drop view:
+	SYNTAX is: DROP VIEW view_name;
+    example, DROP VIEW sup_orders;
+	
+NOTE:
+When you update record(s) in a VIEW, it updates the records in the underlying tables that make up the View. (unless the view is marked as READ-ONLY)
+in Oracle, the VIEW continues to exist even after one of the tables is fropped from view but querying such views errors.
+If you recreate the table (the table that you had dropped), the Oracle VIEW will again be fine.
+
+WITH CHECK OPTION:
+views can be created with “WITH CHECK OPTION”  and “WITH READ ONLY“.
+
+Both options are used to restrict Insert and Update performed through the view.
+
+Differences between the 2 include:
+If view is created with “WITH READ ONLY” no data manipulation is allowed in any condition. Only selects are allowed against the views.
+If view is created with “WITH CHECK OPTION” row insertion is allowed but restricted. It makes sure, no rows are updated which do not appear in the view.
+
+NOTE: “WITH CHECK OPTION” works for update, and insert. It does not allow delete even if the delete satisfies the condition.
+
+example-1,
+1) CREATE TABLE:
+	create table jbt_employee(name varchar2(20), address varchar2(20), phone number);
+
+2) CREATE VIEWS:
+	"With Read Only"
+		CREATE OR REPLACE FORCE VIEW jbt_read_only_view AS SELECT * FROM jbt_employee    
+		WHERE phone < 8          
+		WITH READ ONLY CONSTRAINT read_only_const_name
+
+	“WITH CHECK ONLY”
+		CREATE OR REPLACE FORCE VIEW jbt_check_option_view AS SELECT * FROM jbt_employee    
+		WHERE phone < 8          
+		WITH CHECK OPTION CONSTRAINT check_option_const_name
+		
+3) Try to insert rows into views:
+	a) insert into jbt_read_only_view values('name', 'address', 9);
+		Error Thrown : ORA-01733: virtual column not allowed here
+		
+	b) insert into jbt_check_option_view values('name', 'address', 7);
+		Successfully Fired.
+		
+	c) insert into jbt_check_option_view values('name', 'address', 9);
+		Error Thrown : ORA-01402: view WITH CHECK OPTION where-clause violation
+	
+example-2,
+create table Customers (
+id  int not null,
+customer_name   varchar(100) not null,
+county varchar(50) not null,
+status char(1) not null
+)
+
+insert Customers ( customer_name, county ) values( 'Trevor Dwyer', 'Hertfordshire' )
+insert Customers ( customer_name, county ) values( 'Tony Rogerson', 'Hertfordshire' )
+insert Customers ( customer_name, county ) values( 'Simon Sabin', 'Hertfordshire' )
+insert Customers ( customer_name, county ) values( 'Mark Allison', 'Bedfordshire' )
+insert Customers ( customer_name, county ) values( 'Peter Blackburn', 'Cambridgeshire' )
+
+create view vw_Customers_Hertfordshire
+as select id, customer_name, status, County from Customers where county = 'Hertfordshire' with check option;
+
+These calls will error:
+1) update vw_Customers_Hertfordshire set status = 'M';
+2) update vw_Customers_Hertfordshire set county = 'Cumbria';
+
+These calls will be successful:
+1) update Customers set county = 'Cumbria' where county = 'Hertfordshire';
+2) update Customers set status = 'M' where county = 'Hertfordshire';
+
+################################################################################################
+
+ORACLE Subqueries:
+a query which is added to the where clause of another query becomes a sub-query.
+2 types of subqueries:
+1) correlated subqueries: dependent query i.e. the outer query depends on the subquery.
+	a) example-1,(subquery in the WHERE clause example)
+		SELECT product_id, product_name, list_price
+		FROM
+			products
+		WHERE
+			list_price =(
+				SELECT
+					MIN( list_price )
+				FROM
+					products
+			);
+			
+	b) example-2,(subquery in the SELECT clause example)
+		SELECT
+			product_id,
+			product_name,
+			standard_cost,
+			ROUND(
+				(
+					SELECT AVG( standard_cost ) FROM products
+					WHERE category_id = p.category_id
+				),
+				2
+			) avg_standard_cost
+		FROM
+			products p
+		ORDER BY
+			product_name;
+
+	c) example-3 (Oracle correlated subquery with the EXISTS operator example)
+		SELECT customer_id, name
+		FROM
+			customers
+		WHERE
+			NOT EXISTS (
+				SELECT * FROM orders
+				WHERE
+				orders.customer_id = customers.customer_id
+			)
+		ORDER BY
+		name;	
+		
+		SELECT *
+		FROM customers
+		WHERE EXISTS (SELECT * FROM order_details
+					  WHERE customers.customer_id = order_details.customer_id);
+					  
+	d) example-4 (inline queries, i.e. subquery in FROM clause)
+		SELECT suppliers.name, subquery1.total_amt
+		FROM suppliers,
+		 (SELECT supplier_id, SUM(orders.amount) AS total_amt
+		  FROM orders
+		  GROUP BY supplier_id) subquery1
+		WHERE subquery1.supplier_id = suppliers.supplier_id;
+
+2) non-correlated subqueries: There is no reference of outer query table fields in the subquery. 
+	example-1,
+	select * from departments where employee_id in (select employee_id from employees);
+	i.e. there is no reference to departments in the subquery. 
+	
+	example-2
+	SELECT * 
+	FROM all_tables tabs
+	WHERE tabs.table_name IN (SELECT cols.table_name
+							  FROM all_tab_columns cols
+							  WHERE cols.column_name = 'SUPPLIER_ID');
+							  
+################################################################################
+Oracle Schemas:
+A schema allows you to logically group objects in an Oracle database.
+
+In order to create a schema,
+1) create a user
+	CREATE USER smithj
+	  IDENTIFIED BY pwd4smithj
+
+2) Assign SYSTEM privileges to new user
+	GRANT create session TO smithj;
+	GRANT create table TO smithj;
+	GRANT create view TO smithj;
+	GRANT create any trigger TO smithj;
+	GRANT create any procedure TO smithj;
+	GRANT create sequence TO smithj;
+	GRANT create synonym TO smithj;
+	
+3) create objects in the schema like tables, views
+
+4) grant object privileges
+	example, GRANT SELECT, INSERT, UPDATE, DELETE ON suppliers TO smithj;
+	GRANT ALL ON suppliers TO smithj;   -- ALL permissions to be granted for a user named smithj.
+	GRANT SELECT ON suppliers TO public; --to grant only SELECT access on your table to all users, you could grant the privileges to the public keyword.
+	
+To revoke privelages:
+Syntax: REVOKE privileges ON object FROM user;
+example,
+	REVOKE DELETE ON suppliers FROM anderson;
+	REVOKE ALL ON suppliers FROM anderson;
+	REVOKE ALL ON suppliers FROM public;
+
+-- Grant/Revoke privileges on functions/procedures
+Syntax is: 
+for GRANT  : GRANT EXECUTE ON object TO user;
+for REVOKE : REVOKE EXECUTE ON object FROM user;
+example,
+GRANT EXECUTE ON Find_Value TO public;
+GRANT EXECUTE ON Find_Value TO smithj;
+
+REVOKE execute ON Find_Value FROM anderson;
+REVOKE EXECUTE ON Find_Value FROM public;
+
+What are privileges and Grants?
+Privileges are the rights to execute SQL statements
+Grants are given to the object so that objects can be accessed accordingly.
+
+#####################################################################################
+rename and alias:
+
+Rename is a permanent name given to a table or a column 
+whereas 
+Alias is a temporary name given to a table or column. Alias acts as an alternate name of the table or column.
+
+1) Rename Table or View
+	ALTER TABLE mytable RENAME TO othertable
+	OR
+	RENAME mytable TO othertable   -- both options supports renaming a table in same schema
+	
+	ALTER TABLE owner.mytable RENAME TO othertable;  --rename a table in a different schema
+	
+	RENAME view_name TO new_view_name; --for views
+	
+2) Rename indexes:
+	alter index owner.index_name rename to new_name;
+	
+3) Rename column:
+	ALTER TABLE employee RENAME COLUMN f_name TO first_name;
+	
+
+--Alias
+1) column alias: i.e. column_name AS alias_name
+	example-1, (aliased the second column (ie: first_name and last_name concatenated) as NAME)
+		SELECT contact_id, first_name || last_name AS NAME FROM contacts WHERE last_name = 'Anderson';
+
+	example-2, (spaces in the alias name can be put in " ")
+		SELECT contact_id, first_name || last_name AS "CONTACT NAME" FROM contacts WHERE last_name = 'Anderson';
+		
+2) table alias: i.e. table_name alias_name
+	example-1
+		SELECT p.product_id, p.product_name, categories.category_name
+		FROM products p
+		INNER JOIN categories
+		ON p.category_id = categories.category_id
+		ORDER BY p.product_name ASC, categories.category_name ASC;
+		
+	example-2
+		SELECT p.product_id, p.product_name, c.category_name
+		FROM products p
+		INNER JOIN categories c
+		ON p.category_id = c.category_id
+		ORDER BY p.product_name ASC, c.category_name ASC;
+		
+#########################################################################################
+Cursors:
+It is a reference variable.
+It is a facility provided by oracle to assign a name to SELECT statement and manipulate the info retrieved from the SELECT Statement.
+
+1) declare a cursor: CURSOR <name> (optional parameter-list) is SELECT_STATEMENT
+	example-1, (cursor without parameters)
+		CURSOR c1
+		IS
+		SELECT course_number FROM courses_tbl WHERE course_name = name_in;
+	
+	example-2, (cursor with parameters)
+		CURSOR c2 (subject_id_in IN varchar2)
+		IS
+		SELECT course_number FROM courses_tbl WHERE subject_id = subject_id_in;
+
+	example-3, (Cursor with return clause)
+	SYNTAX IS:
+	CURSOR cursor_name RETURN field%ROWTYPE IS SELECT_statement;
+
+		CURSOR c3
+		RETURN courses_tbl%ROWTYPE
+		IS
+		SELECT *
+		FROM courses_tbl
+		WHERE subject = 'Mathematics';	 -- all columns from the course_tbl where the subject is Mathematics.
+		
+2) Open a cursor: in order to use a cursor, first we will have to open a cursor. SYNTAX: OPEN cursor_name;
+	
+3) Fetch a cursor: fetch rows from your cursor.
+	SYNTAX IS: FETCH cursor_name INTO variable_list; where variable_list is the list of variables, comma delimited, that you wish to store the cursor result set in.
+	
+	example,
+		CURSOR c1
+		IS
+		SELECT course_number
+		FROM courses_tbl
+		WHERE course_name = name_in;
+		
+		FETCH c1 into cnumber;
+		
+4) Close a cursor: CLOSE cursor_name;
+
+5) cursor attributes: is used to determine the status of your cursor.
+%ISOPEN   : Returns TRUE if the cursor is open, FALSE if the cursor is closed.
+%FOUND    : Returns TRUE if a successful fetch has been executed. FALSE when no row is returned.
+%NOTFOUND : Returns FALSE if a successful fetch has been executed. Returns TRUE if no row was returned.i.e. OPPOSITE of $FOUND
+%ROWCOUNT : doesn't give the real row count until you have iterated through the entire cursor. DO NOT RELY.
+
+
+example-1,
+	CREATE OR REPLACE Function FindCourse
+	   ( name_in IN varchar2 )
+	   RETURN number
+	IS
+	   cnumber number;
+
+	   CURSOR c1
+	   IS
+	   SELECT course_number FROM courses_tbl WHERE course_name = name_in;
+
+	BEGIN
+	   OPEN c1;
+	   FETCH c1 INTO cnumber;
+
+	   if c1%notfound then
+		  cnumber := 9999;
+	   end if;
+
+	   CLOSE c1;
+
+	RETURN cnumber;
+
+	END;
+	
+example-2 (Cursors with SELECT FOR UPDATE)
+SYNTAX:
+CURSOR cursor_name IS select_statement FOR UPDATE [OF column_list] [NOWAIT];
+here, NOWAIT is Optional. The cursor does not wait for resources.
+This feature allows you to lock the records in the cursor result set. The record locks are released when the next commit or rollback statement is issued.
+
+NOTE: You are not required to make changes to the records in order to use this statement.
+	 
+	CURSOR c1
+	IS
+	SELECT course_number, instructor
+	FROM courses_tbl
+	FOR UPDATE OF instructor;  
+	
+example-3 (WHERE CURRENT OF)
+WHERE CURRENT OF is used for updating or deleting records that have been referenced by a SELECT FOR UPDATE statement.
+
+SYNTAX IS:
+UPDATE table_name SET set_clause WHERE CURRENT OF cursor_name;
+OR
+DELETE FROM table_name WHERE CURRENT OF cursor_name;
+
+Sample code:
+	CREATE OR REPLACE Function FindCourse
+	   ( name_in IN varchar2 )
+	   RETURN number
+	IS
+	   cnumber number;
+
+	   CURSOR c1
+	   IS
+		 SELECT course_number
+		 FROM courses_tbl
+		 WHERE course_name = name_in
+		 FOR UPDATE of instructor;
+
+	BEGIN
+
+	   OPEN c1;
+	   FETCH c1 INTO cnumber;
+
+	   if c1%notfound then
+		  cnumber := 9999;
+
+	   else
+		  UPDATE courses_tbl
+			SET instructor = 'SMITH'
+			WHERE CURRENT OF c1;
+
+		  COMMIT;
+
+	   end if;
+
+	   CLOSE c1;
+
+	RETURN cnumber;
+
+	END;
+	
+Other sample code:
+	CREATE OR REPLACE Function FindCourse
+	   ( name_in IN varchar2 )
+	   RETURN number
+	IS
+	   cnumber number;
+
+	   CURSOR c1
+	   IS
+	   SELECT course_number
+	   from courses_tbl
+	   where course_name = name_in
+	   FOR UPDATE of instructor;
+
+	BEGIN
+
+	   open c1;
+	   fetch c1 into cnumber;
+
+	   if c1%notfound then
+		  cnumber := 9999;
+
+	   else
+		  DELETE FROM courses_tbl
+			WHERE CURRENT OF c1;
+
+		  COMMIT;
+
+	   end if;
+
+	   close c1;
+
+	RETURN cnumber;
+
+	END;
+	
+example-4 (Cursor within a cursor)
+	CREATE OR REPLACE PROCEDURE MULTIPLE_CURSORS_PROC is
+	   v_owner varchar2(40);
+	   v_table_name varchar2(40);
+	   v_column_name varchar2(100);
+
+	   /* First cursor */
+	   CURSOR get_tables IS
+		 SELECT DISTINCT tbl.owner, tbl.table_name
+		 FROM all_tables tbl
+		 WHERE tbl.owner = 'SYSTEM';
+
+	   /* Second cursor */
+	   CURSOR get_columns IS
+		 SELECT DISTINCT col.column_name
+		 FROM all_tab_columns col
+		 WHERE col.owner = v_owner
+		 AND col.table_name = v_table_name;
+
+	   BEGIN
+
+	   -- Open first cursor
+	   OPEN get_tables;
+	   LOOP
+		  FETCH get_tables INTO v_owner, v_table_name;
+
+		  -- Open second cursor
+		  OPEN get_columns;
+		  LOOP
+			 FETCH get_columns INTO v_column_name;
+		  END LOOP;
+
+		  CLOSE get_columns;
+
+	   END LOOP;
+
+	   CLOSE get_tables;
+
+	EXCEPTION
+	   WHEN OTHERS THEN
+		  raise_application_error(-20001,'An error was encountered - '||SQLCODE||' -ERROR- '||SQLERRM);
+	end MULTIPLE_CURSORS_PROC;
+	
+	
+-------------------
+difference between %ROWTYPE and TYPE RECORD?
+%ROWTYPE is used whenever query returns an entire row of a table or view.
+TYPE RECORD is used whenever query returns columns of different table or views and variables.
+
+example %ROWTYPE:
+	CURSOR c3
+	RETURN courses_tbl%ROWTYPE
+	IS
+	SELECT *
+	FROM courses_tbl
+	WHERE subject = 'Mathematics';	 -- all columns from the course_tbl where the subject is Mathematics.
+	
+example %TYPE:
+	DECLARE 
+	   type books is record 
+		  (title varchar(50), 
+		  author varchar(50), 
+		  subject varchar(100), 
+		  book_id number); 
+	   book1 books; 
+	   book2 books; 
+	BEGIN 
+	   -- Book 1 specification 
+	   book1.title  := 'C Programming'; 
+	   book1.author := 'Nuha Ali ';  
+	   book1.subject := 'C Programming Tutorial'; 
+	   book1.book_id := 6495407;  
+	   -- Book 2 specification 
+	   book2.title := 'Telecom Billing'; 
+	   book2.author := 'Zara Ali'; 
+	   book2.subject := 'Telecom Billing Tutorial'; 
+	   book2.book_id := 6495700;  
+	  
+	  -- Print book 1 record 
+	   dbms_output.put_line('Book 1 title : '|| book1.title); 
+	   dbms_output.put_line('Book 1 author : '|| book1.author); 
+	   dbms_output.put_line('Book 1 subject : '|| book1.subject); 
+	   dbms_output.put_line('Book 1 book_id : ' || book1.book_id); 
+	   
+	   -- Print book 2 record 
+	   dbms_output.put_line('Book 2 title : '|| book2.title); 
+	   dbms_output.put_line('Book 2 author : '|| book2.author); 
+	   dbms_output.put_line('Book 2 subject : '|| book2.subject); 
+	   dbms_output.put_line('Book 2 book_id : '|| book2.book_id); 
+	END; 
+	/
+	
+	O/p:
+	Book 1 title : C Programming 
+	Book 1 author : Nuha Ali 
+	Book 1 subject : C Programming Tutorial 
+	Book 1 book_id : 6495407 
+	Book 2 title : Telecom Billing 
+	Book 2 author : Zara Ali 
+	Book 2 subject : Telecom Billing Tutorial 
+	Book 2 book_id : 6495700  
+	
+-----------------------------
+Types of cursors:
+1) Implicit cursors: Whenever a DML statement (INSERT, UPDATE and DELETE) is issued, an implicit cursor is associated with this statement. 
+                    For INSERT operations, the cursor holds the data that needs to be inserted. 
+					For UPDATE and DELETE operations, the cursor identifies the rows that would be affected.
+					i.e. are automatically created by Oracle whenever an SQL statement is executed. Programmers cannot control the implicit cursors and the information in it.
+					 
+					However, implicit cursor (most recent) has attributes (%FOUND, %ISOPEN, %NOTFOUND, and %ROWCOUNT)
+					 
+					example,
+						DECLARE  
+						   total_rows number(2); 
+						BEGIN 
+						   UPDATE customers 
+						   SET salary = salary + 500; 
+						   IF sql%notfound THEN 
+							  dbms_output.put_line('no customers selected'); 
+						   ELSIF sql%found THEN 
+							  total_rows := sql%rowcount;
+							  dbms_output.put_line( total_rows || ' customers selected '); 
+						   END IF;  
+						END; 
+						/  
+
+					O/p:
+					6 customers selected.
+					
+2)  Explicit cursors: programmer-defined cursors (as explained in this section)
+
+#####################################################################################################
+Union, Union all, Intersect, minus:
+
+Union, Union all, Intersect, minus ARE also called SET-OPERATORS i.e. compound two or more queries.
+
+1) UNION: used to combine the result sets of 2 or more SELECT statements. BY DEFAULT, it removes DUPLICATE ROWS between select statements.
+	      EACH SELECT STATEMENT WITHIN THE UNION MUST HAVE THE SAME NUMBER OF FIELDS IN THE RESULT SETS WITH SIMILAR DATA TYPES.
+		  
+		  SYNTAX IS:
+			SELECT expression1, expression2, ... expression_n
+			FROM tables
+			[WHERE conditions]
+			UNION
+			SELECT expression1, expression2, ... expression_n
+			FROM tables
+			[WHERE conditions];
+			
+		expression1, expression2, expression_n: columns or calculations that you wish to retrieve.
+		
+		Prerequisits for UNION to work fine:
+		a) There must be same number of expressions in both SELECT statements.
+		b) The corresponding expressions must have the same data type in the SELECT statements
+		   ex, expression1 must be the same data type in both the first and second SELECT statement.
+		c) Column headings in the result set will be from the 1st table in the UNION.
+		   
+	example-Inputs:
+	suppliers table,
+	supplier_id	supplier_name
+	1000		Microsoft
+	2000		Oracle
+	3000		Apple
+	4000		Samsung
+
+	orders table,
+	order_id	order_date	supplier_id
+	1			2015-08-01	2000
+	2			2015-08-01	6000
+	3			2015-08-02	7000
+	4			2015-08-03	8000
+	
+	company table,
+	company_id	company_name
+	1000		Microsoft
+	3000		Apple
+	7000		Sony
+	8000		IBM
+	
+	example-1,
+		SELECT supplier_id
+		FROM suppliers
+		UNION
+		SELECT supplier_id
+		FROM orders
+		ORDER BY supplier_id;
+		
+		O/p:
+		supplier_id
+		1000
+		2000
+		3000
+		4000
+		6000
+		7000
+		8000
+		
+	example-2,
+		SELECT supplier_id, supplier_name
+		FROM suppliers
+		WHERE supplier_id > 2000
+		UNION
+		SELECT company_id, company_name
+		FROM companies
+		WHERE company_id > 1000
+		ORDER BY 1;   -- will order the result by supplier_id, company_id.
+		
+		O/p:
+		supplier_id	supplier_name  
+		3000		Apple
+		4000		Samsung
+		7000		Sony
+		8000		IBM
+		
+2) UNIONALL: same as UNION, but it includes duplicates from both the tables.
+	example-1,
+		SELECT supplier_id
+		FROM suppliers
+		UNION ALL
+		SELECT supplier_id
+		FROM orders
+		ORDER BY supplier_id;
+		
+		O/p:
+		supplier_id
+		1000
+		2000
+		2000
+		3000
+		4000
+		6000
+		7000
+		8000
+		
+	example-2,
+		SELECT supplier_id, supplier_name
+		FROM suppliers
+		WHERE supplier_id > 2000
+		UNION ALL
+		SELECT company_id, company_name
+		FROM companies
+		WHERE company_id > 1000
+		ORDER BY 1;
+		
+		O/p:
+		supplier_id	supplier_name
+		3000		Apple
+		3000		Apple
+		4000		Samsung
+		7000		Sony
+		8000		IBM
+		
+3) INTERSECT: will return rows common to 2 or more select statements.
+	SYNTAX,
+		SELECT expression1, expression2, ... expression_n
+		FROM tables
+		[WHERE conditions]
+		INTERSECT
+		SELECT expression1, expression2, ... expression_n
+		FROM tables
+		[WHERE conditions];
+		
+	example-1,
+		SELECT supplier_id
+		FROM suppliers
+		INTERSECT
+		SELECT supplier_id
+		FROM orders;
+		
+	example-2,
+		SELECT contact_id, last_name, first_name
+		FROM contacts
+		WHERE last_name <> 'Anderson'
+		INTERSECT
+		SELECT customer_id, last_name, first_name
+		FROM customers
+		WHERE customer_id < 50
+		ORDER BY 2;  -- will order by the last_name
+		
+4) MINUS: return all rows in the first SELECT statement that are not returned by the second SELECT statement
+		  i.e.  These are the records that exist in Dataset1 and not in Dataset2.
+		  
+		  NOTE: it must meet all criteria prerequisite for UNION.
+
+#####################################################################################################
+Deleting Duplicate rows in a table:
+1) via rowid:
+	DELETE FROM table_name A
+	WHERE a.rowid > ANY (
+	SELECT B.rowid FROM table_name B
+	WHERE 
+	A.col1 = B.col1 AND 
+	A.col2 = B.col2
+	); 
+	
+2) via self join as,
+	DELETE FROM
+	select book_unique_id, page_seq_nbr, image_key 
+	from page_image a 
+	where 
+	   rowid > 
+		 (select min(rowid) from page_image b 
+		  where b.key1 = a.key1 and 
+		  b.key2 = a.key2 and 
+		  b.key3 = a.key3 
+		 ); 
+		 
+	NOTE: you must specify all of the columns that make the row a duplicate in the SQL where clause.
+	
+3) via self join anf no rowid
+	SELECT t1.entity_id, t1.station_id, t1.obs_year
+	FROM mytable t1
+	INNER JOIN (
+	SELECT station_id, obs_year FROM mytable 
+	GROUP BY station_id, obs_year HAVING COUNT(*) > 1) dupes 
+	ON 
+	t1.station_id = dupes.station_id AND
+	t1.obs_year = dupes.obs_year
+	
+##################################################################################
+Constraints:
+Rule to which data must conform. It is an optional part of a CREATE TABLE statement or ALTER TABLE statement.
+There are 2 kind of constraints:
+1) column constraint
+2) table constraint
+
+column constraint comprises of:
+	NOT NULL	 
+	PRIMARY KEY
+	UNIQUE 
+	FOREIGN KEY 
+	CHECK 
+	
+Table constraint comprises of:
+	PRIMARY KEY 
+	UNIQUE
+	FOREIGN KEY
+	CHECK 
+
+CREATE TABLE SAMP.OUT_TRAY
+(
+SENT TIMESTAMP,
+DESTINATION CHAR(8),
+SUBJECT CHAR(64) NOT NULL CONSTRAINT PRIMARY KEY,    -- column level primary key
+NOTE_TEXT VARCHAR(3000) 
+);
+
+CREATE TABLE SAMP.EMP 
+(
+EMPNO CHAR(6) NOT NULL CONSTRAINT EMP_PK PRIMARY KEY,
+FIRSTNME CHAR(12) NOT NULL,
+MIDINIT vARCHAR(12) NOT NULL,
+LASTNAME VARCHAR(15) NOT NULL,
+SALARY DECIMAL(9,2) CONSTRAINT SAL_CK CHECK (SALARY >= 10000),  --column level check constraint
+BONUS DECIMAL(9,2), 
+TAX DECIMAL(9,2),
+CONSTRAINT BONUS_CK CHECK (BONUS > TAX)    -- table level check
+);
+
+CREATE TABLE FLIGHTS
+	(
+	FLIGHT_ID CHAR(6) NOT NULL ,
+	SEGMENT_NUMBER INTEGER NOT NULL ,
+	ORIG_AIRPORT CHAR(3),
+	DEPART_TIME TIME,
+	DEST_AIRPORT CHAR(3),
+	ARRIVE_TIME TIME,
+	MEAL CHAR(1) CONSTRAINT MEAL_CONSTRAINT  CHECK (MEAL IN ('B', 'L', 'D', 'S')),   --column level check  
+	PRIMARY KEY (FLIGHT_ID, SEGMENT_NUMBER)
+	);
+
+   
+table constraint comprises of:
+CREATE TABLE SAMP.SCHED 
+(
+CLASS_CODE CHAR(7) NOT NULL, 
+DAY SMALLINT NOT NULL, 
+STARTING TIME, 
+ENDING TIME,
+PRIMARY KEY (CLASS_CODE, DAY)
+);
+
+CREATE TABLE SAMP.EMP 
+(
+EMPNO CHAR(6) NOT NULL CONSTRAINT EMP_PK PRIMARY KEY,
+FIRSTNME CHAR(12) NOT NULL,
+MIDINIT vARCHAR(12) NOT NULL,
+LASTNAME VARCHAR(15) NOT NULL,
+SALARY DECIMAL(9,2) CONSTRAINT SAL_CK CHECK (SALARY >= 10000),  --column level check constraint
+BONUS DECIMAL(9,2), 
+TAX DECIMAL(9,2),
+CONSTRAINT BONUS_CK CHECK (BONUS > TAX)    -- table level check
+);
+
+ALTER TABLE SAMP.PROJECT ADD CONSTRAINT P_UC UNIQUE (PROJNAME);
+
+CREATE TABLE Orders (
+    OrderID int NOT NULL PRIMARY KEY,
+    OrderNumber int NOT NULL,
+    PersonID int FOREIGN KEY REFERENCES Persons(PersonID)   --FOREIGN KEY on the "PersonID" column when the "Orders" table is created 
+);
+
+ALTER TABLE Orders ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID); 
+
+
+Integrity constraint: to implement a business rule accurately in a table. There are 2 : domain and referential integrity constraints
+
+referential integrity constraints include (check, PK, not null)
+
+#####################################################################################################
+SUBSTR and INSTR:
+SUBSTR returns specific portion of a string and INSTR provides character position in which a pattern is found in a string.
+SUBSTR returns string whereas INSTR returns numeric.
+
+SUBSTR: extracts a substring from a string.
+		SYNTAX IS: substr( string, start_position, [ length ] )
+        where, length is optional. It is the number of characters to extract. If this parameter is omitted, substr will return the entire string.
+		Note:
+		If start_position is 0, then substr treats start_position as 1 (ie: the first position in the string).
+		If start_position is a positive number, then substr starts from the beginning of the string.
+		If start_position is a negative number, then substr starts from the end of the string and counts backwards.
+
+		If length is a negative number, then substr will return a NULL value.
+		
+		example:
+		substr('This is a test', 6, 2) would return 'is' 
+		substr('This is a test', 6) would return 'is a test' 
+		substr('TechOnTheNet', 1, 4) would return 'Tech' 
+		substr('TechOnTheNet', -3, 3) would return 'Net' 
+		substr('TechOnTheNet', -6, 3) would return 'The' 
+		substr('TechOnTheNet', -8, 2) would return 'On' 
+
+INSTR: returns the location of a substring in a string.
+	   SYNTAX IS: INSTR( string, substring [, start_position [, nth_appearance ] ] )
+	   nth_appearance is Optional. The nth appearance of substring. If omitted, it defaults to 1
+	   returns a numeric value. 
+	   a) The first position in the string is 1.
+	   b) If substring is not found in string, then the INSTR function will return 0.
+	   
+		example,
+		INSTR('Tech on the net', 'e')
+		Result: 2   (the first occurrence of 'e')
+
+		INSTR('Tech on the net', 'e', 1, 1)
+		Result: 2   (the first occurrence of 'e')
+
+		INSTR('Tech on the net', 'e', 1, 2)
+		Result: 11  (the second occurrence of 'e')
+
+		INSTR('Tech on the net', 'e', 1, 3)
+		Result: 14  (the third occurrence of 'e')
+
+		INSTR('Tech on the net', 'e', -3, 2)
+		Result: 2
+	   
+########################################################################################################
+Oracle Triggers:
+
+You can define procedures that are implicitly executed when an INSERT, UPDATE or DELETE statement is issued against the associated table. 
+These procedures are called database triggers.
+
+six CREATE TRIGGER statements according to their firing points:
+Firing Point: BEFORE
+1) BEFORE INSERT TRIGGER
+	Syntax is:
+		CREATE [ OR REPLACE ] TRIGGER trigger_name
+		BEFORE INSERT
+		ON table_name
+	    [ FOR EACH ROW ]
+		
+	example,
+		CREATE TABLE orders
+		( order_id number(5),
+		  quantity number(4),
+		  cost_per_item number(6,2),
+		  total_cost number(8,2),
+		  create_date date,
+		  created_by varchar2(10)
+		);
+
+		CREATE OR REPLACE TRIGGER orders_before_insert
+		BEFORE INSERT
+		   ON orders
+		   FOR EACH ROW
+
+		DECLARE
+		   v_username varchar2(10);
+
+		BEGIN
+
+		   -- Find username of person performing INSERT into table
+		   SELECT user INTO v_username FROM dual;
+
+		   -- Update create_date field to current system date
+		   :new.create_date := sysdate;
+
+		   -- Update created_by field to the username of the person performing the INSERT
+		   :new.created_by := v_username;
+
+		END;
+
+
+
+2) BEFORE UPDATE TRIGGER
+	example,
+		CREATE OR REPLACE TRIGGER orders_before_update
+		BEFORE UPDATE
+		ON orders
+		FOR EACH ROW
+
+3) BEFORE DELETE TRIGGER
+	example,
+		CREATE OR REPLACE TRIGGER orders_before_delete
+		BEFORE DELETE
+		ON orders
+		FOR EACH ROW
+
+Firing Point: AFTER
+1) AFTER INSERT TRIGGER
+	example,
+		CREATE OR REPLACE TRIGGER orders_after_insert
+		AFTER INSERT
+		   ON orders
+		   FOR EACH ROW
+
+		DECLARE
+		   v_username varchar2(10);
+
+		BEGIN
+
+		   -- Find username of person performing the INSERT into the table
+		   SELECT user INTO v_username
+		   FROM dual;
+
+		   -- Insert record into audit table
+		   INSERT INTO orders_audit
+		   ( order_id,
+			 quantity,
+			 cost_per_item,
+			 total_cost,
+			 username )
+		   VALUES
+		   ( :new.order_id,
+			 :new.quantity,
+			 :new.cost_per_item,
+			 :new.total_cost,
+			 v_username );
+
+		END;
+
+2) AFTER UPDATE TRIGGER
+	example,
+		CREATE OR REPLACE TRIGGER orders_after_update
+		AFTER UPDATE
+		ON orders
+		FOR EACH ROW
+
+3) AFTER DELETE TRIGGER
+	example,
+		CREATE OR REPLACE TRIGGER orders_after_delete
+		AFTER DELETE
+		ON orders
+		FOR EACH ROW
+ 
+########################################################################################################
+Oracle Index:
+An index is a performance-tuning method of allowing faster retrieval of records. Indexes can be created on multiple columns.
+
+SYNTAX to create index:
+	CREATE [UNIQUE] INDEX index_name
+	ON table_name (column1, column2, ... column_n)
+	[ COMPUTE STATISTICS ];
+
+	where,
+	UNIQUE will ensure combination of values in the indexed columns must be unique.
+	COMPUTE STATISTICS tells Oracle to collect statistics during the creation of the index. 
+					   The statistics are then used by the optimizer to choose a "plan of execution" when SQL statements are executed.
+				   
+	example,
+	CREATE INDEX supplier_idx ON supplier (supplier_name); //created an index on the supplier table called supplier_idx.
+	CREATE INDEX supplier_idx ON supplier (supplier_name, city) COMPUTE STATISTICS; 
+
+SYNTAX to rename an index:
+	ALTER INDEX index_name RENAME TO new_index_name;
+		   
+	example,
+	ALTER INDEX supplier_id RENAME TO supplier_index_name;
+	
+SYNTAX to drop an index:
+	DROP INDEX supplier_idx;
+	
+How indexing works?
+Creating an index on a field in a table creates another data structure which holds the field value, and a pointer to the record it relates to. 
+This index structure is then sorted, allowing Binary Searches to be performed on it.
+
+The downside to indexing is that indexes require additional space on the disk since the indexes are stored together in a table
+
+############################################################################################################
+
+Data file: 
+A database’s data files contain all the database data. The data of logical database structures is tables and indexes is physically stored in the data files allocated for a database.
+
+
+difference between UNIQUE and PRIMARY KEY?
+A column defined as PRIMARY KEY can contain unique values
+same as UNIQUE but UNIQUE can contain NULLs while a column defined as PRIMARY KEY cannot contain NULLs.
+
+
+Difference between Truncate and Delete:
+Truncate is Dml Statements. Cannot be rolled back. Delete allows the filtered deletion.
+Deleted records can be rolled back or committed.
+
+#############################################################################################################
+uses for RAISE_APPLICATION_ERROR in PL/SQL:
+
+The first is to replace generic Oracle exception messages with our own, more meaningful messages.
+The second is to create exception conditions of our own, when Oracle would not throw them.
+
+Whenever a message is displayed using RAISE_APPLICATION_ERROR, all previous transactions which are not committed 
+within the PL/SQL Block are rolled back automatically (i.e. change due to INSERT, UPDATE, or DELETE statements). 
+
+The General Syntax to use this procedure is: 
+RAISE_APPLICATION_ERROR (error_number, error_message); 
+
+example:
+DECLARE
+  huge_quantity EXCEPTION; 
+  CURSOR product_quantity is 
+  SELECT p.product_name as name, sum(o.total_units) as units
+  FROM order_tems o, product p
+  WHERE o.product_id = p.product_id; 
+  quantity order_tems.total_units%type; 
+  up_limit CONSTANT order_tems.total_units%type := 20; 
+  message VARCHAR2(50); 
+BEGIN 
+  FOR product_rec in product_quantity LOOP 
+    quantity := product_rec.units;
+     IF quantity > up_limit THEN 
+        RAISE huge_quantity; 
+     ELSIF quantity < up_limit THEN 
+      v_message:= 'The number of unit is below the discount limit.'; 
+     END IF; 
+     Dbms_output.put_line (message); 
+  END LOOP; 
+ EXCEPTION 
+   WHEN huge_quantity THEN 
+	raise_application_error(-2100, 'The number of unit is above the discount limit.');
+ END; 
+/ 
+
+In addition: types of exception:
+a) Named System Exceptions: System exceptions are automatically raised by Oracle.
+	Exception Name			Reason											Error Number
+	CURSOR_ALREADY_OPEN		When you open a cursor that is already open.	ORA-06511
+	INVALID_CURSOR			When you perform an invalid operation on a		ORA-01001 
+							cursor like closing a cursor, 
+							fetch data from a cursor that is not opened.
+
+	NO_DATA_FOUND			When a SELECT...INTO clause does not return		ORA-01403 
+							any row from a table.
+
+	TOO_MANY_ROWS			When you SELECT or fetch more than one			ORA-01422 
+							row into a record or variable.
+
+	ZERO_DIVIDE				When you attempt to divide a number by zero.	ORA-01476
+
+	example,
+	BEGIN 
+	  Execution section
+	EXCEPTION 
+	WHEN NO_DATA_FOUND THEN 
+	 dbms_output.put_line ('A SELECT...INTO did not return any row.'); 
+	 END;
+ 
+b) Unnamed System Exceptions 
+c) User-defined Exception
+
+details of error handling in : http://plsql-tutorial.com/plsql-exception-handling.htm 
+
+ 
