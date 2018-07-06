@@ -170,3 +170,34 @@ While my application is working fine, the size of the jar is very large and I am
 -rw-rw-r-- 1 shubhro2705854012 shubhro2705854012 93216095 Jul  5 08:30 Spark_Stream_App1-assembly-1.5.2.jar   #i.e. around 93 MB
 
 Is there an alternate way to optimize the package and accomplish the wordCount logic.
+
+-----------------------------------------
+email-2:
+Hi,
+
+Thanks for the response,I have already accomplished word count and some more case studies using spark streaming from shell,
+But, I am trying to accomplish "kafka - spark streaming - kafka"  E2E via SBT to emulate production like scenario.
+
+With that said, I did try the approach you have mentioned i.e. in my build.sbt file,
+name := "Spark_Stream_App1"
+version := "1.5.2"
+scalaVersion := "2.10.4"
+libraryDependencies ++= Seq("org.apache.spark" %% "spark-streaming-kafka-assembly" % "1.5.2",
+"org.apache.spark" %% "spark-core" % "1.5.2",
+"org.apache.spark" %% "spark-streaming" % "1.5.2")
+
+The build was able to package successfully, but when I try to run as,
+spark-submit \
+--class "WordCount" \
+--master local[4] \
+target/scala-2.10/spark_stream_app1_2.10-1.5.2.jar
+
+It errors with:
+Exception in thread "main" java.lang.NoClassDefFoundError: org/apache/spark/streaming/kafka/KafkaUtils$
+
+The only way I could successfully run is using sbt-assembly. Could you please help me by sharing any example where just adding spark-streaming-kafka-assembly
+worked.
+
+PFA for the approach I have used as per your suggestion.
+
+
