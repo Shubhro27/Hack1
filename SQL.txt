@@ -1,9 +1,10 @@
 https://career.guru99.com/top-50-oracle-interview-questions-and-answers/
 https://www.besanttechnologies.com/oracle-interview-questions-and-answers
+https://mindmajix.com/sql-interview-questions
 
+https://intellipaat.com/interview-question/sql-interview-questions/
 http://www.testingbrain.com/interview/oracle-interview-questions.html
 https://mindmajix.com/oracle-pl-sql-interview-questions
-https://mindmajix.com/sql-interview-questions
 #########################################################################################
 SQL: Structured Query Language is non-procedural language used for data retrieval, data update, insert or delete data from an database.
 
@@ -13,7 +14,14 @@ Views  – Virtual table derived from one or more tables
 Indexes – Performance tuning method for processing the records
 Synonyms – Alias name for tables
 Sequences – Multiple users generate unique numbers
-Tablespaces – Logical storage unit in Oracl
+Tablespaces – Logical storage unit in Oracle
+
+types of SQL statements:
+Data Retrieval: SELECT
+Data Manipulation Language (DML): INSERT, UPDATE, DELETE, MERGE
+Data Definition Language (DDL): CREATE, ALTER, DROP, RENAME, TRUNCATE.
+Transaction Control Statements: COMMIT, ROLLBACK, SAVEPOINT
+Data Control Language (DCL): GRANT, REVOKE
 
 What is DUAL?
 The DUAL table is owned by the user SYS and can be accessed by users. 
@@ -21,9 +29,15 @@ It contains one column, DUMMY, and one row with the value X.
 The DUAL table is useful when you want to return a value once only.
 for instance, the value of a constant, pseudocolumn, or expression that is not derived from a table with user data. 
 
+maximum no.of columns a table can have ?
+254.
+
 Comments in Oracle:
 -- for single line
 /*.....*/ for multi line
+
+order of Precedence used in executing SQL statements:
+Arithmetic operators -> concatenation operators (||) -> comparision condition -> logical condition 
 
 SELECT DISTINCT(colname) from table_name to get DISTINCT values in the column.
 
@@ -42,6 +56,7 @@ Using ROW ID is the fastest query method to fetch data from the table.
 display row numbers with the records? select rownum, <fieldnames> from table;
 
 How can we view last record added to a table? Select * from (select * from employees order by rownum desc) where rownum<2;
+
 
 How to display employee records who gets more salary than the average salary in the department? 
 Select * from employee where salary > (select avg(salary) from dept, employee where dept.deptno = employee.deptno);
@@ -72,6 +87,64 @@ select second max salary from a table:
 select * from sivaemp where salary = 
 (select max(salary) from emp where salary not in (select max(salary) from emp))
 
+
+Top N maximum and min salaries from a table:
+select * from sivaemp a where &n > (select count(*) from sivaemp b where a.salary < b .salary)   /*for max*/
+select * from sivaemp a where &n > (select count(*) from sivaemp b where a.salary > b.salary)    /*for min*/
+
+
+Create a copy of EMP table without any data:
+CREATE TABLE EMP1 SELECT * FROM EMP WHERE 'X' = 'Y';
+
+Delete 10th record of EMP table:
+DELETE FROM EMP WHERE ENAME = (SELECT ENAME FROM EMP WHERE ROWNUM < =10 MINUS SELECT ENAME FROM EMP WHERE ROWNUM<10);
+
+find departments where employee count is > 3:
+SELECT D.DNAME, COUNT (E.ENAME) FROM EMP E, DEPT D WHERE D.DEPTNO=E.DEPTNO GROUP BY DNAME HAVING COUNT (EMPNO) > 3;
+
+Display the name of employees who joined on the same date:
+SELECT A.ENAME FROM EMP A, EMP B WHERE A.EMPNO < > B.EMPNO AND A.HIREDATE=B.HIREDATE;
+
+Delete those employees who joined the company 10 years back from today?
+SELECT ENAME FROM EMP WHERE (SYSDATE-HIREDATE)/365 > 10
+
+Display those employees whose salary is ODD value?
+SELECT ENAME, SAL FROM EMP WHERE MOD (SAL, 2) < > 0;
+
+What is Oracle Transaction? Describe common errors can occur while executing any Transaction
+Set of SQL statements between 2 commits or rollbacks.
+The violation of constraints.
+Data type mismatch.
+Value too wide to fit in column.
+The system crashes or Server gets down.
+The session Killed.
+Locking take place. Etc.
+
+Which of the following is not a schema object : Indexes, tables, public synonyms, triggers and packages ?
+Public synonyms
+
+Locking in SQL:
+Locking prevents destructive interaction between concurrent transactions. Locks (both implicit and explicit) held until Commit or Rollback
+Types of locking are: 
+Implicit Locking: Occurs for all SQL statements except SELECT.
+Explicit Locking: Can be done by user manually.To explicitly LOCK -- select .... where ... FOR UPDATE; 
+example,
+	SQL> select * from emp where empno in (7369, 7521, 7698) for update ;
+
+	EMPNO ENAME      JOB         MGR HIREDATE          SAL      COMM DEPTNO
+	----- ---------- --------- ----- ----------- --------- --------- ------
+	 7369 SMITH      CLERK      7902 17-Dec-1980    800.00               20
+	 7521 WARD       SALESMAN   7698 22-Feb-1981   1250.00    500.00     30
+	 7698 BLAKE      MANAGER    7839 01-May-1981   2850.00               30
+	 
+	 
+Find What is Wrong in this Query?
+SELECT subject_code, AVG (marks) FROM students WHERE AVG(marks) > 75 GROUP BY subject_code; 
+The WHERE clause cannot be used to restrict groups. Instead, the HAVING clause should be used.
+	SELECT subject_code, AVG (marks)
+	FROM students
+	HAVING AVG(marks) > 75
+	GROUP BY subject_code;
 
 ##################################################################################
 varchar and varchar2?
@@ -518,7 +591,27 @@ These calls will be successful:
 2) update Customers set status = 'M' where county = 'Hertfordshire';
 
 ################################################################################################
+Oracle Snapshots:
 
+It is a read only copy of the master table on a remote node which is refreshed periodically to reflect changes in the master table.
+
+we can create a snapshot as,
+CREATE SNAPSHOT AS SELECT * FROM <TABLE-NAME>;
+
+CREATE SNAPSHOT AS SELECT COL1,COL2..... FROM <TABLE-NAME> WHERE......;
+
+Snapshot and materialized view are almost same same but with one difference.
+
+You can say that, materialized view =snapshot + query rewrite functionality
+
+query rewrite functionality:In materialized view you can enable or disable query rewrite option. 
+which means databse server  will rewrite the query so as to give high performance. 
+Query rewrite is based on some prewritten standards(by oracle itself).
+So the database server will follow these standards and rewrite the query written in the materilized view..
+
+but this functionality is not there in snapshots
+
+################################################################################################
 ORACLE Subqueries:
 a query which is added to the where clause of another query becomes a sub-query.
 2 types of subqueries:
@@ -590,8 +683,29 @@ a query which is added to the where clause of another query becomes a sub-query.
 							  FROM all_tab_columns cols
 							  WHERE cols.column_name = 'SUPPLIER_ID');
 							  
-NOTE: multi row subqueries can use the operators as IN, ANY, ALL.
-							  
+------
+sub queries can also be typed as,
+Single-Row Sub query: Queries that return only one row from the Inner select statement. 
+                      Single-row comparison operators are: =, >, >=, <, <=, <>
+
+Multiple-Row Sub query: Queries that return more than one row from the inner Select statement. 
+                        There are also multiple-column sub queries that return more than one column from the inner select statement. 
+						Operators includes: IN, ANY, ALL.
+	
+------
+ANY vs ALL:
+
+1) ANY: performs an OR operation on each value in the list. Must be preceded by =,!=,>,<,<=,=>.
+		example,
+		select empno,ename,sal from emp where sal = any(1500,3000);
+		here optimizer take above query as --select empno,ename,sal from emp where sal>1500 or sal>3000;
+		
+2) ALL: performs an AND operation on each value in the list. Must be preceded by =,!=,>,<,=>,<=
+		example,
+		select empno,ename,sal from emp where sal > ALL (1600,3000);
+		here optimizer take this query as --select empno,ename,sal from emp where sal 1600 AND sal>3000;
+		
+		
 ################################################################################
 Oracle Schemas:
 A schema allows you to logically group objects in an Oracle database.
@@ -1317,6 +1431,11 @@ Oracle Triggers:
 You can define procedures that are implicitly executed when an INSERT, UPDATE or DELETE statement is issued against the associated table. 
 These procedures are called database triggers.
 
+parts of a database trigger:
+A triggering event or statement
+A trigger restriction
+A trigger action
+
 six CREATE TRIGGER statements according to their firing points:
 Firing Point: BEFORE
 1) BEFORE INSERT TRIGGER
@@ -1420,6 +1539,21 @@ Firing Point: AFTER
 		ON orders
 		FOR EACH ROW
  
+-----
+Difference between trigger and stored procedure? 
+Trigger in act which is performed automatically before or after a event occur when DML operations are occur Trigger is Fired.
+Stored procedure is a set of functionality which is executed when it is explicitly invoked.
+
+-----
+What are cascading triggers? What is the maximum no of cascading triggers at a time?
+When a statement in a trigger body causes another trigger to be fired, the triggers are said to be cascading.Max = 32.
+
+What are mutating triggers ?
+A trigger giving a SELECT on the table on which the trigger is written.
+
+What are constraining triggers ?
+A trigger giving an Insert/Updat e on a table having referential integrity constraint on the triggering table.
+
 ########################################################################################################
 Oracle Index:
 An index is a performance-tuning method of allowing faster retrieval of records. Indexes can be created on multiple columns.
@@ -1453,6 +1587,21 @@ This index structure is then sorted, allowing Binary Searches to be performed on
 
 The downside to indexing is that indexes require additional space on the disk since the indexes are stored together in a table
 
+When to create index: 
+when table is queried for less than 2% or 4% to 25% of the table rows.
+
+How can we avoid index in case indexes already exist on columns without deleting the indexes?
+example,
+create table t1(id varhcar2(10),data1 varchar2(3000));
+create table t2(id varhcar2(10),data2 varchar2(3000));
+
+create index id1 on t1(id);
+
+select * from t1,t2 where t1.id=t2.id;
+
+to avoid index, we can use NO_INDEX hint,
+SELECT /*+ NO_INDEX(t1 id1) */  FROM t1,t2 WHERE t1.id = t2.id;
+
 ############################################################################################################
 
 Data file: 
@@ -1471,6 +1620,9 @@ Deleted records can be rolled back or committed.
 Difference between PROCEDURE and FUNCTION:
 A PROCEDURE may return one or more values or may not return at all.
 A FUNCTION must returns a value using the return statement.
+
+various types of parameter modes in a procedure:
+IN, OUT AND INOUT.
 
 What is Package and its advantages?
 database object that groups logically related procedures.
@@ -1714,6 +1866,10 @@ ALTER TABLE products DROP CONSTRAINT fk_supplier;
 Disable a foreign key:
 ALTER TABLE products DISABLE CONSTRAINT fk_supplier;
 
+-------
+difference between foreign key and reference key ?
+Foreign key is attribute which refers to another table primary key. Reference key is the primary key of table referred by another table.
+
 ################################################################################
 TRIM Function in oracle:
 
@@ -1796,9 +1952,9 @@ example,
 	Savepoint created.
 
 	SQL> INSERT INTO BOOK 
-	2 VALUES ('B130', 'P002', 'easy oracle sql', 
-	3 'miscellaneous', 9.95, 1000, 15, 0, '', 
-	4 to_date ('02-20-2005','MM-DD-YYYY'));
+	VALUES ('B130', 'P002', 'easy oracle sql', 
+	'miscellaneous', 9.95, 1000, 15, 0, '', 
+	to_date ('02-20-2005','MM-DD-YYYY'));
 	1 row created.
 
 	SQL> rollback to in_author;
@@ -1845,3 +2001,212 @@ Top-n analysis can be done via,
 		  RANK() OVER (ORDER BY dpartment_id DESC) AS rnum 
 		  FROM Employee)
 	WHERE rnum<=3;
+	
+####################################################################################################
+Oracle Synonyms:
+alternative name for objects such as tables, views, sequences, stored procedures, and other database objects.
+
+You generally use synonyms when you are granting access to an object from another schema 
+and you don't want the users to have to worry about knowing which schema owns the object.
+
+CREATE [OR REPLACE] [PUBLIC] SYNONYM [schema .] synonym_name
+  FOR [schema .] object_name [@ dblink];
+  
+example-1,(create a synonym called suppliers)
+CREATE PUBLIC SYNONYM suppliers FOR app.suppliers;
+so,
+users of other schemas can reference the table called suppliers without having to prefix the table name with the schema named app.
+
+to drop this synonym:
+DROP PUBLIC SYNONYM suppliers;
+
+difference between a view and a synonym ?
+Synonym is Schema Object,just a second name of table,.View can be created with many tables, and with virtual columns and with conditions.
+
+#######################################################################################################
+Oracle Hints:
+
+https://www.red-gate.com/simple-talk/sql/oracle/a-beginners-guide-to-optimizer-hints/
+
+
+#######################################################################################################
+Rollback segments:
+
+Rollback statement is used to undo the changes made by the DML statements, to the last commit point of the oracle. 
+Now, rollback segment is that segment which keeps a copy of last commit point and can be restored upon using rollback statement.
+
+#######################################################################################################
+SQL functions:
+
+are entities which can take argument and return some value.
+
+there are 2 types of SQL functions:
+1) Single-Row functions: These functions operate on a single row to give one result per row.
+	example: to_date, to_char.....
+2) Multiple-Row functions: These functions operate on groups of rows to give one result per group of rows.
+	example: AVG,COUNT,MAX,MIN,SUM.
+	
+Character functions: accept character input and return both character and number values. Types of character function are:
+			a) Case-Manipulation Functions: LOWER, UPPER, INITCAP
+			b) Character-Manipulation Functions: CONCAT, SUBSTR, LENGTH, INSTR, LPAD/RPAD, TRIM, REPLACE
+
+Number Functions: accept Numeric input and return numeric values. Number Functions are: ROUND, TRUNC and MOD
+
+Date Functions: operates on values of the Date data type. 
+                (All date functions return a value of DATE data type except the MONTHS_BETWEEN Function, which returns a number. 
+				Date Functions are MONTHS_BETWEEN, ADD_MONTHS, NEXT_DAY, LAST_DAY, ROUND, TRUNC. 
+
+-----
+Conversion functions:
+converts a value from one data type to another. There are 2 types:
+1) Implicit data type conversion. example,
+	VARCHAR2 or CHAR To NUMBER, DATE
+	NUMBER To VARCHAR2
+	DATE To VARCHAR2
+	
+2) Explicit data type conversion.
+	a) TO_NUMBER: SYNTAX IS: TO_NUMBER( string1 [, format_mask])
+		where,
+		format_mask: Optional. This is the format that will be used to convert string1 to a number.
+
+		example,
+		TO_NUMBER('1210.73', '9999.99')  // Result: 1210.73
+
+		TO_NUMBER('546', '999') 		 // Result: 546
+
+		TO_NUMBER('23', '99') 			// Result: 23
+
+		TO_NUMBER('1210.73')  			// Result: 1210.73
+
+	b) TO_CHAR: converts a number or date to a string. SYNTAX IS: TO_CHAR( value [, format_mask])
+		example-1 (number examples),
+		TO_CHAR(1210.73, '9999.9')		//Result: ' 1210.7'
+
+		TO_CHAR(-1210.73, '9999.9')		//Result: '-1210.7'
+
+		TO_CHAR(1210.73, '9,999.99')	//Result: ' 1,210.73'
+
+		TO_CHAR(1210.73, '$9,999.00')	//Result: ' $1,210.73'
+
+		TO_CHAR(21, '000099')			//Result: ' 000021'
+		
+		example-2 (date examples),
+		TO_CHAR(sysdate, 'yyyy/mm/dd')
+		Result: '2003/07/09'
+
+		TO_CHAR(sysdate, 'Month DD, YYYY')
+		Result: 'July 09, 2003'
+
+		TO_CHAR(sysdate, 'FMMonth DD, YYYY')
+		Result: 'July 9, 2003'
+
+		TO_CHAR(sysdate, 'MON DDth, YYYY')
+		Result: 'JUL 09TH, 2003'
+
+		TO_CHAR(sysdate, 'FMMON DDth, YYYY')
+		Result: 'JUL 9TH, 2003'
+
+		TO_CHAR(sysdate, 'FMMon ddth, YYYY')
+		Result: 'Jul 9th, 2003'
+				
+		TO_CHAR(sysdate, 'FMMonth DD, YYYY')
+		Result: 'July 9, 2003'
+
+		TO_CHAR(sysdate, 'FMMON DDth, YYYY')
+		Result: 'JUL 9TH, 2003'
+
+		TO_CHAR(sysdate, 'FMMon ddth, YYYY')
+		Result: 'Jul 9th, 2003'
+		
+		NOTE: if the format_mask parameter begins with "FM". This means that zeros and blanks are suppressed.
+	
+
+	c) TO_DATE:  converts a string to a date.
+		example,
+		TO_DATE('2003/07/09', 'yyyy/mm/dd')
+		Result: date value of July 9, 2003
+
+		TO_DATE('070903', 'MMDDYY')
+		Result: date value of July 9, 2003
+
+		TO_DATE('20020315', 'yyyymmdd')
+		Result: date value of Mar 15, 2002
+		
+		SELECT TO_DATE('2015/05/15 8:30:25', 'YYYY/MM/DD HH:MI:SS') FROM dual;
+		Result: 2015/05/15 8:30:25 to a date value.
+
+----
+Question: Why doesn't this sort the days of the week in order?
+	SELECT ename, hiredate, TO_CHAR((hiredate),'fmDay') "Day"
+	FROM emp
+	ORDER BY "Day";
+Answer: In the above SQL, the fmDay format mask used in the TO_CHAR function will return the name of the Day and not the numeric value of the day.
+To sort the days of the week in order, you need to return the numeric value of the day by using the fmD format mask as follows:
+	SELECT ename, hiredate, TO_CHAR((hiredate),'fmD') "Day"
+	FROM emp
+	ORDER BY "Day";
+	
+----
+General Function used in SQL:
+NVL:  Converts a null value to an actual value.
+
+NVL2: If exp1 is not null, nvl2 returns exp2, if exp1 is null, nvl2 returns exp3. NVL2 (exp1, exp2, exp3)
+	  example,
+	  select NVL2(supplier_city, 'Completed', 'n/a') from suppliers;
+	  will return 'Completed' if supplier_city is NOT NULL and 'n/a' if NULL
+
+NULLIF: Compares two expressions and returns null if they are equal or the first expression if they are not equal. NULLIF (exp1, exp2)
+
+COALESCE: Returns the first non-null expression in the expression list
+
+Conditional Expressions.
+
+	
+###############################################################################
+COUNT in Oracle:
+
+1) COUNT(*)   : Returns number of rows in a table including duplicates rows and rows containing null values in any of the columns.
+2) COUNT(exp) : will ONLY include count where exp is NOT NULL.
+                example,
+				supplier_id	supplier_name	state
+				1			IBM				CA
+				2			Microsoft
+				3			NVIDIA
+
+				so,
+				SELECT COUNT(supplier_id) FROM suppliers;   //will return 3
+				SELECT COUNT(state) FROM suppliers;         //will return 1
+				
+3) COUNT(DISTINCT exp): Returns the number of unique, non-null values in the column.
+						example,
+						SELECT COUNT(DISTINCT department) AS "Unique departments" FROM employees WHERE salary > 55000;
+						
+4) COUNT with group_by: 
+						example,
+						SELECT department, COUNT(*) AS "Number of employees"
+						FROM employees
+						WHERE state = 'CA'
+						GROUP BY department;
+
+################################################################################
+use of single Ampersand (&&) and Double Ampersand (&&) in SQL Queries:
+
+Both of these are substitution variable 
+
+"&" ---> the variable prefixed with an ampersand (&) to prompt the user for a value.
+			eg:
+			SELECT employee_id, last_name, salary, department_id
+			FROM employees
+			WHERE employee_id = &employee_num ;
+
+			It should prompt the user to enter a value for employee_num
+
+
+"&&" ---> Mainly we used the double-ampersand (&&) if you want to reuse the variable value without prompting the user each time.
+			eg:
+			SELECT employee_id, last_name, job_id, &&column_name
+			FROM employees
+			ORDER BY &column_name;
+
+			Here the user is asked to give the value for variable column_name only once. 
+			The value supplied by the user (department_id) is used both for display and ordering of data.
