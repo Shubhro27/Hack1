@@ -49,11 +49,37 @@ Select * from employee where salary > (select avg(salary) from dept, employee wh
 Oracle literals are strings (can have character, a number, or a date) which can included in SELECT statement along with column name
 ex, Select last_name||’is a’||job_id As “emp details” from employee; (Here “is a” is a literal).
 
+How to save the query output with spool on a text file?
+SPOOL 'D:\sqltestes\sql_test.txt'
+SELECT max(column1) from my_table;
+SPOOL OFF;
+//and hit F5
+
+
+to determine leap year:
+create or replace function IS_LEAP_YEAR (nYr in number) return boolean is 
+v_day varchar2(2); 
+begin 
+  select to_char(last_day(to_date( '01-FEB-'|| to_char(nYr), 'DD-MON-YYYY')), 'DD') into v_day from dual; 
+  if v_day = '29' then -- if v_day = 29 then it must be a leap year, return TRUE 
+    return TRUE; 
+  else 
+    return FALSE;  -- otherwise year is not a leap year, return false 
+  end if; 
+end;
+
+select second max salary from a table:
+select * from sivaemp where salary = 
+(select max(salary) from emp where salary not in (select max(salary) from emp))
+
+
 ##################################################################################
 varchar and varchar2?
 varchar							varchar2
 can store up to 2000 bytes		can store up to 4000 bytes
 occupies SPACE for NULL			can accomodate NULL
+
+Char can store up to 255 bytes.
 
 As of now both are used as synonyms regarding memory allocation & release. both r variable in length and occupies memory at runtime.
 In future, VARCHAR2, is supposed to, not distinguish between a NULL and empty string while VARCHAR will do,
@@ -564,6 +590,8 @@ a query which is added to the where clause of another query becomes a sub-query.
 							  FROM all_tab_columns cols
 							  WHERE cols.column_name = 'SUPPLIER_ID');
 							  
+NOTE: multi row subqueries can use the operators as IN, ANY, ALL.
+							  
 ################################################################################
 Oracle Schemas:
 A schema allows you to logically group objects in an Oracle database.
@@ -661,6 +689,8 @@ Alias is a temporary name given to a table or column. Alias acts as an alternate
 Cursors:
 It is a reference variable.
 It is a facility provided by oracle to assign a name to SELECT statement and manipulate the info retrieved from the SELECT Statement.
+
+Why is cursor used? it is used to process each row when a query returns multiple rows.
 
 1) declare a cursor: CURSOR <name> (optional parameter-list) is SELECT_STATEMENT
 	example-1, (cursor without parameters)
@@ -1438,11 +1468,129 @@ Difference between Truncate and Delete:
 Truncate is Dml Statements. Cannot be rolled back. Delete allows the filtered deletion.
 Deleted records can be rolled back or committed.
 
+Difference between PROCEDURE and FUNCTION:
+A PROCEDURE may return one or more values or may not return at all.
+A FUNCTION must returns a value using the return statement.
+
+What is Package and its advantages?
+database object that groups logically related procedures.
+The advantages of packages are modularity, easier application design, 
+information hiding, reusability and better performance.
+
 #############################################################################################################
+Exception handling: ( details of error handling in : http://plsql-tutorial.com/plsql-exception-handling.htm )
+
+PL/SQL Exception message consists of three parts. 
+1) Type of Exception
+2) An Error Code
+3) A message 
+
+general syntax-1,
+	DECLARE
+	   Declaration section 
+	 BEGIN 
+	   Exception section 
+	 EXCEPTION 
+	 WHEN ex_name1 THEN 
+		-Error handling statements 
+	 WHEN ex_name2 THEN 
+		-Error handling statements 
+	 WHEN Others THEN 
+	   -Error handling statements 
+	END; 
+	
+
+types of exception:
+a) Named System Exceptions: System exceptions are automatically raised by Oracle.
+	Exception Name			Reason											Error Number
+	CURSOR_ALREADY_OPEN		When you open a cursor that is already open.	ORA-06511
+	INVALID_CURSOR			When you perform an invalid operation on a		ORA-01001 
+							cursor like closing a cursor, 
+							fetch data from a cursor that is not opened.
+
+	NO_DATA_FOUND			When a SELECT...INTO clause does not return		ORA-01403 
+							any row from a table.
+
+	TOO_MANY_ROWS			When you SELECT or fetch more than one			ORA-01422 
+							row into a record or variable.
+
+	ZERO_DIVIDE				When you attempt to divide a number by zero.	ORA-01476
+
+	example,
+	BEGIN 
+	  Execution section
+	EXCEPTION 
+	WHEN NO_DATA_FOUND THEN 
+	 dbms_output.put_line ('A SELECT...INTO did not return any row.'); 
+	 END;
+ 
+b) Unnamed System Exception: system exception for which oracle does not provide a name 
+							 is known as unamed system exception. 
+							 
+			There are two ways to handle unnamed sysyem exceptions: 
+			1. By using the WHEN OTHERS exception handler, or 
+			2. By associating the exception code to a name and using it as a named exception.
+
+			We can assign a name to unnamed system exceptions using a Pragma called EXCEPTION_INIT.
+			EXCEPTION_INIT will associate a predefined Oracle error number to a programmer_defined exception name.		
+
+		example,
+		consider the product table and order_items table from sql joins.
+		product_id is a primary key in product table and a foreign key in order_items table. 
+		If we try to delete a product_id from the product table when it has child records in order_id table 
+		an exception will be thrown with oracle code number -2292.
+		
+		DECLARE 
+		  Child_rec_exception EXCEPTION; 
+		  PRAGMA 
+		  EXCEPTION_INIT (Child_rec_exception, -2292); 
+		BEGIN 
+		  Delete FROM product where product_id= 104; 
+		EXCEPTION 
+		   WHEN Child_rec_exception 
+		   THEN Dbms_output.put_line('Child records are present for this product_id.'); 
+		END; 
+		/
+					
+c) User-defined Exception: exceptions based on business rules. 
+	They should be explicitly declared in the declaration section. 
+	They should be explicitly raised in the Execution Section. 
+	They should be handled by referencing the user-defined exception name in the exception section.
+	
+	example,
+		DECLARE 
+		  huge_quantity EXCEPTION; 
+		  CURSOR product_quantity is 
+		  SELECT p.product_name as name, sum(o.total_units) as units
+		  FROM order_tems o, product p
+		  WHERE o.product_id = p.product_id; 
+		  quantity order_tems.total_units%type; 
+		  up_limit CONSTANT order_tems.total_units%type := 20; 
+		  message VARCHAR2(50); 
+		BEGIN 
+		  FOR product_rec in product_quantity LOOP 
+			quantity := product_rec.units;
+			 IF quantity > up_limit THEN 
+			  message := 'The number of units of product ' || product_rec.name ||  
+						 ' is more than 20. Special discounts should be provided. 
+				 Rest of the records are skipped. '
+			 RAISE huge_quantity; 
+			 ELSIF quantity < up_limit THEN 
+			  v_message:= 'The number of unit is below the discount limit.'; 
+			 END IF; 
+			 dbms_output.put_line (message); 
+		  END LOOP; 
+		 EXCEPTION 
+		   WHEN huge_quantity THEN 
+			 dbms_output.put_line (message); 
+		END; 
+
 uses for RAISE_APPLICATION_ERROR in PL/SQL:
 
 The first is to replace generic Oracle exception messages with our own, more meaningful messages.
 The second is to create exception conditions of our own, when Oracle would not throw them.
+
+error number should be in range between -20000 and -20999.
 
 Whenever a message is displayed using RAISE_APPLICATION_ERROR, all previous transactions which are not committed 
 within the PL/SQL Block are rolled back automatically (i.e. change due to INSERT, UPDATE, or DELETE statements). 
@@ -1476,33 +1624,224 @@ BEGIN
  END; 
 / 
 
-In addition: types of exception:
-a) Named System Exceptions: System exceptions are automatically raised by Oracle.
-	Exception Name			Reason											Error Number
-	CURSOR_ALREADY_OPEN		When you open a cursor that is already open.	ORA-06511
-	INVALID_CURSOR			When you perform an invalid operation on a		ORA-01001 
-							cursor like closing a cursor, 
-							fetch data from a cursor that is not opened.
+#########################################################################
+Foreign key with cascade delete:
+A foreign key with cascade delete means that if a record in the parent table is deleted, 
+then the corresponding records in the child table will automatically be deleted.
 
-	NO_DATA_FOUND			When a SELECT...INTO clause does not return		ORA-01403 
-							any row from a table.
+A foreign key with a cascade delete can be defined in,
+1) either a CREATE TABLE statement 
+2) or an ALTER TABLE statement.
 
-	TOO_MANY_ROWS			When you SELECT or fetch more than one			ORA-01422 
-							row into a record or variable.
+example-1, (creating FK with one field)
+	1) created a primary key on the supplier table called supplier_pk. 
+	2) created a foreign key called fk_supplier on the products table that references 
+	   the supplier table based on the supplier_id field.
+   
+	CREATE TABLE supplier
+	( supplier_id numeric(10) not null,
+	  supplier_name varchar2(50) not null,
+	  contact_name varchar2(50),
+	  CONSTRAINT supplier_pk PRIMARY KEY (supplier_id)
+	);
 
-	ZERO_DIVIDE				When you attempt to divide a number by zero.	ORA-01476
+	CREATE TABLE products
+	( product_id numeric(10) not null,
+	  supplier_id numeric(10) not null,
+	  CONSTRAINT fk_supplier
+		FOREIGN KEY (supplier_id)
+		REFERENCES supplier(supplier_id)
+		ON DELETE CASCADE
+	);
 
+example-2, (creating a FK, with more than one field)
+	CREATE TABLE supplier
+	( supplier_id numeric(10) not null,
+	  supplier_name varchar2(50) not null,
+	  contact_name varchar2(50),
+	  CONSTRAINT supplier_pk PRIMARY KEY (supplier_id, supplier_name)
+	);
+
+	CREATE TABLE products
+	( product_id numeric(10) not null,
+	  supplier_id numeric(10) not null,
+	  supplier_name varchar2(50) not null,
+	  CONSTRAINT fk_supplier_comp
+		FOREIGN KEY (supplier_id, supplier_name)
+		REFERENCES supplier(supplier_id, supplier_name)
+		ON DELETE CASCADE
+	);
+
+example-3, (with alter table statement)
+	ALTER TABLE products
+	ADD CONSTRAINT fk_supplier
+	  FOREIGN KEY (supplier_id)
+	  REFERENCES supplier(supplier_id)
+	  ON DELETE CASCADE;
+	  
+	ALTER TABLE products
+	ADD CONSTRAINT fk_supplier
+	  FOREIGN KEY (supplier_id, supplier_name)
+	  REFERENCES supplier(supplier_id, supplier_name)
+	  ON DELETE CASCADE;
+
+----
+Foreign Keys with Set Null on Delete:
+if a record in the parent table is deleted, then the corresponding records in the child table 
+will have the foreign key fields set to null. 
+
+example-1,
+	CREATE TABLE supplier
+	( supplier_id numeric(10) not null,
+	  supplier_name varchar2(50) not null,
+	  contact_name varchar2(50),
+	  CONSTRAINT supplier_pk PRIMARY KEY (supplier_id)
+	);
+
+	CREATE TABLE products
+	( product_id numeric(10) not null,
+	  supplier_id numeric(10),
+	  CONSTRAINT fk_supplier
+		FOREIGN KEY (supplier_id)
+		REFERENCES supplier(supplier_id)
+		ON DELETE SET NULL
+	);
+	
+-------
+Drop a foreign key:
+ALTER TABLE products DROP CONSTRAINT fk_supplier;
+
+Disable a foreign key:
+ALTER TABLE products DISABLE CONSTRAINT fk_supplier;
+
+################################################################################
+TRIM Function in oracle:
+
+a) TRIM: removes all specified characters either from the beginning or the end of a string.
+	TRIM( [ [ LEADING | TRAILING | BOTH ] trim_character FROM ] string1 )
+	
+	NOTE: If you do not choose a value for the first parameter (LEADING, TRAILING, BOTH), 
+	the TRIM function will remove trim_character from both the front and end of string1.
+	
 	example,
-	BEGIN 
-	  Execution section
-	EXCEPTION 
-	WHEN NO_DATA_FOUND THEN 
-	 dbms_output.put_line ('A SELECT...INTO did not return any row.'); 
-	 END;
- 
-b) Unnamed System Exceptions 
-c) User-defined Exception
+		TRIM('   tech   ')
+		Result: 'tech'
 
-details of error handling in : http://plsql-tutorial.com/plsql-exception-handling.htm 
+		TRIM(' '  FROM  '   tech   ')
+		Result: 'tech'
 
- 
+		TRIM(LEADING '0' FROM '000123')
+		Result: '123'
+
+		TRIM(TRAILING '1' FROM 'Tech1')
+		Result: 'Tech'
+
+		TRIM(BOTH '1' FROM '123Tech111')
+		Result: '23Tech'
+		
+b) LTRIM: trim the characters from the left-hand side.
+	example,
+		LTRIM('   tech')
+		Result: 'tech'
+
+		LTRIM('   tech', ' ')
+		Result: 'tech'
+
+		LTRIM('000123', '0')
+		Result: '123'
+
+		LTRIM('123123Tech', '123')
+		Result: 'Tech'
+
+		LTRIM('123123Tech123', '123')
+		Result: 'Tech123'
+
+		LTRIM('xyxzyyyTech', 'xyz')
+		Result: 'Tech'
+
+		LTRIM('6372Tech', '0123456789')
+		Result: 'Tech'
+		
+	NOTE: LTRIM function may appear to remove patterns, but this is not the case
+	example,
+		LTRIM('xxyyxzyxyyxTech', 'xyz')	Result: 'Tech'
+		LTRIM( '637Tech', '0123456789') Result: 'Tech'
+
+c) RTRIM: same as LTRIM except trims right hand side.
+
+###################################################################
+Oracle Savepoint:
+
+Savepoint is a marker within a transaction that allows partial rollback.
+If we encounter an error, we can rollback to a SAVEPOINT
+
+example,
+	SQL> INSERT INTO AUTHOR 
+	2 VALUES ('A11l', 'john', 
+	3 'garmany', '123-345-4567', 
+	4 '1234 here st', 'denver', 
+	5 'CO','90204', '9999');
+
+	1 row created.
+
+	SQL> savepoint in_author;
+
+	Savepoint created.
+
+	SQL> INSERT INTO BOOK_AUTHOR VALUES ('A111', 'B130', .20); 
+	1 row created.
+
+	SQL> savepoint in_book_author;
+
+	Savepoint created.
+
+	SQL> INSERT INTO BOOK 
+	2 VALUES ('B130', 'P002', 'easy oracle sql', 
+	3 'miscellaneous', 9.95, 1000, 15, 0, '', 
+	4 to_date ('02-20-2005','MM-DD-YYYY'));
+	1 row created.
+
+	SQL> rollback to in_author;
+
+	Rollback complete.
+	
+###################################################################
+Top-n analysis:
+
+i.e. How to limit the number of rows returned from ordered sets of data in SQL.
+
+SYNTAX can be:
+SELECT [column_list], ROWNUM
+FROM (SELECT [column_list]
+      FROM table_name
+      ORDER BY Top-N_column)
+WHERE ROWNUM<=N
+
+example,
+
+Top-n analysis can be done via,
+1) Inline View and ROWNUM: i.e. force the data into the correct order which is then limited thru ROWNUM
+	example,
+	SELECT first_name, last_name
+	FROM (SELECT first_name, last_name
+		  FROM Employee
+		  ORDER BY salary DESC)
+	WHERE ROWNUM<=4;
+	
+2) Nested Inline View and ROWNUM: 
+	example,
+	SELECT employee_id, first_name, salary
+	FROM   (SELECT employee_id, first_name, salary, rownum AS rnum
+			FROM   (SELECT employee_id, first_name, salary
+					FROM Employee
+					ORDER BY salary)
+			WHERE rownum<=4)
+	WHERE  rnum>=2;
+	
+3) Using RANK function: The RANK analytic function assigns a sequential rank to each distinct value in output.
+	example,
+	SELECT dpartment_id, first_name
+	FROM (SELECT dpartment_id, first_name,
+		  RANK() OVER (ORDER BY dpartment_id DESC) AS rnum 
+		  FROM Employee)
+	WHERE rnum<=3;
