@@ -5,6 +5,13 @@ https://mindmajix.com/sql-interview-questions
 https://intellipaat.com/interview-question/sql-interview-questions/
 http://www.testingbrain.com/interview/oracle-interview-questions.html
 https://mindmajix.com/oracle-pl-sql-interview-questions
+
+
+Pending:
+Joins
+dynamic SQL (https://docs.oracle.com/cd/B28359_01/appdev.111/b28370/dynamic.htm#LNPLS01115)
+REF CURSOR (or) CURSOR VARIABLE (or) DYNAMIC CURSOR and types of REF CURSOR.
+
 #########################################################################################
 SQL: Structured Query Language is non-procedural language used for data retrieval, data update, insert or delete data from an database.
 
@@ -32,6 +39,29 @@ for instance, the value of a constant, pseudocolumn, or expression that is not d
 maximum no.of columns a table can have ?
 254.
 
+Describe few Data Types used in SQL?
+VARCHAR2(size): Minimum size is ‘1’ and Maximum size is ‘4000’
+CHAR(size): Minimum size is ‘1’and Maximum size is ‘2000’
+NUMBER(P,S): " Precision" can range from 1 to 38 and the “Scale” can range from -84 to 127.
+DATE
+LONG: 2GB
+RAW (size): Maximum size is 2000
+LONG RAW: 2GB
+BLOB: 4GB
+BFILE: 4GB
+ROWID: A 64 base number system representing the unique address of a row in the table.
+
+Oracle Long datatype?
+	CREATE TABLE t1(id NUMBER, doc LONG);
+	Table created.
+	SQL> INSERT INTO t1 VALUES (1, 'Test to go into LONG column');
+	1 row created.
+	Used to store long text.
+	A LONG column cannot be,
+	a) included in a GROUP BY or an ORDER BY clause. 
+	b) Only one LONG column can be used per table. 
+	c) No constraint can be defined on a LONG column.
+	
 Comments in Oracle:
 -- for single line
 /*.....*/ for multi line
@@ -145,7 +175,44 @@ The WHERE clause cannot be used to restrict groups. Instead, the HAVING clause s
 	FROM students
 	HAVING AVG(marks) > 75
 	GROUP BY subject_code;
+	
+	
+Default option in Oracle?
+A column can be given a default value by using the DEFAULT option. 
+This prevents null values from entering the column if a row is inserted without a value for that column.
+The DEFAULT value can be: literal, an expression, or a SQL function such as SYSDATE
+The DEFAULT value cannot be: name of another column or a pseudo column such as NEXTVAL or CURRVAL.
+example-1,
+	create table t2(charcol char default 'Y',datecol date default sysdate);
+	insert into t2 (charcol) values (default);
+	select * from t2;
 
+	C DATECOL
+	- ————-
+	Y 28-MAY-04
+
+example-2,
+	create table t1
+	(
+		id$ integer not null,
+		charcol char default 'Y',
+		datecol date default sysdate,
+		strcol varchar2(30) default user,
+		intcol integer default 12
+	);
+	insert into t1 (id$) values (1);
+	select * from t1;
+
+		   ID$ C DATECOL   STRCOL                             INTCOL
+	————— - ————- ——————————————— —————
+			 1 Y 28-MAY-04 SCOTT                                  12
+			 
+			 
+difference between USER TABLES and DATA DICTIONARY?
+USER TABLES: Is a collection of tables created and maintained by the user. Contain USER information. 
+DATA DICTIONARY: Is a collection of tables created and maintained by the Oracle Server. It contains database information. 
+                 All data dictionary tables are owned by the SYS user.
+				 
 ##################################################################################
 varchar and varchar2?
 varchar							varchar2
@@ -489,6 +556,7 @@ This is the concept of Key Preserved Tables.
 ################################################################################################
 Views:
 is a virtual table created from querying a single table or query joining multiple tables.
+View definitions can be retrieved from the data dictionary table: USER_VIEWS.
 
 Create View: 
 	SYNTAX is:
@@ -528,6 +596,8 @@ NOTE:
 When you update record(s) in a VIEW, it updates the records in the underlying tables that make up the View. (unless the view is marked as READ-ONLY)
 in Oracle, the VIEW continues to exist even after one of the tables is fropped from view but querying such views errors.
 If you recreate the table (the table that you had dropped), the Oracle VIEW will again be fine.
+
+Also, you cannnot DELETE or INSERT data thru a view
 
 WITH CHECK OPTION:
 views can be created with “WITH CHECK OPTION”  and “WITH READ ONLY“.
@@ -1611,11 +1681,21 @@ A database’s data files contain all the database data. The data of logical datab
 difference between UNIQUE and PRIMARY KEY?
 A column defined as PRIMARY KEY can contain unique values
 same as UNIQUE but UNIQUE can contain NULLs while a column defined as PRIMARY KEY cannot contain NULLs.
-
+Unique Key										Primary Key
+A table can have more than one Unique Key.		A table can have only one Primary Key.
+Unique key column can store NULL values.		Primary key column cannot store NULL values.
+Uniquely identify each value in a column.		Uniquely identify each row in a table.
 
 Difference between Truncate and Delete:
 Truncate is Dml Statements. Cannot be rolled back. Delete allows the filtered deletion.
 Deleted records can be rolled back or committed.
+TRUNCATE														DELETE
+Removes all rows from a table and releases 						Removes all rows from a table but does not
+storage space used by that table.								release storage space used by that table.
+TRUNCATE Command is faster. 									DELETE command is slower.
+Is a DDL statement and cannot be Rollback.						Is a DDL statement and can be Rollback.
+Database Triggers do not fire on TRUNCATE.						Database Triggers fire on DELETE.
+
 
 Difference between PROCEDURE and FUNCTION:
 A PROCEDURE may return one or more values or may not return at all.
@@ -2210,3 +2290,194 @@ Both of these are substitution variable
 
 			Here the user is asked to give the value for variable column_name only once. 
 			The value supplied by the user (department_id) is used both for display and ordering of data.
+
+##################################################################################
+Oracle Not Used clause:
+
+SET UNUSED option marks one or more columns as unused so that they can be dropped on demand or when system resources is lower. 
+Unused columns are treated as if they were dropped, even though their column data remains in the table’s rows.
+After a column has been marked as unused, you have no access to that column. A select * query will not retrieve data from unused columns.
+columns marked unused will not be displayed during a DESCRIBE.
+you can add to the table a new column with the same name as an unused column.
+You cannot reuse a unused column.
+The SET UNUSED information is stored in the USER_UNUSED_COL_TABS dictionary view.
+
+example,
+	SQL> create table t23 (
+	  2  id number
+	  3  , col1 varchar2(10)
+	  4  );
+
+	Table created.
+
+	SQL> alter table t23 set unused column id;
+
+	Table altered.
+
+	SQL> desc t23
+	 Name                                      Null?    Type
+	 ----------------------------------------- -------- ----------------------------
+	 COL1                                               VARCHAR2(10)
+
+	SQL> alter table t23 
+	  2      add (id number)   
+	  3  /
+
+	Table altered.
+
+	SQL> desc t23
+	 Name                                      Null?    Type
+	 ----------------------------------------- -------- ----------------------------
+	 COL1                                               VARCHAR2(10)
+	 ID                                                 NUMBER
+
+	SQL> alter table t23 drop unused columns
+	  2  /
+
+	Table altered.
+
+
+Difference between "Drop column" and "set used"?
+dropping a column deletes it completely (physically),
+setting to "unused" is just like dropping, but will allow you to defer the actual physical deletion to a later date.
+
+############################################################################################################
+What is Invalid_number, Value_Error?
+
+In oracle when we try to convert “string type to number type” or” data string into data type” then oracle server returns two types of errors.
+1. Invalid_number
+2. Value_error (or) numeric_error
+
+a) Invalid_number:
+   When PL/SQL block have a SQL statements and also those SQL statements try to convert string type to number type or 
+   data string into data type then oracle server returns an error: ora-1722-Invalid Number
+
+	For handling this error oracle provides number exception Invalid_number exceptionname.
+	Example:
+	begin
+	Insert into
+	emp(empno, ename, sal) values(1,’gokul’, ‘abc’)
+	exception
+	when invalid_number then
+	dbms_output.put_line(‘insert proper data only’);
+	end;
+	/
+
+b) Value_error:
+   Whenever PL/SQL block having procedural statements and also those statements find to convert string type to number type 
+   then oracle servers returns an error: ora-6502:numeric or value error: character to number conversion error
+
+   For handling this error oracle provided exception value_error exception name
+	Example:
+	begin
+	declare
+	z number(10);
+	begin
+	z:= ‘&x’ + ‘&y’;
+	dbms_output.put_line(z);
+	exception
+	when value_error then
+	dbms_output.put_line(‘enter numeric data value for x & y only’);
+	end;
+	/
+
+	Output:
+	Enter value for x:3
+	Enter value for y:2
+	z:=5
+	Enter value for x:a
+	Enter value for y:b
+	Error:enter numeric data value for x & y only.
+	
+####################################################################################################
+Oracle Bind Variables:
+
+A bind variable is a placeholder in a SQL statement that must be replaced with a valid value.
+Bind variables are ideally used in Oracle for dynamic SQL. 
+Dynamic SQL is where you have a query as a string literal with a place holder for a dynamic value which will be passed to the query
+
+example-1: 
+you can have a dynamic sql for selecting records for a particular employee, in this case the employee id will be a place holder for bind variable.
+vSQL = ‘SELECT emp_name FROM emp WHERE emp_id = :1’
+
+The above statement can be called any number of time by passing the employee id as below,
+EXECUTE IMMEDIATE vSQL INTO vEmpName1 USING 123;
+EXECUTE IMMEDIATE vSQL INTO vEmpName2 USING 456;
+
+example-2 (Bind Variables in SQL*PLUS):
+SQL> variable deptno number
+SQL> exec :deptno := 10
+SQL> select * from emp where deptno = :deptno;
+
+####################################################################################################
+PL/SQL Programs:
+
+1) Write a PL/SQL Program which raise a user defined exception on thursday?
+	declare
+	a exception
+	begin
+	If to_char(sysdate, ‘DY)=’THU’
+	then
+	raise a;
+	end if;
+	exception
+	when a then
+	dbms_output.put_line(‘my exception raised on thursday’);
+	end;
+	
+2) Write a PL/SQL program to retrieve emp table and then display the max salary?
+	declare
+	v_sal number(10);
+	begin 
+	select max(sal)into v_sal from emp;
+	dbms_output.put_line(v.sal);
+	end;
+	/
+	
+3) find greatest among 2 numbers?
+	declare
+	A number(10);
+	B number(10);
+	C number(10);
+	begin
+	a:=70;
+	b:=30;
+	c:=greatest+(a,b);
+	dbms_output.put_line(c);
+	end;
+	/
+	
+4) PL/SQL cursor program which is used to calculate total salary from emp table without using sum() function?
+	Declare
+	cursor c1 is select sal from emp;
+	v_sal number(10);
+	n.number(10):=0;
+	begin
+	open c1;
+	loop
+	fetch c1 into v_sal;
+	exit when c1%not found;
+	n:=n+v_sal;
+	end loop;
+	dbms_output.put_line(‘tool salary is’||’ ‘ ||n);
+	close c1;
+	end;
+/
+
+5) PL/SQL cursor program to display all employee names and their salary from emp table by using % not found attributes?
+	Declare
+	Cursor c1 is select ename, sal from emp;
+	v_ename varchar2(10);
+	v_sal number(10);
+	begin
+	open c1;
+	loop
+	fetch c1 into v_ename, v_sal;
+	exist when c1 % notfound;
+	dbms_output.put_line(v_name ||’ ‘||v_sal);
+	end loop;
+	close c1;
+	end;
+	/
+	
+	
