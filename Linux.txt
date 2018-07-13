@@ -1,0 +1,368 @@
+https://career.guru99.com/shell-scripting-interview-questions/
+
+##################################################################################
+Shell: is an interface between user and kernel. So, whenever a user enters a command through the keyboard, 
+       the shell communicates with the kernel to execute it and then display the output to the user.
+	   Commonly used shells are: csh,ksh,bash,Bourne
+
+(links reference: https://www.thegeekstuff.com/2010/10/linux-ln-command-examples/)	   
+Links: is equivalent of a "file shortcut" in Windows. If we do a "ls -l", If the 1st character is l (lower case L), then it is a link file.
+example,
+$ ls -l
+total 4
+lrwxrwxrwx 1 chris chris 10 2010-09-17 23:40 file1 -> sample.txt
+-rw-r--r-- 1 chris chris 22 2010-09-17 23:36 sample.txt
+
+There are 2 kinds of links in UNIX:
+soft link : With soft link, the data in the original file can be accessed through the special file. i.e.
+			data part of this special file as a reference to another file path.
+			
+			NOTE: softlinked file will have a different inode number than the original file.
+			
+			to create a soft link, do the following (ln command with -s option):
+			$ ln -s /full/path/of/original/file /full/path/of/soft_link/file
+			
+			
+hard link : Hard link named FILE2 shares the same index node as the existing file FILE1. 
+		    Since FILE1 and FILE2 share the same index node, they will point to the same data on the disk, 
+			and modifying one will be functionally the same as modifying the other.
+			
+			to create a hard link, do the following:
+			$ ln /full/path/of/original/file /full/path/of/hard_link/file   //ex, link computer.txt hope.txt
+			
+			
+NOTE: When you create a new link (if another file exist already with the same name as the new link name), 
+      You can instruct ln command to take a backup of the original file before creating the new link.
+	  
+	example,
+	$ ls
+	ex1.c  ex2.c
+
+	$ ln --backup -s ex1.c ex2.c 
+
+	$ ls -lrt
+	total 8
+	-rw-r--r-- 1 chris chris 20 2010-09-19 16:57 ex1.c
+	-rw-r--r-- 1 chris chris 20 2010-09-19 16:57 ex2.c~
+	lrwxrwxrwx 1 chris chris  5 2010-09-19 17:02 ex2.c -> ex1.c
+	
+	Deleting the original file makes the soft link inactive (broken link) but does not affect the hard link (Hard link will still access a copy of the file)
+	
+	unlink — Remove a file. example: unlink -hope.txt.
+
+###################################################################################################
+passing and accessing arguments to a script:
+
+Arguments can be passed as scriptname arg1 arg2 arg3....
+Arguments can be accessed as $1,$2,$3.....
+
+What is the significance of $#?
+$# shows the count of the arguments passed to the script.
+
+What is the difference between $* and $@?
+both $@ and $* will refer to all command line arguments and They are often used to simply pass all arguments to another program.
+
+"$@": will hand over all arguments in the way we received them.
+"$*": will hand over exactly one argument, containing all original arguments, separated by single spaces.
+$*:  it will split an argument containing spaces into several arguments.
+
+example,
+wrapper "one two    three" four five "six seven"
+
+"$@": wrappedProgram "one two    three" four five "six seven"
+"$*": wrappedProgram "one two    three four five six seven"
+                             ^^^^ These spaces are part of the first
+                                  argument and are not changed.
+$*:   wrappedProgram one two three four five six seven
+
+for a in "$@"; do something_with "$a"; done
+
+What is significance of "$?"?
+$? gives the exit status of the last command that was executed.
+example,
+	nohup ./<scriptname> ${filePath} ${fileName} >> $normalLog
+	rc=$?
+	if [ $rc -eq 0 ] 
+	then
+	  echo "Program successfully completed"   >> $normalLog
+	else
+	  echo "Program unsuccessful.  Return Code = ${rc}" >> $log
+	  pageSomeone $mesgStr >> $log
+	  exit 1
+	fi 
+
+#########################################################################################################
+Use sed command to replace the content of the file (emulate tac command)
+Eg:
+if cat file1
+ABCD
+EFGH
+
+Then O/p should be
+EFGH
+ABCD
+
+An) sed '1! G; h;$!d' file1
+
+-----------
+Given a file,  replace all occurrence of word “ABC” with “DEF” from 5th line till end in only those lines that contains word “MNO”
+An) sed –n ‘5,$p’ file1|sed ‘/MNO/s/ABC/DEF/’
+
+-----------
+Given a file, write a command sequence to find the count of each word.
+An)
+tr –s  “(backslash)040” <file1|tr –s  “(backslash)011”|tr “(backslash)040 (backslash)011” “(backslash)012” |uniq –c
+where “(backslash)040” is octal equivalent of “space”
+
+----------
+How will you find the 99th line of a file using only tail and head command?
+An) tail +99 file1|head -1
+
+Print the 10th line without using tail and head command.
+An) sed –n ‘10p’ file1
+
+-----------
+fibonacci series in shell:
+	# Static input fo N
+	N=6
+	# First Number of the Fibonacci Series
+	a=0
+	# Second Number of the Fibonacci Series
+	b=1  
+	echo "The Fibonacci series is : "
+	for (( i=0; i<N; i++ ))
+	do
+		echo -n "$a "
+		fn=$((a + b))
+		a=$b
+		b=$fn
+	done
+	# End of for loop
+	
+	O/p
+	Fibonacci Series is : 
+	0
+	1
+	1
+	2
+	3
+	5
+	8
+	
+-------
+emulate wc –l using awk?
+awk ‘END {print NR} fileName’
+
+------
+find the count of lines containing the word “ABC”.
+grep –c  “ABC” file1
+
+------
+a command sequence to find all the files modified in less than 2 days and print the record count of each.
+find . –mtime -2 –exec wc –l {} \;
+
+------
+set the default rwx permission to all users on every file which is created in the current shell
+umask 777   #NOTE: this is applicable for files.
+
+$ touch newfile1.txt newfile2.txt
+$ ls -l |grep newfile
+-rwxrwxrwx   1 saml saml        0 Nov  3 22:34 newfile1.txt
+-rwxrwxrwx   1 saml saml        0 Nov  3 22:34 newfile2.txt
+
+unmask 007
+$ touch newfile3.txt newfile4.txt
+$ ls -l |grep newfile
+-rw-rw----   1 saml saml        0 Nov  3 22:34 newfile1.txt
+-rw-rw----   1 saml saml        0 Nov  3 22:34 newfile2.txt
+
+In case you want to override the unmask permissions for a directory,
+$ umask
+0037
+$ mkdir -m 777 somedir1
+$
+$ ls -ld somedir1
+drwxrwxrwx 2 saml saml 4096 Nov  3 22:44 somedir1
+
+------
+how to find the process name from its process id?
+ “ps –p ProcessId” 
+ 
+------
+create command aliases in a shell:
+
+alias Aliasname=”Command whose alias is to be created”
+example, in .profile file -> alias lf='ls -F'
+
+In a shell script, 
+	#!/bin/bash
+	shopt -s expand_aliases
+	alias I_am_only_ls_alias=ls
+	I_am_only_ls_alias
+	
+but one should use a function instead of alias,
+Aliases cannot be defined in shell script that you execute - their effect will be gone once shell process finished execution.
+
+#############################################################################################################
+“s” permission bit mean in a file:
+
+example,
+-rws---r-x 1 root root 21872 2009-10-13 21:06 prg1 
+
+-rwx---r-x 1 root root 21872 2009-10-13 21:06 prg2 
+
+"s" imples set up bit i.e. it tells OS to execute that program with the userid of its owner.
+This is typically used with files owned by root to allow normal users to execute them as root with no external tools (such as sudo).
+ 
+You can set the suid bit using chmod, 
+ example, chmod 4755 which will give a file give the normal permissions 755 does (rwxr-xr-x) and add the suid bit to give rwsr-xr-x
+ 
+You can clear the setuid bit by issuing a normal chmod command with a 0 prepended to it. 
+ example, to set permissions back to rwxr-xr-x you would use chmod 0755.
+ 
+##############################################################################################################
+create a directory such that,
+1) anyone in the group can create a file and access any person’s file in it 
+2) but none should be able to delete a file other than the one created by himself.
+
+example,
+1) mkdir direc1
+2) chmod g+wx direc1
+3) chmod +t direc1 
+
+"t" is called sticky bit which is a permission bit that is set on a directory that allows,
+1) Only owner or root to delete or rename a file within the directory
+2) Other users can have read, write and execute the files BUT cannot rename or delete them.
+
+###############################################################################################################
+find out how long the system has been running? - uptime
+
+How can any user find out all information about a specific user like his default shell, real-life name, default directory, when and how long he has been using the system?
+- finger  “loginName”                  …where loginName is the login name of the user whose information is expected.
+
+difference between $$ and $!?
+In shell script:
+a) $$ is the PID of the current shell.
+b) $! is the PID of the last backgrounded process.
+c) kill -0 $PID checks whether it's still running.
+
+###############################################################################################################
+Zombie Process:
+Processes which are not functional, but have not been completely removed from memory by the parent process.
+
+Details:
+When a process dies on Linux, it isn’t all removed from memory immediately — its process descriptor stays in memory,
+The process’s status becomes EXIT_ZOMBIE and the process’s parent is notified that its child process has died.
+The parent process is then supposed to execute the wait() system call to read the dead process’s exit status.
+This allows the parent process to get information from the dead process. After wait() is called, the zombie process is completely removed from memory.
+
+However, if a parent process isn’t programmed properly and never calls wait(), its zombie children will stick around in memory until they’re cleaned up.
+
+NOTE: Utilities like GNOME System Monitor, the top command, and the ps command display zombie processes.
+
+Zombie processes don’t use up any system resources. (Actually, each one uses a very tiny amount of system memory to store its process descriptor.) 
+However, each zombie process retains its process ID (PID). 
+Linux systems have a finite number of process IDs – 32767 by default on 32-bit systems. 
+If zombies are accumulating at a very quick rate preventing other processes from launching.
+
+You can’t kill zombie processes as you can kill normal processes.
+One way is by sending the SIGCHLD signal to the parent process.
+This signal tells the parent process to execute the wait() system call and clean up its zombie children.
+i.e. kill -s SIGCHLD pid
+
+list the zombie process: ps aux |grep "defunct" OR ps aux |grep Z
+
+################################################################################################################
+connect to a remote server and execute some commands:
+ssh username@serverIP -p sshport
+Example
+ssh root@122.52.251.171 -p 22
+
+################################################################################################################
+I have 2 files and I want to print the records which are common to both:
+
+“comm” command 
+comm -12 file1 file2               … 12 will suppress the content which are unique to 1st and 2nd  file respectively. 
+
+#################################################################################################################
+forking and exec:
+
+Forking:
+Normal programs are system commands that exist in a compiled form on your system. 
+When such a program is executed, a new process is created. 
+This child process has the same environment as its parent, only the process ID number is different. 
+This procedure is called forking. So, Forking provides a way for an existing process to start a new one.
+
+However, there may be situations where a child process is not the part of the same program as parent process. 
+In this case exec is used. exec will replace the contents of the currently running process with the new command.
+The exec command does not spawn a new process. Instead, the current process is overlaid with the new command. 
+In other words the exec command is executed in place of the current shell without creating a new process. 
+
+example-1,
+in normal shell,
+Scenario-1: in shell, if we hit vi <pgmname> and then quit, it returns back to the shell (which is the parent process)
+Scenario-2: in shell, if we hit exec vi <pgmname> and then quit, it quits the shell itself (as the parent process is overridden by vi process)
+
+example-2,
+bash-3.2$ bash
+bash-3.2$ exec > file
+bash-3.2$ date
+bash-3.2$ exit
+bash-3.2$ cat file
+Thu 18 Sep 2014 23:56:25 CEST
+
+example-3, (inside a .ksh file)
+find file1 -name "lost*" -prune -o -type f -name "abc*[0-9]"  -mtime +${moveToArchive}  -exec compress {} \; >> $LogName 2>&1
+
+#####################################################################################################################
+Unix nohup:
+
+nohup stands for "no hangup"
+In command shell, prefixing a command with nohup prevents command from being aborted automatically when you exit a shell.
+
+example,
+1) nohup mycommand: 
+	a) All output, including any error messages, will be written to the file nohup.out in the working directory, or in your home directory.
+	b) If mycommand is running when you log out or close the terminal, mycommand will not terminate.
+	
+2) nohup mycommand &:
+	a)  The "&" symbol instructs bash to run nohup mycommand in the background.
+	b)  It can be brought back to the foreground with the fg bash builtin command.
+
+Nohup is very helpful when you have to execute a shell-script or command that take a long time to finish. 
+In that case, you don’t want to be connected to the shell and waiting for the command to complete. 
+Instead, execute it with nohup, exit the shell and continue with your other work. 
+
+within a shell script, we can call a program (c program or other script) as:
+	nohup ./<scriptname> ${filePath} ${fileName} >> $normalLog
+	rc=$?
+	if [ $rc -eq 0 ] 
+	then
+	  echo "Program successfully completed"   >> $Log
+	else
+	  echo "Program unsuccessful.  Return Code = ${rc}" >> $log
+	  pageSomeone $mesgStr >> $log
+	  exit 1
+	fi 
+	
+#############################################################################################################################
+four fundamental components of every file system on Linux:
+
+Bootblock : This block contains a small program called “Master Boot record”(MBR) which loads the kernel during system boot up. 
+
+superblock: Super block contains all the information about the file system like the size of file system, 
+            block size used by its number of free data blocks and list of free inodes and data blocks. 
+
+inodeblock: This block contains the inode for every file of the file system along with all the file attributes except its name.
+
+Datablock: This block is where the data of a file is stored.
+
+#############################################################################################################################
+How can I send a mail with a compressed file as an attachment?
+  
+ zip file1.zip file1|mailx –s “subject” Recipients email id
+ Email content
+ EOF
+ 
+ #############################################################################################################################
+ 

@@ -1695,7 +1695,8 @@ storage space used by that table.								release storage space used by that tabl
 TRUNCATE Command is faster. 									DELETE command is slower.
 Is a DDL statement and cannot be Rollback.						Is a DDL statement and can be Rollback.
 Database Triggers do not fire on TRUNCATE.						Database Triggers fire on DELETE.
-
+Truncate can be rolled back.									DELETE cannot be rolled back.
+example,TRUNCATE TABLE customers;								example, DELETE FROM customers;
 
 Difference between PROCEDURE and FUNCTION:
 A PROCEDURE may return one or more values or may not return at all.
