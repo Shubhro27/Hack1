@@ -1,0 +1,859 @@
+https://career.guru99.com/shell-scripting-interview-questions/
+https://www.softwaretestinghelp.com/shell-scripting-interview-questions/
+https://mindmajix.com/unix-shell-scripting-interview-questions
+
+##################################################################################
+Shell: is an interface between user and kernel. So, whenever a user enters a command through the keyboard, 
+       the shell communicates with the kernel to execute it and then display the output to the user.
+	   Commonly used shells are:  Bourne Shell (sh),C Shell (csh),Korn Shell (ksh),Bourne Again Shell (bash)
+	   
+NOTE:
+In a typical UNIX environment, only one kernel and many shells are available.
+A separate compiler is not required to execute a shell program.
+Shell scripts should not be used when,
+ a) When the task is very much complex
+ b) when exteral software tools are required.
+ 
+each block in UNIX is of 1024 bytes.
+
+(links reference: https://www.thegeekstuff.com/2010/10/linux-ln-command-examples/)	   
+Links: is equivalent of a "file shortcut" in Windows. If we do a "ls -l", If the 1st character is l (lower case L), then it is a link file.
+example,
+$ ls -l
+total 4
+lrwxrwxrwx 1 chris chris 10 2010-09-17 23:40 file1 -> sample.txt
+-rw-r--r-- 1 chris chris 22 2010-09-17 23:36 sample.txt
+
+There are 2 kinds of links in UNIX:
+soft link : With soft link, the data in the original file can be accessed through the special file. i.e.
+			data part of this special file as a reference to another file path.
+			
+			NOTE: softlinked file will have a different inode number than the original file.
+			
+			to create a soft link, do the following (ln command with -s option):
+			$ ln -s /full/path/of/original/file /full/path/of/soft_link/file
+			
+			
+hard link : Hard link named FILE2 shares the same index node as the existing file FILE1. 
+		    Since FILE1 and FILE2 share the same index node, they will point to the same data on the disk, 
+			and modifying one will be functionally the same as modifying the other.
+			
+			to create a hard link, do the following:
+			$ ln /full/path/of/original/file /full/path/of/hard_link/file   //ex, link computer.txt hope.txt
+			
+			
+NOTE: When you create a new link (if another file exist already with the same name as the new link name), 
+      You can instruct ln command to take a backup of the original file before creating the new link.
+	  
+	example,
+	$ ls
+	ex1.c  ex2.c
+
+	$ ln --backup -s ex1.c ex2.c 
+
+	$ ls -lrt
+	total 8
+	-rw-r--r-- 1 chris chris 20 2010-09-19 16:57 ex1.c
+	-rw-r--r-- 1 chris chris 20 2010-09-19 16:57 ex2.c~
+	lrwxrwxrwx 1 chris chris  5 2010-09-19 17:02 ex2.c -> ex1.c
+	
+	Deleting the original file makes the soft link inactive (broken link) but does not affect the hard link (Hard link will still access a copy of the file)
+	
+	unlink — Remove a file. example: unlink -hope.txt.
+	
+When to use hardlinks and when to use softlinks?
+Key feature of hardlink is it uses the same inode number as the original file, if the file content in original file changes, the link is not broken.
+Softlink shows the changes in the data in case the original file undergoes any change.
+Although hardlink is seldom used, one use case will be,
+when you want two (or more) directories to share ownership of a file, so that when the file is unlinked (removed) from one directory, it remains in the other.
+This will avoid using space for two copies of the same file.
+
+What happens if we delete one of the hard links?
+In Unix all normal files are Hardlinks. Hardlinks in a Unix (and most (all?) ) filesystems are references to an to what's called an inode. 
+The inode has a reference counter, when you have one "link" to the file (which is the normal modus operandi) the counter is 1. 
+When you create a second, third, fourth, etc link, the counter is incremented (increased ) each time by one. 
+When you delete (rm) a link the counter is decremented ( reduced ) by one. 
+If the link counter reaches 0 the filesystem removes the inode and marks the space as available for use.
+In short, as long as you do not delete the last link and original file, the file will remain.
+
+###################################################################################################
+file permissions:
+Permissions		Weight
+r – read		4
+w – write		2
+x - execute		1
+
+In the command line,
+if we mention 7, it includes all the three permissions r,w and x (i.e., 4+2+1)
+if we mention 6, it includes two permissions r and w (i.e., 4+2)
+if we mention 5, it includes two permissions r and x (i.e., 4+1) and so on
+
+chmod command is used to set permissions.
+
+important standard streams in the UNIX shell scripting:
+standard input
+standard output
+standard error
+
+What does 2>&1 mean and when is it typically used?
+The 2>&1 is typically used when running a command with its standard output redirected to a file. For example, consider:
+
+command > file 2>&1
+
+Anything that is sent to command's standard output will be redirected to "file" in this example. 
+
+The 2 (from 2>&1) is the UNIX file descriptor used by standard error (stderr). 
+Therefore, 2>&1 causes the shell to send anything headed to standard error to the same place messages to standard output (1) are sent...which is "file" in the above example.
+
+To make this a little clearer, the > in between "command" and "file" in the example is equivalent to 1>.
+
+###################################################################################################
+passing and accessing arguments to a script:
+
+Arguments can be passed as scriptname arg1 arg2 arg3....
+Arguments can be accessed as $1,$2,$3.....
+
+What is the significance of $#?
+$# shows the count of the arguments passed to the script.
+
+What is the difference between $* and $@?
+both $@ and $* will refer to all command line arguments and They are often used to simply pass all arguments to another program.
+
+"$@": will hand over all arguments in the way we received them.
+"$*": will hand over exactly one argument, containing all original arguments, separated by single spaces.
+$*:  it will split an argument containing spaces into several arguments.
+
+example,
+wrapper "one two    three" four five "six seven"
+
+"$@": wrappedProgram "one two    three" four five "six seven"
+"$*": wrappedProgram "one two    three four five six seven"
+                             ^^^^ These spaces are part of the first
+                                  argument and are not changed.
+$*:   wrappedProgram one two three four five six seven
+
+for a in "$@"; do something_with "$a"; done
+
+How you will treat the quoted arguments as separate ones from the general? Is it possible to treat them in a single string?
+This is done through the command $@. Yes the same is possible and for this, the command $* can be applied directly.
+
+What is significance of "$?"?
+$? gives the exit status of the last command that was executed.
+example,
+	nohup ./<scriptname> ${filePath} ${fileName} >> $normalLog
+	rc=$?
+	if [ $rc -eq 0 ] 
+	then
+	  echo "Program successfully completed"   >> $normalLog
+	else
+	  echo "Program unsuccessful.  Return Code = ${rc}" >> $log
+	  pageSomeone $mesgStr >> $log
+	  exit 1
+	fi 
+
+Positional Parameters: variables defined by the shell which can be used to convey information to the program. This is done by specifying arguments at the command line
+There are totally 9 positional parameters present i.e. from $1 to $9.
+Example: 
+	$ Test Indian IT Industry has grown very much faster
+	In the above statement, positional parameters are assigned like this.
+	$0 -> Test (Name of a shell program/script)
+	$1 ->Indian
+	$2 -> IT and so on.
+#########################################################################################################
+Use sed command to replace the content of the file (emulate tac command)
+Eg:
+if cat file1
+ABCD
+EFGH
+
+Then O/p should be
+EFGH
+ABCD
+
+An) sed '1! G; h;$!d' file1
+
+-----------
+Given a file,  replace all occurrence of word “ABC” with “DEF” from 5th line till end in only those lines that contains word “MNO”
+An) sed –n ‘5,$p’ file1|sed ‘/MNO/s/ABC/DEF/’
+
+-----------
+Given a file, write a command sequence to find the count of each word.
+An)
+tr –s  “(backslash)040” <file1|tr –s  “(backslash)011”|tr “(backslash)040 (backslash)011” “(backslash)012” |uniq –c
+where “(backslash)040” is octal equivalent of “space”
+
+----------
+How will you find the 99th line of a file using only tail and head command?
+An) tail +99 file1|head -1  OR head -100 file1|tail -1
+
+Print the 10th line without using tail and head command.
+An) sed –n ‘10p’ file1
+
+-----------
+fibonacci series in shell:
+	# Static input fo N
+	N=6
+	# First Number of the Fibonacci Series
+	a=0
+	# Second Number of the Fibonacci Series
+	b=1  
+	echo "The Fibonacci series is : "
+	for (( i=0; i<N; i++ ))
+	do
+		echo -n "$a "
+		fn=$((a + b))
+		a=$b
+		b=$fn
+	done
+	# End of for loop
+	
+	O/p
+	Fibonacci Series is : 
+	0
+	1
+	1
+	2
+	3
+	5
+	8
+	
+-------
+emulate wc –l using awk?
+awk ‘END {print NR} fileName’
+
+------
+find the count of lines containing the word “ABC”.
+grep –c  “ABC” file1
+
+------
+a command sequence to find all the files modified in less than 2 days and print the record count of each.
+find . –mtime -2 –exec wc –l {} \;
+
+------
+set the default rwx permission to all users on every file which is created in the current shell
+umask 777   #NOTE: this is applicable for files.
+
+$ touch newfile1.txt newfile2.txt
+$ ls -l |grep newfile
+-rwxrwxrwx   1 saml saml        0 Nov  3 22:34 newfile1.txt
+-rwxrwxrwx   1 saml saml        0 Nov  3 22:34 newfile2.txt
+
+unmask 007
+$ touch newfile3.txt newfile4.txt
+$ ls -l |grep newfile
+-rw-rw----   1 saml saml        0 Nov  3 22:34 newfile1.txt
+-rw-rw----   1 saml saml        0 Nov  3 22:34 newfile2.txt
+
+In case you want to override the unmask permissions for a directory,
+$ umask 0037
+$ mkdir -m 777 somedir1
+$
+$ ls -ld somedir1
+drwxrwxrwx 2 saml saml 4096 Nov  3 22:44 somedir1
+
+------
+how to find the process name from its process id?
+ “ps –p ProcessId” 
+ 
+In Shell scripting,
+ process id of the process executing currently: $$
+ process id of processes that take place recently: $
+ 
+------
+create command aliases in a shell:
+
+alias Aliasname=”Command whose alias is to be created”
+example, in .profile file -> alias lf='ls -F'
+
+In a shell script, 
+	#!/bin/bash
+	shopt -s expand_aliases
+	alias I_am_only_ls_alias=ls
+	I_am_only_ls_alias
+	
+but one should use a function instead of alias,
+Aliases cannot be defined in shell script that you execute - their effect will be gone once shell process finished execution.
+
+-----
+find the current shell which you are using?
+echo $SHELL   #NOTE: "SHELL" should be all CAPS
+
+-----
+How to find all the available shells in your system?
+cat /etc/shells
+
+-----
+how to read keyboard inputs in shell scripts?
+can be done by "read" commands
+example,
+	!#/bin/bash
+	read name
+	echo "Hello $name"
+	
+	O/p:
+	Shubhro
+	Hello Shubhro
+	
+-----
+How to know the variable length?
+using "$ {#variable}"
+example,
+	export trythis="Hello"
+    echo ${#trythis}
+
+    O/p: 5	
+	
+-----
+method for copying a file from one system to another
+ftp,scp and rsync
+
+ftp <server name>
+put <filename>
+bye
+
+In linux, curl is also used:
+is a tool to transfer data from or to a server, using one of the supported protocols (HTTP, HTTPS, FTP etc) 
+ex,
+	curl https://www.computerhope.com/index.htm
+	this will Fetch the file index.htm from www.computerhope.com using the HTTP protocol, and display it to standard output. 
+
+-----
+use a shell script to determine if the directory actually exists or not?
+–d option
+or $mydir
+
+----
+the difference between &/&&?
+& - "Bitwise AND", evaluates both sides of the operation.
+&& - "Logical AND Operator", evaluates at the left side of the operation (If it is True) it continues at the right side.
+
+----
+What command can be used to test if $a greater than 12?
+The following command is used: [ $a -gt 12 ]
+
+----
+command helpful to forward errors to a file?
+The command that used for forwarding error to a file is 2> filename
+
+----
+Command that used for Displaying the list of files in a directory
+$ ls -lrt | grep ^-? command used for displaying the list of files in a directory.
+
+#############################################################################################################
+“s” permission bit mean in a file:
+
+example,
+-rws---r-x 1 root root 21872 2009-10-13 21:06 prg1 
+
+-rwx---r-x 1 root root 21872 2009-10-13 21:06 prg2 
+
+"s" imples set up bit i.e. it tells OS to execute that program with the userid of its owner.
+This is typically used with files owned by root to allow normal users to execute them as root with no external tools (such as sudo).
+ 
+You can set the suid bit using chmod, 
+ example, chmod 4755 which will give a file give the normal permissions 755 does (rwxr-xr-x) and add the suid bit to give rwsr-xr-x
+ 
+You can clear the setuid bit by issuing a normal chmod command with a 0 prepended to it. 
+ example, to set permissions back to rwxr-xr-x you would use chmod 0755.
+ 
+##############################################################################################################
+create a directory such that,
+1) anyone in the group can create a file and access any person’s file in it 
+2) but none should be able to delete a file other than the one created by himself.
+
+example,
+1) mkdir direc1
+2) chmod g+wx direc1
+3) chmod +t direc1 
+
+"t" is called sticky bit which is a permission bit that is set on a directory that allows,
+1) Only owner or root to delete or rename a file within the directory
+2) Other users can have read, write and execute the files BUT cannot rename or delete them.
+
+###############################################################################################################
+find out how long the system has been running? - uptime
+
+How can any user find out all information about a specific user like his default shell, real-life name, default directory, when and how long he has been using the system?
+- finger  “loginName”                  …where loginName is the login name of the user whose information is expected.
+
+difference between $$ and $!?
+In shell script:
+a) $$ is the PID of the current shell.
+b) $! is the PID of the last backgrounded process.
+c) kill -0 $PID checks whether it's still running.
+
+###############################################################################################################
+Zombie Process:
+Processes which are not functional, but have not been completely removed from memory by the parent process.
+
+Details:
+When a process dies on Linux, it isn’t all removed from memory immediately — its process descriptor stays in memory,
+The process’s status becomes EXIT_ZOMBIE and the process’s parent is notified that its child process has died.
+The parent process is then supposed to execute the wait() system call to read the dead process’s exit status.
+This allows the parent process to get information from the dead process. After wait() is called, the zombie process is completely removed from memory.
+
+However, if a parent process isn’t programmed properly and never calls wait(), its zombie children will stick around in memory until they’re cleaned up.
+
+NOTE: Utilities like GNOME System Monitor, the top command, and the ps command display zombie processes.
+
+Zombie processes don’t use up any system resources. (Actually, each one uses a very tiny amount of system memory to store its process descriptor.) 
+However, each zombie process retains its process ID (PID). 
+Linux systems have a finite number of process IDs – 32767 by default on 32-bit systems. 
+If zombies are accumulating at a very quick rate preventing other processes from launching.
+
+You can’t kill zombie processes as you can kill normal processes.
+One way is by sending the SIGCHLD signal to the parent process.
+This signal tells the parent process to execute the wait() system call and clean up its zombie children.
+i.e. kill -s SIGCHLD pid
+
+list the zombie process: ps aux |grep "defunct" OR ps aux |grep Z
+
+################################################################################################################
+connect to a remote server and execute some commands:
+ssh username@serverIP -p sshport
+Example
+ssh root@122.52.251.171 -p 22
+
+################################################################################################################
+I have 2 files and I want to print the records which are common to both:
+
+“comm” command 
+comm -12 file1 file2               … 12 will suppress the content which are unique to 1st and 2nd  file respectively. 
+
+#################################################################################################################
+forking and exec:
+
+Forking:
+Normal programs are system commands that exist in a compiled form on your system. 
+When such a program is executed, a new process is created. 
+This child process has the same environment as its parent, only the process ID number is different. 
+This procedure is called forking. So, Forking provides a way for an existing process to start a new one.
+
+However, there may be situations where a child process is not the part of the same program as parent process. 
+In this case exec is used. exec will replace the contents of the currently running process with the new command.
+The exec command does not spawn a new process. Instead, the current process is overlaid with the new command. 
+In other words the exec command is executed in place of the current shell without creating a new process. 
+
+example-1,
+in normal shell,
+Scenario-1: in shell, if we hit vi <pgmname> and then quit, it returns back to the shell (which is the parent process)
+Scenario-2: in shell, if we hit exec vi <pgmname> and then quit, it quits the shell itself (as the parent process is overridden by vi process)
+
+example-2,
+bash-3.2$ bash
+bash-3.2$ exec > file
+bash-3.2$ date
+bash-3.2$ exit
+bash-3.2$ cat file
+Thu 18 Sep 2014 23:56:25 CEST
+
+example-3, (inside a .ksh file)
+find file1 -name "lost*" -prune -o -type f -name "abc*[0-9]"  -mtime +${moveToArchive}  -exec compress {} \; >> $LogName 2>&1
+
+#####################################################################################################################
+Unix nohup:
+
+nohup stands for "no hangup"
+In command shell, prefixing a command with nohup prevents command from being aborted automatically when you exit a shell.
+
+example,
+1) nohup mycommand: 
+	a) All output, including any error messages, will be written to the file nohup.out in the working directory, or in your home directory.
+	b) If mycommand is running when you log out or close the terminal, mycommand will not terminate.
+	
+2) nohup mycommand &:
+	a)  The "&" symbol instructs bash to run nohup mycommand in the background.
+	b)  It can be brought back to the foreground with the fg bash builtin command.
+
+Nohup is very helpful when you have to execute a shell-script or command that take a long time to finish. 
+In that case, you don’t want to be connected to the shell and waiting for the command to complete. 
+Instead, execute it with nohup, exit the shell and continue with your other work. 
+
+within a shell script, we can call a program (c program or other script) as:
+	nohup ./<scriptname> ${filePath} ${fileName} >> $normalLog
+	rc=$?
+	if [ $rc -eq 0 ] 
+	then
+	  echo "Program successfully completed"   >> $Log
+	else
+	  echo "Program unsuccessful.  Return Code = ${rc}" >> $log
+	  pageSomeone $mesgStr >> $log
+	  exit 1
+	fi 
+	
+#############################################################################################################################
+four fundamental components of every file system on Linux:
+
+Bootblock : This block contains a small program called “Master Boot record”(MBR) which loads the kernel during system boot up. 
+
+superblock: Super block contains all the information about the file system like the size of file system, 
+            block size used by its number of free data blocks and list of free inodes and data blocks. 
+
+inodeblock: This block contains the inode for every file of the file system along with all the file attributes except its name.
+
+Datablock: This block is where the data of a file is stored.
+
+#############################################################################################################################
+How can I send a mail with a compressed file as an attachment?
+  
+ zip file1.zip file1|mailx –s “subject” <Recipients email id>
+ Email content
+ EOF
+ 
+#############################################################################################################################
+How are shell variables stored?
+
+Shell variables are stored as string variables.
+Example: $ a=10
+In the above statement a=10, the 10 stored in ‘a’ is not treated as a number, but as a string of characters 1 and 0.
+
+How to make variables as unchangeable?
+using "readonly" command.
+example, if we want variable a value to remain as 10 and not to be changed then we can achieve this using readonly.
+	$ a=10
+	$ readonly a
+
+How variables can be wiped out i.e. erase from shell's memory?
+$ a =20
+$ unset a   #the variable ‘a’ and its value 20 get erased from shell’s memory.
+
+###############################################################################################################################
+Encryption and decryption in Unix:
+
+1) via gpg:
+	a) turn directory into a file i.e. to encrypt a directory, first convert it into a file:
+	   tar czf myfiles.tar.gz mydirectory/
+	   This gives you a new file 'myfiles.tar.gz'
+	   
+	   NOTE: to turnback into directory: tar xzf myfiles.tar.gz
+	   
+	b) Prepare GPG i.e. create a private key with which you will encrypt your files:
+	   gpg --gen-key
+	   will prompt for a name and paraphrase.
+	   
+	c) Encrypt: 
+	   gpg -e -r USERNAME ~USERNAME/filename
+	   where,
+	   filename is the name of some file in your account and USERNAME is your username. 
+	   This command will create filename.gpg. 
+	   At this point you may choose to remove filename in favor of the encrypted file filename.gpg.
+	   
+    d) Decrypt:
+	   gpg -d -o ~USERNAME/decrypted ~USERNAME/filename
+	   will create a new file which is decrypted.	
+	   
+2) Using openssl:
+   a) openssl to encrypt:
+      openssl enc -in foo.bar -aes-256-cbc -pass stdin > foo.bar.enc
+	  
+	  This will encrypt foo.bar to foo.bar.enc using a 256 bit AES cipher in CBC mode. 
+	  
+   b) openssl to decrypt:
+      openssl enc -in foo.bar.enc -d -aes-256-cbc -pass stdin > foo.bar
+
+    NOTE: man openssl and man enc can be used to see details.
+
+3) Using crypt:
+	----------------- for encryption of "first" to "second"------------ 
+
+	$> crypt <first> second
+	$> enter Key: test
+	$>
+	----------------- for decryption----------------------------
+	$> crypt < second
+	$> enter Key: test
+
+	and it shows me the content of file.
+
+	then i tried in vi.. Kelam_magnus is right about -x option of vi. it uses for cryption and decryption.
+
+	vi -x second
+	enter key: test
+
+	and it shows contents of file.	
+	
+	NOTE: encryption file donot have to be end with .x or anything
+	
+4) you can encrypt using zip and a password but not as strong as key based techniques.
+	Command line looks like this::
+	zip -r -0 -e encrypted_file.zip /path/to/files
+	where,
+	-r to recurse directories.
+	-e to encrypt
+	
+	
+NOTE: 
+Three different security provisions provided by UNIX for a file or data are:
+1) It provides a unique user id and password to the user, so that unknown or unauthorized person should not be able to access it.
+2) At file level, it provides security by providing read, write & execute permissions for accessing the files.
+3) Lastly, it provides security using file encryption.  Even if someone succeeds in opening a file, 
+   but they cannot read its contents until and unless it is decrypted
+
+###############################################################################
+Tput: is a unix/linux command which makes use of terminal capabilities
+for example,
+we can clear the screen using tput clear
+we can get the number of columns and lines using "tput cols"; "tput lines" respectively.
+
+###############################################################################
+metacharacters in shell:
+
+synonymous to regular expressions. These are special characters which is used to display all the files/directories which follow a pattern.
+example,
+ls s*
+
+###############################################################################
+Crontab:
+
+A typical crontab file has "6" fields, 
+The first five fields tell cron when to execute the command: minute(0-59), hour(0-23), day(1-31), month(1-12), and day of the week(0-6, Sunday = 0).
+And the sixth field contains the command to be executed.
+example,
+00 02 * * * ksh -c "export NODE=1; /appl/capm/bin/pgm1 "
+here, * means every increment for that column
+
+################################################################################
+
+tar command in linux:
+tar is the command which needs to be used to take the backup. It stands for tape archive. 
+The tar command is mainly used to save and restore files to and from an archive medium like tape.
+
+Compress using tar command:
+1) Compress an Entire Directory or a Single File
+	tar -czvf name-of-archive.tar.gz /path/to/directory-or-file
+	where,
+	 c: Create an archive.
+	-z: Compress the archive with gzip.
+	-v: Optional. Display progress in the terminal while creating the archive, also known as “verbose” mode. 
+	-f: Allows you to specify the filename of the archive.
+	example,
+	for file, tar -czvf archive.tar.gz stuff
+	for directory, tar -czvf archive.tar.gz /usr/local/something
+	
+2) Compress Multiple Directories or Files at Once
+   Just provide a list of files or directories instead of a single one
+   tar -czvf archive.tar.gz /home/ubuntu/Downloads /usr/local/stuff /home/ubuntu/Documents/notes.txt
+   NOTE: we can provide a combination of files and directories.
+   
+3) Exclude Directories and Files:
+   i.e. you may wish to compress an entire directory, but not include certain files and directories
+   such compressions can be done via --exclude switch 
+   example,
+   tar -czvf archive.tar.gz /home/ubuntu --exclude=/home/ubuntu/Downloads --exclude=/home/ubuntu/.cache
+   
+   example-2, (accepting patterns)
+   tar -czvf archive.tar.gz /home/ubuntu --exclude=*.mp4
+
+Extract an archive:
+1) extract a .gz file into current directory.
+	tar -xzvf archive.tar.gz
+	
+2) extract a .gz file into specific directory.
+	tar -xzvf archive.tar.gz -C /tmp
+	
+how can the contents of a file inside jar be read without extracting in a shell script? - An. tar –tvf <File Name>.tar
+	
+NOTE: there is also a bz2 compression mode, tar uses the same command but file extn is .bz2 instead of .gz
+
+###################################################################################################
+Disk Usage in Unix:
+
+2 commands:
+a) df – i.e. "disk filesystem". This command is used to check the free disk space. 
+        "df -h" shows the disk space in "human readable" form.
+	
+b) du – This command is used to check the directory wise disk usage. i.e. shows the disk space used by the files and directories in the current directory
+        "df -h" shows the disk space in "human readable" form.
+		"df -a" lists the space taken by all files and not just the directories.
+		"df -u /home/users/<userid> to find out the total disk space used by a specific user.
+
+###################################################################################################
+Shebang in shell script:
+
+Shebang (i.e. "#! mainly determines the location of the shell which is to be used in order to execute the script.
+Here ‘#’ symbol is called as hash and ‘!’ is called a bang.
+Example: #!/bin/bash
+The above line also tells which shell to use.
+
+###################################################################################################
+Debugging a shell script:
+
+1) Debug statements can be inserted in the shell script to output/display the information which helps to identify the problem.
+2) Using “set -x” we can enable debugging in the script.
+
+###################################################################################################
+Difference between "diff" and "cmp" in Unix:
+
+diff – Basically, it tells about the changes which need to be made to make files identical.
+cmp – Basically it compares two files byte by byte and displays the very first mismatch.
+
+example,
+	file1.txt
+	Hello World
+	This is good start
+
+	file2.txt
+	Hello World
+	This is bad start
+	
+	a) diff file1.txt file2.txt
+	   < This is good start
+	   ---
+	   > This is bad start
+	   
+	b) cmp file1.txt file2.txt
+	   file1.txt file2.txt differ: char 21,line 2
+	   
+####################################################################################################
+grep,egrep,fgrep in Unix:
+
+1) grep (Global Regular Expression Print):
+   this uses basic regular expression (BRE) where metacharacters (explained below) lose their meaning and are treated as normal characters of string
+   UNLESS they are they are preceded with escape character (\)
+   example,
+    check_file:
+	hello World
+    this is a file
+    this is not a gile
+    there is nothing called gile
+	
+	$ grep '(f|g)ile' check_file
+	O/p:
+	'(f|g)ile'
+	
+	$ grep '\(f\|g\)ile' check_file
+	O/p:
+    this is a file
+    this is not a gile
+    there is nothing called gile
+	
+2) egrep (extended grep): 
+   "egrep or grep -E" 
+   it treats meta-characters as is and doesn’t substitute them as strings like in grep
+   example,
+	$ egrep '(f|g)ile' check_file
+	O/p:
+    this is a file
+    this is not a gile
+    there is nothing called gile 
+	
+	$ egrep '\(f\|g\)ile' check_file
+	O/p:
+    '(f|g)ile'
+
+3) fgrep (fixed grep):
+   "fgrep or grep -F"
+	Fgrep searches for complete string and doesn’t even recognize special characters as part of regular expression even if escaped or not escaped.
+	So
+	$ fgrep '(f|g)ile' check_file
+	$ fgrep '\(f\|g\)ile' check_file
+	
+	will not show any O/p.
+
+NOTE: Meta characters in grep include:
++ – Equivalent to one or more occurrences of previous character.
+? – This denotes almost 1 repetition of previous character. Like: a? Would match ‘a’ or ‘aa’.
+( – Start of alternation expression.
+) – End of alternation expression.
+| – Matching either of the expression separated by '|'. Like: “(a|b)cde” would match either ‘abcde’ or ‘bbcde’.
+{ – This meta-character indicates start of range specifier. Like: “a{2}” matches “aa” in file i.e. a 2 times.
+} – This meta-character indicates end of range specifier.
+
+#################################################################################################################
+DB connection from shell script:
+
+1) maintain a properties file: db.properties,
+    driverClassName=oracle.jdbc.driver.OracleDriver
+	url='(description=(address_list=(address=(protocol=TCP)(host=171.01.187.94)(port=1532)))(connect_data=(sid=DEV)))'
+	userName=abc
+	password=abc
+	
+2) from shell script, include this properties file and run,
+	file="./database.properties"
+
+	if [ -f "$file" ]
+	then
+		echo "$file found."
+	 . $file
+
+	  echo "User Id       = " ${userName}
+	  echo "user password = " ${password}
+	  echo "url  = " ${url}
+
+	sqlplus -S ${userName}/${password}@${url}
+
+	else
+		echo "$file not found."
+	fi
+	
+#####################################################################################################################
+Pretty Print JSON On The Command-Line:
+
+jq is a JSON API, We can get it from github.
+
+It can handle very large JSON structures, including streams.
+example:
+$ jq . <<< '{ "foo": "lorem", "bar": "ipsum" }'
+{
+  "bar": "ipsum",
+  "foo": "lorem"
+}
+
+#####################################################################################################################
+Difference between process and thread
+a thread is a small piece of code/instruction that needs to be executed in a process, 
+whereas a process is a collection of one or more thread executions to complete one complete task.
+
+Note: A process consists of multiple threads can share resources among them as they belong to the same process. 
+      And threads belong to different processes cannot share their resources.
+	  
+#####################################################################################################################
+shell script: loop Control:
+
+1) break:
+	example,
+		#!/bin/sh
+		a=0
+		while [ $a -lt 10 ]
+		do
+		   echo $a
+		   if [ $a -eq 5 ]
+		   then
+			  break
+		   fi
+		   a=`expr $a + 1`
+		done
+		
+	O/p:
+	0
+	1
+	2
+	3
+	4
+	5
+	
+2) continue:
+	example,
+		#!/bin/sh
+		NUMS="1 2 3 4 5 6 7"
+		for NUM in $NUMS
+		do
+		   Q=`expr $NUM % 2`
+		   if [ $Q -eq 0 ]
+		   then
+			  echo "Number is an even number!!"
+			  continue
+		   fi
+		   echo "Found odd number"
+		done
+		
+	O/p:
+	Found odd number
+	Number is an even number!!
+	Found odd number
+	Number is an even number!!
+	Found odd number
+	Number is an even number!!
+	Found odd number
+	
+NOTE: expr is a command line Unix utility which evaluates an expression and outputs the corresponding value.
