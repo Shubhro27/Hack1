@@ -1,0 +1,737 @@
+Reference: https://www.tutorialspoint.com/unix/unix-regular-expressions.htm
+
+SED is stream editor.
+
+In order to invoke SED, we can send data thru a pipe. ex, $ cat /etc/passwd | sed
+
+sed General Syntax: /pattern/action
+where,
+	pattern is a regular expression. 
+	action is one of the commands as:
+		p : Prints the line
+		d : Deletes the line
+		s/pattern1/pattern2/ : Substitutes the first occurrence of pattern1 with pattern2
+		
+NOTE: If pattern is omitted, action is performed for every line
+
+example,
+cat /etc/passwd | sed 'd'  # delete all lines with sed.
+sed -e 'd' /etc/passwd     # same result as above.
+
+###################################################################
+sed Addresses and Address ranges:
+/etc/passwd
+abc:x:1:1:abc:/usr/sbin:/bin/sh
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+bin:x:2:2:bin:/bin:/bin/sh
+sys:x:3:3:sys:/dev:/bin/sh
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/bin/sh
+man:x:6:12:man:/var/cache/man:/bin/sh
+mail:x:8:8:mail:/var/mail:/bin/sh
+news:x:9:9:news:/var/spool/news:/bin/sh
+backup:x:34:34:backup:/var/backups:/bin/sh
+
+1) cat /etc/passwd | sed '1d' |more 
+   O/p:
+	daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+	bin:x:2:2:bin:/bin:/bin/sh
+	sys:x:3:3:sys:/dev:/bin/sh
+	sync:x:4:65534:sync:/bin:/bin/sync
+	games:x:5:60:games:/usr/games:/bin/sh
+	man:x:6:12:man:/var/cache/man:/bin/sh
+	mail:x:8:8:mail:/var/mail:/bin/sh
+	news:x:9:9:news:/var/spool/news:/bin/sh
+	backup:x:34:34:backup:/var/backups:/bin/sh
+	
+   i.e. instructs the sed to perform the editing command on the first line of the file. 
+	
+2) cat /etc/passwd | sed '1, 5d' |more
+   O/p:
+	games:x:5:60:games:/usr/games:/bin/sh
+	man:x:6:12:man:/var/cache/man:/bin/sh
+	mail:x:8:8:mail:/var/mail:/bin/sh
+	news:x:9:9:news:/var/spool/news:/bin/sh
+	backup:x:34:34:backup:/var/backups:/bin/sh
+	
+	i.e. The above command will be applied on all the lines starting from 1 through 5.
+	
+'4,10d' : Lines starting from the 4th till the 10th are deleted
+'10,4d' : Only 10th line is deleted, because the sed does not work in reverse direction
+'4,+5d' : This matches line 4 in the file, deletes that line, continues to delete the next five lines, and then ceases its deletion and prints the rest
+'2,5!d' : This deletes everything except starting from 2nd till 5th line
+'1~3d'  : This deletes the first line, steps over the next three lines, and then deletes the fourth line. Sed continues to apply this pattern until the end of the file.
+'2~2d'  : This tells sed to delete the second line, step over the next line, delete the next line, and repeat until the end of the file is reached
+'4,10p' : Lines starting from 4th till 10th are printed
+'4,d'   : This generates the syntax error
+',10d'  : This would also generate syntax error
+
+NOTE: The above SED commands may not work. In such case use "sed -n" option
+example,
+cat /etc/passwd | sed -n '1, 5p' |more
+   
+#########################################################################################
+SED Substitution Command:
+The substitution command, denoted by "s", will substitute any string that you specify with any other string that you specify.
+
+SYNTAX: s/<string to replace>/<substitution string>
+
+I/p file:
+root:x:0:0:root user:/root:/bin/sh
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+
+example,
+a) substitutes the first occurrence on a line of the string : from "root" to "amrood".
+	example,
+	cat /etc/passwd | sed 's/root/amrood/'
+	amrood:x:0:0:root user:/root:/bin/sh
+	daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+	..........................
+	
+b) global substitution i.e. all occurances : from "root" to "amrood".
+	example,
+	cat /etc/passwd | sed 's/root/amrood/g'
+	amrood:x:0:0:amrood user:/amrood:/bin/sh
+	daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+	..........................
+	
+Common substitution flags:
+g          : Replaces all matches, not just the first match
+NUMBER     : Replaces only NUMBERth match
+p          : If substitution was made, then prints the pattern space
+w FILENAME : If substitution was made, then writes result to FILENAME
+I or i     : Matches in a case-insensitive manner
+
+to use multiple substitution flags, we can do like,
+cat /etc/passwd | sed 's/root/amrood/gw FILE1.txt'   #i.e. use both "g" and "w" together.
+
+Alternative String Separator/delimiter:
+to separate the base and substitution string, we usually use "/" i.e. sed 's/root/amrood/'
+we can also use alternate delimiter ":"
+example,
+cat /etc/passwd | sed 's:/root:/amrood:g'
+amrood:x:0:0:amrood user:/amrood:/bin/sh
+daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+
+This will try try searching "/root" instead of the simple "root".
+
+Replacing with Empty Space: cat /etc/passwd | sed 's/root//g'     #O/p - :x:0:0::/:/bin/sh
+
+Address/ Address range Substitution: 
+a) address substitution: 
+	example,
+	cat /etc/passwd | sed '10s/sh/quiet/g'
+	This will substitute the string "sh" with the string "quiet" only on line 10.
+	
+b) address range substitution:
+	example,
+	cat /etc/passwd | sed '1,5s/sh/quiet/g'
+	This will substitute string "sh" with the string "quiet" for the first five lines.
+
+#######################################################################################
+Regular Expressions:
+
+1) to match all the lines starting/ending with <some string>.
+	ex, 
+	a) matches all the lines starting with "daemon" and print it,
+	   cat testing | sed '/^daemon/p'
+	b) matches all the lines starting with "daemon" and delete it,
+	   cat testing | sed '/^daemon/d'
+	c) deletes all the lines ending with "sh",
+       cat testing | sed '/sh$/d'
+
+2) special characters in regular expression:
+	^	Matches the beginning of lines.
+	$	Matches the end of lines.
+	.	Matches any single character.
+	*	Matches zero or more occurrences of the previous character.
+	[]  Matches any one of the characters given in char-set within [], ex, /[tT]he/ matches the string "The" and "the"
+	
+	examples,
+	/a.c/ 	  : Matches lines that contain strings such as a+c, a-c, abc, match, and a3c
+
+	/a*c/     : Matches the same strings along with strings such as ace, yacc, and arctic
+
+	/[tT]he/  : Matches the string The and the
+
+	/^$/      : Matches blank lines
+
+	/^.*$/    : Matches an entire line whatever it is
+
+	/ */      : Matches one or more spaces
+
+3) frequently used sets of characters:
+	[a-z]       : Matches a single lowercase letter
+
+	[A-Z]       : Matches a single uppercase letter
+
+	[a-zA-Z]    : Matches a single letter
+
+	[0-9]       : Matches a single number
+
+	[a-zA-Z0-9] : Matches a single letter or number	
+	
+4) Character Class Keywords: GNU utilities that employ regexps. Some special keywords are commonly available to regexps like,
+	[[:alnum:]]	- Alphanumeric [a-z A-Z 0-9]
+	[[:alpha:]] - Alphabetic [a-z A-Z]
+	[[:blank:]] - Blank characters (spaces or tabs)
+	[[:digit:]] - Numbers [0-9]
+	[[:lower:]] - Lowercase letters [a-z]
+	[[:space:]] - Whitespace
+	[[:upper:]] - Uppercase letters [A-Z]
+
+	example, 
+	cat /etc/syslog.conf | sed -n '/^[[:alpha:]]/p'  #prints only those lines in the /etc/syslog.conf file that start with a letter of the alphabet.
+	
+5) Aampersand (&) Referencing : 
+	& represents the contents of the pattern that was matched.
+	   example,
+		phone.txt:
+		5555551212
+		5555551213
+		5555551214
+		6665551215
+		6665551216
+		7775551217
+		
+		to make the area code (the first three digits) surrounded by parentheses:
+		sed -e 's/^[[:digit:]][[:digit:]][[:digit:]]/(&)/g' phone.txt
+		
+		O/p:
+		(555)5551212
+		(555)5551213
+		(555)5551214
+		(666)5551215
+		(666)5551216
+		(777)5551217
+		
+6) grouping and back references : 
+       Grouping allows a series of characters to be collected in a set, indicating the boundaries of the set with \( and \)
+	   example, \(like this\)* or \(like this\)\{5,7\}.
+	   Backreferences repeat the contents of a particular group, using a backslash and a digit (1-9) for each corresponding group
+	   example,  "/\(pom\)\1/" is another way of writing "/pompom/". 
+	   
+	   example-1,
+	   echo "312.2 MB" | sed 's/\([0-9]\)[[:space:]]\([GMK]\)/\1\2/g'
+	   O/p: 312.2MB
+	   
+	   example-2,
+	   echo "James Bond" | sed -E 's/(.*) (.*)/The name is \2, \1 \2./'
+	   O/p: The name is Bond, James Bond.
+	   
+	   example-2,
+	   phone.txt:
+		(555)555-1212
+		(555)555-1213
+		(555)555-1214
+		(666)555-1215
+		(666)555-1216
+		(777)555-1217
+		
+	   cat phone.txt | sed 's/\(.*)\)\(.*-\)\(.*$\)/Area code: \1 Second: \2 Third: \3/' 
+	   
+	   O/p:
+		Area code: (555) Second: 555- Third: 1212 
+		Area code: (555) Second: 555- Third: 1213 
+		Area code: (555) Second: 555- Third: 1214 
+		Area code: (666) Second: 555- Third: 1215 
+		Area code: (666) Second: 555- Third: 1216 
+		Area code: (777) Second: 555- Third: 1217
+	   
+#######################################################################################
+Using Multiple sed Commands:
+
+sed -e 'command1' -e 'command2' ... -e 'commandN' files
+
+example,
+	sed -e 's/^[[:digit:]]\{3\}/(&)/g' -e 's/)[[:digit:]]\{3\}/&-/g' phone.txt 
+	O/p:
+	(555)555-1212 
+	(555)555-1213 
+	(555)555-1214 
+	(666)555-1215 
+	(666)555-1216 
+	(777)555-1217
+	
+	NOTE: instead of repeating the character class keyword [[:digit:]] three times 
+	    i.e. sed -e 's/^[[:digit:]][[:digit:]][[:digit:]]/(&)/g' phone.txt, 
+	    we replaced it with \{3\}, which means the preceding regular expression is matched three times.
+		
+########################################################################################
+########################################################################################
+Awk
+
+references: 
+https://www.cse.iitb.ac.in/~br/courses/cs699-autumn2013/refs/awk-tutorial.html
+https://likegeeks.com/awk-command/
+
+----
+The Awk text-processing programming language and is a useful tool for manipulating text. 
+1) Awk recognizes the concepts of "file", "record", and "field". 
+2) A file consists of records, which by default are the lines of the file. One line becomes one record. 
+3) Awk operates on one record at a time. 
+4) A record consists of fields, which by default are separated by any number of spaces or tabs. 
+5) Field number 1 is accessed with $1, field 2 with $2, and so forth. $0 refers to the whole record.
+
+The awk command is used like this:
+$ awk options program file
+Awk can take the following options:
+-F fs     		  To specify a file separator.
+-f file           To specify a file that contains awk script.
+-v var=value      To declare a variable.
+
+gawk is a pattern scanning and processing language.
+By default it reads standard input and writes standard output.
+
+Examples:
+        gawk '{ sum += $1 }; END { print sum }' file
+        gawk -F: '{ print $1 }' /etc/passwd
+
+##############################################################################
+code block in awk:
+In awk, curly braces are used to group blocks of code together, similar to C. 
+example,
+	$ awk '{ print $0 }' /etc/passwd
+
+	O/p:
+	root:x:0:0:root:/root:/bin/bash
+	daemon:x:1:1:daemon:/usr/sbin:/bin/sh
+	bin:x:2:2:bin:/bin:/bin/sh
+	sys:x:3:3:sys:/dev:/bin/sh
+	sync:x:4:65534:sync:/bin:/bin/sync
+	...
+
+NOTE: In awk, the $0 variable represents the entire current line, so print and print $0 do exactly the same thing. 
+	  i.e. awk '{ print "" }' /etc/passwd OR awk '{ print}' /etc/passwd
+	  
+example-2,
+	awk '{ print "hello" }' /etc/passwd
+	
+	O/p:
+	Running this script will fill your screen with hello's i.e. number of "hello" == "number of records".
+
+Formatted Printing:
+c         Prints numeric output as a string.
+d         Prints an integer value.
+e         Prints scientific numbers.
+f         Prints float values.
+o         Prints an octal value.
+s         Prints a text string.	
+
+awk 'BEGIN{ x = 100 * 100;printf "The result is: %e\n", x}'
+
+O/p: The result is: 1.0000000e+04
+	
+##################################################################################
+to run an awk program from a file:
+
+awk -f command.awk marks.txt  #here command.awk is the script having the code and marks.txt is the file on which the code will operate.
+
+example of code in command.txt:
+#!/usr/bin/awk -f
+{for(i=1;i <=NF;i++) freq[$i]++ }
+END{for(word in freq) print word, freq[word]
+}
+
+example-2,
+$ awk -F: -f testfile /etc/passwd
+
+I/p: testfile:
+{
+	text = " home at "
+	print $1 $6
+}
+
+##################################################################################
+AWK standard options:
+1) -v option:
+	assigns a value to a variable. It allows assignment before the program execution
+	example,
+	awk -v name=Jerry 'BEGIN{printf "Name = %s\n", name}'
+	O/p:
+	Name = Jerry
+	
+2) --lint[=fatal] option:
+   When an argument fatal is provided, it treats warning messages as errors.
+   example,
+   awk --lint '' /bin/ls
+   O/p:
+    awk: cmd. line:1: warning: empty program text on command line
+	awk: cmd. line:1: warning: source file does not end in newline
+	awk: warning: no program text at all!
+	
+3) awk --version;awk --help: shows the version; shows the man page. NOTE: this is a GNU feature, but may not work in all shells.
+
+##################################################################################
+AWK Variables:
+In AWK, variables are initialized to either zero or the empty string the first time they are used.
+
+About Variables: 
+1) Variable declaration is not required.
+2) May contain any type of data, their data type may change over the life of the program.
+3) Are case senstive.
+
+examples:
+I/p file (calc.txt)
+3 56
+567 89
+
+example-1:
+	awk '{ imp=$1; print imp }' calc.txt
+
+	O/p:
+	3
+	567
+	
+	NOTE: Note that the final statement, a "print" in this case, does not need a semicolon. It doesn't hurt to put it in, though. 
+	
+example-2:
+	awk '{d=($2-$1);s=($2+$1);print d,s }' calc.txt
+
+	O/p:
+	53 59
+	-478 656
+	
+example-3:
+	awk '{d=($2-($1-4));s=($2+$1);print d/sqrt(s),d*d/s }' calc.txt
+	
+	O/p:
+	7.42077 55.0678
+	-18.5066 342.494
+	
+	
+built-in variables:
+NR          -- The current line's sequential number 
+NF          -- The number of fields in the current line 
+FS          -- The input field separator; defaults to whitespace and is reset by the -F command line parameter 
+FIELDWIDTHS -- Specifies the field width.
+RS          -- Specifies the record separator.
+OFS         -- Specifies the Output separator.
+ORS         -- Specifies the Output separator.
+
+
+example-1 (special variable NF tells you how many fields are in this record):
+	if calc.txt:
+	3 56 abd
+	567 89 xyz
+
+	awk '{print $1,$NF }' calc
+
+	O/p:
+	3 abd
+	567 xyz
+	
+example-2 (By default, the OFS variable is the space, you can set the OFS variable to specify the separator you need)
+	$ awk 'BEGIN{FS=":"; OFS="-"} {print $1,$6,$7}' /etc/passwd
+	
+	i.e. if we just give awk '{print $1,$6,$7}' /etc/passwd, it will give incorrect result as fields are ":" delimited
+	so, defining the FS (i.e. field separator), OFS will help format the output.
+
+example-3 (the fields are distributed without a fixed separator. In these cases, FIELDWIDTHS variable solves the problem)
+	if i/p is:
+	1235.96521
+	927-8.3652
+	36257.8157
+	
+	awk 'BEGIN{FIELDWIDTHS="3 4 3"}{print $1,$2,$3}' testfile
+	
+	O/p:
+	123 5.96 521
+	927 -8.3 652
+	362 57.8 157
+
+example-4 (use of FS and RS)
+	if i/p is:
+	Person Name
+	123 High Street
+	(222) 466-1234
+	 
+	Another person
+	487 High Street
+	(523) 643-8754
+	
+	Here, awk fails to process fields properly because the fields are separated by new lines and not spaces.
+	
+	awk 'BEGIN{FS="\n"; RS=""} {print $1,$3}' addresses
+	i.e.
+	FS to the newline (\n) and 
+	RS to a blank text, so empty lines will be considered separators.
+	
+More built in variables:
+a) ARGC     Retrieves the number of passed parameters. 
+   ARGV     Retrieves the command line parameters.
+
+   example,
+	awk 'BEGIN{print ARGC,ARGV[1]}' myfile
+	
+	O/p: 2 myfile
+	
+b) EVIRON	Array of the shell environment variables and corresponding values.
+   
+   example,
+	awk ' BEGIN{ print ENVIRON["PATH"] }' 
+	
+   we can also use shell variables without ENVIRON command,
+	echo | awk -v home=$HOME '{print "My home is " home}'
+	
+c) NR    Retrieves total count of processed records.
+   FNR   The record which is processed.
+   
+   example,
+    I/p file: myfile
+	This is a test.
+	This is the second test.
+	This is the third test.
+	This is the fourth test.
+	
+    awk '{print $1,"FNR="FNR}' myfile myfile
+   
+    O/p file:
+  	This is a test. FNR=1
+	This is the second test. FNR=2
+	This is the third test. FNR=3
+	This is the fourth test. FNR=4
+  	This is a test. FNR=1
+	This is the second test. FNR=2
+	This is the third test. FNR=3
+	This is the fourth test. FNR=4
+	
+	i.e. the awk script mentioned 2 input files and FNR value is incremented for each file processed
+	
+	Using the same file with NR option,
+	awk '{print $1,"FNR="FNR,"NR="NR} END{print "Total",NR,"processed lines"}' myfile myfile
+	
+	O/p:
+  	This is a test. FNR=1 NR=1
+	This is the second test. FNR=2 NR=2
+	This is the third test. FNR=3 NR=3
+	This is the fourth test. FNR=4 NR=4
+  	This is a test. FNR=1 NR=5
+	This is the second test. FNR=2 NR=6
+	This is the third test. FNR=3 NR=7
+	This is the fourth test. FNR=4 NR=8
+	Total 8 processed lines
+
+############################################################################################
+BEGIN and END in AWK: (can be asked under AWK pre-processing and post-processing)
+Actions with BEGIN pattern will happen before any line-by-line processing is done. 
+Actions with the END pattern will happen after all lines are processed. 
+
+Examples:
+I/p file:
+(calc.txt)
+3 56
+567 89
+
+example-1,
+	awk 'BEGIN{print"fee"} $1=="3"{print"fi"} END{print"fo fum"}' calc.txt
+
+	O/p:
+	fee
+	fi
+	fo fum
+	
+example-2,
+	awk 'BEGIN{print"fee"} $1=="13"{print"fi"} END{print"fo fum"}' calc.txt
+	
+	O/p:
+	fee
+	fo fum
+	
+
+NOTE: in AIX shell (ksh), we need to always succeed an awk command with a file name.
+      i.e.
+	  if we do awk '{ print "Welcome" }'         , the screen will be stuck
+	  if we do awk '{ print "Welcome" }' file.txt, it will display Welcome for each record awk process in the file.
+	  if we do awk 'BEGIN { print "Welcome" }'   , it will display Welcome one time 
+
+############################################################################################
+Separator/Delimiter in AWK:
+
+In AWK, by default, the delimiter is " " (i.e. SPACE), but we can override the default delimiter as -F<DEMILITER>,
+awk -F: '{print $1}' /etc/passwd
+	  
+############################################################################################
+AWK Arrays:
+
+There are 2 key features of AWK arrays:
+1) The indexes need not to be continuous set of number; you can use either string or number as an array index. 
+2) There is no need to declare the size of an array in advance – arrays can expand/shrink at runtime.
+
+a) creating an array:
+	awk 'BEGIN {
+	   fruits["mango"] = "yellow";
+	   fruits["orange"] = "orange"
+	   print fruits["orange"] "\n" fruits["mango"]
+	}'
+	
+	O/p:
+	orange
+	yellow
+	
+b) deleting array elements:
+	awk 'BEGIN {
+	   fruits["mango"] = "yellow";
+	   fruits["orange"] = "orange";
+	   delete fruits["orange"];
+	   print fruits["orange"]
+	}'
+	
+	O/p:
+	No output is shown
+	
+###############################################################################################
+Conditional Statements:
+
+examples:
+	I/p file:
+	10
+	15
+	6
+	33
+	45
+	
+example-1:
+	awk '{if ($1 > 30) print $1}' testfile
+	
+	O/p:
+	33
+	45
+	
+example-2:
+	awk '{ if ($1 > 30) { x = $1 * 3;print x } }' testfile
+
+	O/p:
+	99
+	135
+	
+example-3:
+	awk '{ if ($1 > 30) { x = $1 * 3;print x } else { x = $1 / 2;print x} }' testfile
+
+	O/p:
+	5
+	7.5
+	3
+	99
+	135
+
+###########################################################################
+Iterations/loops in AWK:
+
+examples,
+	I/p file:
+	124 127 130
+	112 142 135
+	175 158 245
+	118 231 147
+	
+example-1 (while loop):
+	awk '{
+	sum = 0
+	i = 1
+	while (i < 5)
+	{
+	sum += $i
+	i++
+	}
+	average = sum / 3
+	print "Average:",average
+	}' testfile
+	
+	O/p (avg of fields in each record):
+	Average:127
+	Average:129.667
+	Average:192.667
+	Average:165.33
+	
+example-2 (while with break):
+	awk '{
+	tot = 0
+	i = 1
+	while (i < 5)
+	{
+	tot += $i 
+	if (i == 3)
+	break
+	i++
+	}
+	average = tot / 3
+	print "Average is:",average
+	}' testfile
+	
+	O/p:
+	Average is:127
+	Average is:129.667
+	
+example-3 (for loop):
+	awk '{
+	total = 0
+	for (var = 1; var < 5; var++)
+	{
+	total += $var
+	}
+	avg = total / 3
+	print "Average:",avg
+	}' testfile
+	
+	O/p:
+	Average:127
+	Average:129.667
+	Average:192.667
+	Average:165.333
+	
+##################################################################################
+User Defined Functions:
+
+awk '
+function myfunc()
+{ printf "The user %s has home path at %s\n", $1,$6 }
+BEGIN{FS=":"}
+{
+myfunc()
+}' /etc/passwd
+
+########################################################################################
+########################################################################################
+Regex in SED and AWK:
+https://likegeeks.com/regex-tutorial-linux/
+https://www.tutorialspoint.com/awk/awk_regular_expressions.htm
+
+-----
+IV questions: awk :ref( https://www.folkstalk.com/2011/11/unix-interview-questions-on-awk-command.html )
+              sed :ref( https://www.wisdomjobs.com/e-university/awk-interview-questions.html )
+
+1. How to run awk command specified in a file?
+awk -f filename
+
+2. Write a command to print the squares of numbers from 1 to 10 using awk command
+awk 'BEGIN { for(i=1;i<=10;i++) {print "square of",i,"is",i*i;}}'
+
+3. Write a command to find the sum of bytes (size of file) of all files in a directory.
+ls -l | awk 'BEGIN {sum=0} {sum = sum + $5} END {print sum}'
+
+4. In the text file, some lines are delimited by colon and some are delimited by space. Write a command to print the third field of each line.
+
+awk '{ if( $0 ~ /:/ ) { FS=":"; } else { FS =" "; } print $3 }' filename
+
+5. Write a command to print the line number before each line?
+awk '{print NR, $0}' filename
+
+6. Write a command to print the second and third line of a file without using NR.
+awk 'BEGIN {RS="";FS="\n"} {print $2,$3}' filename
+
+7. Write a command to print zero byte size files?
+ls -l | awk '/^-/ {if ($5 !=0 ) print $9 }'
+
+8. Write a command to rename the files in a directory with "_new" as postfix?
+ls -F | awk '{print "mv "$1" "$1".new"}' | sh
+
+9. Write a command to print the fields in a text file in reverse order?
+awk 'BEGIN {ORS=""} { for(i=NF;i>0;i--) print $i," "; print "\n"}' filename
+
+10. Write a command to find the total number of lines in a file without using NR
+awk 'BEGIN {sum=0} {sum=sum+1} END {print sum}' filename
+
+Another way to print the number of lines is by using the NR. The command is
+awk 'END{print NR}' filename 
+
