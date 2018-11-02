@@ -1,0 +1,112 @@
+Edge:
+
+// Maintenance JOBTYPE have Parent ticket in ITL.
+var edge_job_type = commonDataObject.getFieldValue("JOBTYPE")
+
+// Source of data from ITL will be "WFAC" OR "TTMAOTS"
+var edge_source_type = commonDataObject.getFieldValue("SOURCETYPE")
+
+if ( edge_source_type.equalsIgnoreCase("WFAC") || edge_source_type.equalsIgnoreCase("TTMAOTS")
+{
+	if (edge_job_type.toUpperCase().startsWith("M")))
+	{
+        /* using buildCommomDataObjectWithZone to capture the zone from  
+           Which the EDGE data originated. */
+          
+		EDGE_DATA_ZONE = zone
+		
+		/* PART-1, compare if EXTKEY1 exists in ITL_MAP1 REDIS */
+		if ( EXTKEY1 received from EDGE_GG exists in ITL_MAP1 REDIS )
+		{
+			if ( ITL_MAP1 REDIS contains values WRID ) /* NOTE: ITL data should not be deleted IF EXISTS */
+			{
+				/* Update current values to WRID,SOURCETYPE,EDGE_DATA_ZONE,SERVICEADDRSTRING,EXTKEY1,CUSTNAME,APPOINTMENTDATETIME
+				   ACCESSBEGINDATETIME,ACCESSENDDATETIME,TECHASSIGNED
+                */				   
+			}
+			else if ( ITL_MAP1 REDIS DO NOT values WRID )
+			{
+				/* Append WRID,SOURCETYPE,EDGE_DATA_ZONE,SERVICEADDRSTRING,EXTKEY1,CUSTNAME,APPOINTMENTDATETIME,
+				   ACCESSBEGINDATETIME, ACCESSENDDATETIME, TECHASSIGNED
+				   to ITL_MAP1 REDIS where CHILD_TICKET_NUMBER == EXTKEY1 */
+				   
+            } 
+		}
+		else if ( if EXTKEY1 received from EDGE_GG NOT FOUND in ITL_MAP1 REDIS )
+		{
+			/* Add a new MAP to ITL_MAP1 REDIS
+               where KEY is EXTKEY1 : { WRID,SOURCETYPE,EDGE_DATA_ZONE,SERVICEADDRSTRING,EXTKEY1,CUSTNAME,APPOINTMENTDATETIME
+				   ACCESSBEGINDATETIME,ACCESSENDDATETIME,TECHASSIGNED }			
+		}
+
+        /******* PART-1 ENDS **********************************************************/		
+		
+		/* PART-2, add or update the REDIS hashmap ED_MAP1 with WRID (key) : { EXTKEY1:"", WRSTAT:"" } */  
+		if ( WRID in Edge Topic Exists in ED_MAP1 )
+		{
+			//check if WRSTAT is same or different
+			if ( WRSTAT in EDGE topic is same as ED_MAP1 WRID.WRSTAT )
+            {
+				// skip this record
+			}
+			else if ( WRSTAT in EDGE topic is Different as ED_MAP1 WRID.WRSTAT )
+			{
+				// UPDATE the value of ED_MAP1 WRID.WRSTAT
+				
+				if ( WRSTAT == "COMPLETE/CANCEL/JEOPARDY/WAIT/NOWORK" )
+				{
+					/* Only update the value of RC */
+				
+				/* use ED_MAP1 WRID.EXTKEY1, check with ITL_MAP1 and create a string having Ticket_#,Service,Location_Address,Location_Contact_Info_(email,_cell#),Location_contact_name,Customer_Name,Job_ID,Appointment_Date,	Reported_By,Access_Hours,Technician_Name,Tech_ATTUID,Assignment_Date/Time,Technician_cell_#,Tech_email_address,Arrival_Date,Arrival_Time,
+				Estimated_time_of_repair,Job_Status (OR WRSTAT),Root_cause */
+				//NOTE: no need to check for different WRSTAT. Same logic for all WRSTAT.
+				
+				}
+				else
+				{
+				/* use ED_MAP1 WRID.EXTKEY1, check with ITL_MAP1 and create a string having Ticket_#,Service,Location_Address,Location_Contact_Info_(email,_cell#),Location_contact_name,Customer_Name,Job_ID,Appointment_Date,	Reported_By,Access_Hours,Technician_Name,Tech_ATTUID,Assignment_Date/Time,Technician_cell_#,Tech_email_address,Arrival_Date,Arrival_Time,
+				Estimated_time_of_repair,Job_Status (OR WRSTAT),Root_cause */
+				
+
+				}
+				
+				/* Write data to TOPIC-1 */
+
+							 
+				*/  
+			}
+        }			
+		else if ( WRID in Edge Topic DO NOT Exist in ED_MAP1 )
+        {
+				// ADD the WRID (key) : { EXTKEY1:"", WRSTAT:"" } to ED_MAP1 REDIS hashmap
+				
+				/* use ED_MAP1 WRID.EXTKEY1, check with ITL_MAP1 and create a string having Ticket_#,Service,Location_Address,Location_Contact_Info_(email,_cell#),Location_contact_name,Customer_Name,Job_ID,Appointment_Date,	Reported_By,Access_Hours,Technician_Name,Tech_ATTUID,Assignment_Date/Time,Technician_cell_#,Tech_email_address,Arrival_Date,Arrival_Time,
+				Estimated_time_of_repair,Job_Status,Root_cause */
+				//NOTE: no need to check for different WRSTAT. Same logic for all WRSTAT.
+				
+				/* Write data to TOPIC-1 */
+		}
+		/******* PART-2 ENDS **********************************************************/
+	}
+}
+
+Topic-1 contents:
+Ticket_#: From ITL REDIS mapping PARENT_TICKET_NUMBER
+Service : From ITL REDIS mapping REPT_SVC_LINE_DESC_TX 
+Location_Address: From ITL REDIS mapping SERVICEADDRSTRING
+Location_Contact_Info: <TBD>
+Location_Contact_Name: <TBD>
+Customer_Name: From ITL REDIS mapping CUSTNAME
+Job_ID: From ITL REDIS mapping EXTKEY1 
+Appointment_Date: From ITL REDIS mapping APPOINTMENTDATETIME
+Reported_By: From ITL REDIS mapping REPORTED_BY
+Access_Hours: From ITL REDIS mapping ACCESSBEGINDATETIME, ACCESSENDDATETIME
+Tech_ATTUID: From ITL REDIS mapping TECHASSIGNED
+Technician_Name: from WEBPHONE
+Technician cell #: from WEBPHONE
+Tech email address: from WEBPHONE
+Assignment Date / Time: <TBD> //which field from EDGE
+Arrival_Date: <TBD> //how to get from VTS.
+Arrival_Time: <TBD> //how to get from VTS.
+Job_Status: From ITL REDIS mapping WRSTAT
+Root_cause: <TBD>. We will have to consume from xbfwrcomp_t and get these details by mapping with WRID
