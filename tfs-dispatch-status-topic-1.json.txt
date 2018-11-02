@@ -1,0 +1,34 @@
+{  
+   "ticketNumber":"<value>",
+   "jobId":"<value>",
+   "jobStatus":"<value>",
+   "locationInfo":{  
+      "service":"<value>",
+      "lat" : "<value>",
+      "lng" : "<value>",
+      "address":"<value>",
+      "contactEmail":"<value>",
+      "contactPhone":"<value>",
+      "contactName":"<value>",
+      "customerName":"<value>",
+      "appointmentDateTime":"<value in YYYY-MM-DD:HH:MM:SS>",
+      "reportedBy":"<value>",
+      "accessBeginDateTime":"<value in YYYY-MM-DD:HH:MM:SS>",
+      "accessEndDateTime":"<value in YYYY-MM-DD:HH:MM:SS>"
+   },
+   "techInfo":{  
+      "name":"",
+      "id":"<value>",
+      "assignDateTime":"<value in YYYY-MM-DD:HH:MM:SS>",
+      "phone":"<value>",
+      "email":"<value>"
+   },
+   "arrivalInfo":{  
+      "dateTime":"value in YYYY-MM-DD:HH:MM:SS",
+      "estimatedRepairTime":"value in YYYY-MM-DD:HH:MM:SS"
+   },
+   "jobRootCause":{  
+      "code":"<value>",
+      "description":"<value>"
+   }
+}
