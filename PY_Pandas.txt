@@ -1,0 +1,2768 @@
+Pandas:
+shortform for "Panel Data System" is built on top of NumPy and SciPy
+
+Pandas has,
+1) a tabular data structure that can hold both homogenous and heterogenous data.
+2) Very good indexing capabilities that makes data alignment and merging easy.
+3) Good time series functionality. No need to use different data structures for time series and cross sectional data. Allows for both ordered and unordered time-series data.
+4) A host of statistical functions developed around NumPy and pandas that makes a researcher’s task easy and fast.
+5) Programming is lot simpler and faster.
+6) Easily handles data manipulation and cleaning.
+7) Easy to expand and shorten data sets. Comprehensive merging, joins, and group by functionality to join multiple data sets.
+
+In order to be able to use Pandas and NumPy, first import it using import statement
+import pandas as pd                         # This will import pandas into your workspace
+import numpy as np                          # We will be using numpy functions so import numpy
+
+There are 2 key components in Panda:
+1) Series : Series is a 1-D array like object. pandas attaches a label to each of the values. If the labels are not provided by the programmer, 
+			then pandas assigns labels ( 0 for first element, 1 for second element and so on).
+			A benefit of assigning labels to data values is that it becomes easier to perform manipulations on the dataset as the whole dataset 
+			becomes more of a dictionary where each value is associated with a label.
+			
+			example, 
+			import pandas as pd
+			s = pd.Series((1,2,3,4,5)) //series object for tuple
+			s1 = pd.Series(list('abcdef')) //series object for list.
+			print s
+			print s.values
+			print s.index    //default index is 0 : N-1
+			print s1
+			print s1.values
+			print s1.index
+			
+			o/p:
+			print s will give:
+			0	1
+			1	2
+			2	3
+			3	4
+			4	5
+			
+			print s.index will give: 0 1 2 3 4 
+			print s.values will give : 1 2 3 4 5
+			
+			Print s1 will give:
+			0	a
+			1	b
+			2	c
+			3	d
+			4	e
+			5	f
+			
+			print s1.index will give: 0 1 2 3 4 5
+			print s1.values will give: a b c d e f
+			
+			
+		** NOTE: details mentioned later in this learning doc	
+					 
+2) Dataframe: 2-D tabular data structure with integrated indexing. Supports both homogeneous and heterogeneous columns.
+			example,
+			import pandas as pd
+			pop_data = {'FL':{2010:18.8,2011:19.1},'GA':{2008:9.7,2010:9.7,2011:9.8}}
+			pop = pd.DataFrame(pop_data)
+			print pop
+			
+			o/p:
+					FL		GA
+			2008	NaN		9.7
+			2010	18.8	9.7
+			2011	19.1	9.8
+			
+3) Panel: 3-D matrix. It has 3 axes,
+		a) items: axis-0 and corresponds to the dataframe.
+		b) major_axis: axis-1 and corresponds to rows of each dataframe.
+		c) minor_axis: axis-2 and corresponds to columns of each dataframe.
+		
+		example,
+		import pandas as pd
+		import numpy as np
+		data = np.random.rand(2,4,5)
+		p = pd.Panel(data)
+		print p
+
+-------------------
+Lambda Functions: i.e. functions without a name which are used as soon as they have been created.
+				Syntax: lambda argument_list: expression (usually functions like filter(),map(),reduce())
+						where,
+						argument_list: comma separated arguments.
+						expression: arithmetic expression using arguments.
+						
+						
+				example,
+				f = lambda x,y: x+y
+				print (f(1,1))
+				
+				o/p:
+				2
+				
+what is map() function?
+map function syntax is - map(func,sequence) where func -> name of function and sequence is a list, array etc
+map function applies to all elements in the sequence i.e. the function will be applied on each element.
+map function returns a new list of elements changed by func
+
+example (function usage of map vs lambda usage of map),
+def far(T):
+ return((float(9)/5)*T + 32)
+ 
+def celsius(T):
+ return((float(5)/9)*(T - 32)
+ 
+temp = (36.5,37,37.5,39)
+f = map(far,temp)
+c = map (celsius,f)
+
+with lambda,
+celsius = (36.5,37,37.5,39)
+far = map(lambda x:(float(9)/5)*x+32,celsius)
+C = map( lambda x:(float(5)/9)*(x-32),far)
+
+-------------------------------------------------
+Pandas Series (revisited): definition already present.
+
+example 1,
+	import pandas as pd
+	import numpy as np
+	series1 = pd.Series([10,20,30,40])   #NOTE: Series keyword is case sensitive. "series" will error out.
+	print (series1)
+	print (series1.values)   #will give the data type object of the Series and the values
+	print (series1.index)    #will give the index data type (usually Int64) and list of index values and data type.
+	print ("\n")
+	series2 = pd.Series([1,2,3,4,5],index = [10,20,30,40,50])  #creating custom indexes
+	print (series2)
+	print (series2.values)
+	print (series2.index) 
+
+o/p:
+	0    10
+	1    20
+	2    30
+	3    40
+	#
+	dtype: int64
+	[10 20 30 40]
+	#
+	Int64Index([0, 1, 2, 3], dtype='int64')
+
+	10    1
+	20    2
+	30    3
+	40    4
+	50    5
+	#
+	dtype: int64
+	[1 2 3 4 5]
+	#
+	Int64Index([10, 20, 30, 40, 50], dtype='int64')
+
+example 2, Series can accept heterogeneous datatypes. In case a series has heterogenous items, dtype: object
+	series3 = pd.Series([1,2,3,"four",5],index = [10,20,30,40,50])
+	print (series3)
+	print (series3.values)
+	print (series3.index)
+
+	o/p:
+	10       1
+	20       2
+	30       3
+	40    four
+	50       5
+	#
+	dtype: object
+	[1 2 3 'four' 5]
+	#
+	Int64Index([10, 20, 30, 40, 50], dtype='int64')
+
+example 3, string index and heterogeneous index,
+	series4 = pd.Series([1,2,3,4,5],index = ['a','b','c','d','e'])
+	print (series4)
+	print (series4.values)
+	print (series4.index)
+	print ("\n")
+	#
+	series5 = pd.Series([1,2,3,4,5],index = ['one',2,'three','four',5])
+	print (series5)
+	print (series5.values)
+	print (series5.index)	
+
+	o/p:
+	a    1
+	b    2
+	c    3
+	d    4
+	e    5
+	dtype: int64
+	[1 2 3 4 5]
+	Index([u'a', u'b', u'c', u'd', u'e'], dtype='object')
+	#
+	one      1
+	2        2
+	three    3
+	four     4
+	5        5
+	dtype: int64
+	[1 2 3 4 5]
+	Index([u'one', 2, u'three', u'four', 5], dtype='object')	
+
+
+Accessing specific elements in a series: this can be done using the same way as numpy.
+example,
+	series3 = pd.Series([1,2,3,"four",5],index = [10,20,30,40,50])
+	print (series3[[10,40]])
+	print (series3[[10:40]])   //THIS WILL ERROR. SyntaxError: invalid syntax
+	series5 = pd.Series([1,2,3,4,5],index = ['one',2,'three','four',5])
+	print (series5[2])
+	print (series5['three'])
+    print (series5['two'])  //THIS WILL ERROR. KeyError: 'two'
+	print (series3[60])     //THIS WILL ERROR as 60 is not listed in index.
+	
+	o/p:
+	#series3
+	10       1
+	20       2
+	30       3
+	40    four
+	50       5	
+
+	10       1
+	40    four
+	dtype: object
+
+	#series5
+	one      1
+	2        2
+	three    3
+	four     4
+	5        5
+
+	2
+	9
+	
+However, if we give a [[]], the keyError is bypassed and o/p becomes NaN
+	example,
+	series3 = pd.Series([1,2,3,"four",5],index = [10,20,30,40,50])
+	print (series3[[60]])
+	print (series3[['two']])
+	print (series3[['two',60,45]]) 
+	
+	O/p:
+	60    NaN
+	#
+	two   NaN
+	#
+	two    NaN
+	60     NaN
+	45     NaN
+	
+to show the elements for an index range. ex, show all elements between 2 to 4 index values.
+example,
+	series8 = pd.Series([1,2,3,4,5])
+	print (series8.ix[2:4])
+	print (series8.ix[2:6])   //If index is out of bounds, elements are displayed only till the maximum index value.
+
+	o/p:
+	2    3
+	3    4
+	4    5
+	dtype: int64
+	
+Arithmetic operations on each element in a series.
+example,
+	series6 = pd.Series([1,2,3,4,5])
+	print (series6 + 10)
+	print (series6 ** 2)
+	print (np.sqrt(series6))
+	series7 = series6 + 10
+	print (series7)   #Assignment to a different series. same result as (series6 + 10).
+
+	O/p:
+	0    11
+	1    12
+	2    13
+	3    14
+	4    15
+	dtype: int64
+	0     1
+	1     4
+	2     9
+	3    16
+	4    25
+	dtype: int64
+	0    1.000000
+	1    1.414214
+	2    1.732051
+	3    2.000000
+	4    2.236068
+	dtype: float64
+	
+Filtering elements of a series.
+example,
+		print (series7[series7 > 11])
+		print (series2[[series2>30]]) #i.e. [[]], will error with too many indices.
+	
+	o/p:
+	1    12
+	2    13
+	3    14
+	4    15
+	dtype: int64
+	
+If you have a dictionary, you can create a Series data structure from that dictionary,
+example,
+	years = [91, 90, 92, 93, 94, 95, 96, 97]
+	f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11, 96:13}
+	firm1 = pd.Series(f1,index=years)                     # Extra element in VALUE not an issue. The extra element is substituted with NaN
+	print(firm1)
+	f2 = {90:14,92:9, 93:13, 94:5}
+	firm2 = pd.Series(f2,index=years)
+	print(firm2)
+	print (pd.isnull(firm2))  							  # isnull() function to find out if there are any missing values in the data structure.
+	print (~pd.isnull(firm2))                             # "~" is NOT Operator. gives opposite of previous statement.
+	
+	o/p:
+	91     9
+	90     8
+	92     7
+	93     8
+	94     9
+	95    11
+	96    13
+	97   NaN
+	dtype: float64
+	#
+	91   NaN
+	90    14
+	92     9
+	93    13
+	94     5
+	95   NaN
+	96   NaN
+	97   NaN
+	dtype: float64
+	#
+	91     True
+	90    False
+	92    False
+	93    False
+	94    False
+	95     True
+	96     True
+	97     True
+	dtype: bool
+	
+	NOTE: NaN stands for missing or NA values in pandas. Make use of isnull() function to find out if there are any missing values in the data structure.
+	
+	
+If we are operating on 2 different series, we do not have to worry about data alignment. Pandas takes care of that.
+example, calculate the sum of common words in combined files
+	dict1 = {'finance': 10, 'earning': 5, 'debt':8}
+	dict2 = {'finance' : 8, 'compensation':4, 'earning': 9}
+	count1 = pd.Series(dict1)
+	count2 = pd.Series(dict2)
+	print (count1)
+	print (count2)
+	print (count1 + count2) #
+	
+	o/p:
+	debt        8
+	earning     5
+	finance    10
+	dtype: int64
+	#
+	compensation    4
+	earning         9
+	finance         8
+	dtype: int64
+	#
+	compensation     NaN
+	debt             NaN
+	earning         14.0
+	finance         18.0
+	
+-----------------------------------------------------------------------------
+Data Frame (revisited):
+is a tabular data structure in which data is laid out in rows and column format (similar to a CSV and SQL file),
+DF is logical extension of Series data structures. 
+In contrast to Series, where there is one index, a DataFrame object has one index for column and one index for rows. 
+This allows flexibility in accessing and manipulating data.
+
+example,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print(data) 	
+
+	O/p: # each key forms a column and each row is automatically indexed from 0-n
+		company				price	ticker
+	0	American Express	95		AXP
+	1	Cisco				25		CSCO
+	2	Walt Disney			85		DIS
+	3	Microsoft			41		MSFT
+	4	Walmart				78		WMT
+
+Note: all the arrays in a DF should be of the same size,
+example,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney']})  /#i.e. company has only 3 values
+	print(data)
+						 
+	O/p:
+	ValueError: arrays must all be same length
+
+to print data for a specific key,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print(data['company'])
+	print(data.company)  //same result as above  
+	
+	o/p:
+	0    American Express
+	1               Cisco
+	2         Walt Disney
+	3           Microsoft
+	4             Walmart
+	Name: company, dtype: object
+	
+to print a row corresponding to an index,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print (data.ix[2])       # Print the row corresponding to the given Index
+	print (data.ix[2:4])     #range of indices
+	
+	o/p:
+	company    Walt Disney
+	price               85
+	ticker             DIS
+	Name: 2, dtype: object
+	
+		   company  price ticker
+	2  Walt Disney     85    DIS
+	3    Microsoft     41   MSFT
+	4      Walmart     78    WMT
+	
+filtering DF based on "key"/"columns":
+example,
+	data.ix[data.ticker=='DIS']            # Print the row corresponding to the ticker that is 'DIS'
+	print(data)
+
+	o/p:
+		company		price	ticker
+	2	Walt Disney	85		DIS
+
+adding a new column to a DF,
+example,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	data['Year'] = 2014                    # Add additional column Year. Populate value of 2014 in all the rows.
+	print(data)
+	data['pricesquared'] = data.price**2      # Square all the prices and add another column 'pricesquared'.
+	print(data)
+	del data['pricesquared']                  # Delete column 'pricesquared'
+	print(data)
+	data['pricesquared'] = np.NaN             # Create column 'pricesquared' with NaN values
+	print(data)
+	data['sequence'] = np.arange(2014,2024,2) # Add column 'sequence'												
+	print(data)
+	
+O/p:
+	company				price	ticker	Year
+0	American Express	95		AXP		2014
+1	Cisco				25		CSCO	2014
+2	Walt Disney			85		DIS		2014
+3	Microsoft			41		MSFT	2014
+4	Walmart				78		WMT		2014
+#
+	company				price	ticker	Year	pricesquared
+0	American Express	95		AXP		2014	9025
+1	Cisco				25		CSCO	2014	625
+2	Walt Disney			85		DIS		2014	7225
+3	Microsoft			41		MSFT	2014	1681
+4	Walmart				78		WMT		2014	6084
+#
+	company				price	ticker	Year
+0	American Express	95		AXP		2014
+1	Cisco				25		CSCO	2014
+2	Walt Disney			85		DIS		2014
+3	Microsoft			41		MSFT	2014
+4	Walmart				78		WMT		2014
+#
+	company				price	ticker	Year	pricesquared
+0	American Express	95		AXP		2014	NaN
+1	Cisco				25		CSCO	2014	NaN
+2	Walt Disney			85		DIS		2014	NaN
+3	Microsoft			41		MSFT	2014	NaN
+4	Walmart				78		WMT		2014	NaN
+#
+	company				price	ticker	Year	pricesquared	sequence
+0	American Express	95		AXP		2014	NaN				2014
+1	Cisco				25		CSCO	2014	NaN				2016
+2	Walt Disney			85		DIS		2014	NaN				2018
+3	Microsoft			41		MSFT	2014	NaN				2020
+4	Walmart				78		WMT		2014	NaN				2022
+
+
+adding a new row to dataframe, sorting it by column:
+example,
+	import pandas as pd
+	np.random.seed(2)
+	dataframe = pd.DataFrame(np.random.randn(3,3),columns=['one','two','three'])
+	print(dataframe)
+	print(dataframe.sort_values(by='two'))
+
+	o/p:
+		 one	     two	    three
+	0	-0.416758	-0.056267	-2.136196
+	1	1.640271	-1.793436	-0.841747
+	2	0.502881	-1.245288	-1.057952
+	#sorted values
+			one       two     three
+	1  1.640271 -1.793436 -0.841747
+	2  0.502881 -1.245288 -1.057952
+	0 -0.416758 -0.056267 -2.136196
+
+
+example-2,
+	import pandas as pd
+	s1 = pd.Series([5, 6, 7])
+	s2 = pd.Series([7, 8, 9])
+	df = pd.DataFrame([list(s1), list(s2)],  columns =  ["A", "B", "C"])
+	print(df)
+	df.loc[-1] = [2, 3, 4]  # adding a row
+	df.index = df.index + 1  # shifting index
+	df = df.sort_index()  # sorting by index
+	print(df)
+	
+	o/p,
+	   A  B  C
+	0  5  6  7
+	1  7  8  9
+	#
+	   A  B  C
+	0  2  3  4
+	1  5  6  7
+	2  7  8  9
+
+
+example-2,
+	import pandas as pd
+	datax = pd.DataFrame({'Value':[2.8,2.5,2.2,2.3],'frequency':[10,20,30,40]})
+	print(datax)
+	datax.loc[-1,'frequency']=35  			#add a new row with frequency = 35 and index = -1
+	print(datax)
+	datax =datax.reset_index(drop=True)		#reset index in the dataframe
+	print(datax)
+	datax = datax.sort_values('frequency')  #sort by frequency column
+	print(datax)
+	
+	OR
+	df = pd.DataFrame({'Value':[2.8,2.5,2.2,2.3],'frequency':[10,20,30,40]})
+	df.loc[-1, 'Frequency'] = 35
+	print(df)
+	df = df.sort_values('Frequency').reset_index(drop=True)
+	print (df)
+	
+	o/p:
+	   Value  frequency
+	0    2.8         10
+	1    2.5         20
+	2    2.2         30
+	3    2.3         40
+		Value  frequency
+	 0    2.8       10.0
+	 1    2.5       20.0
+	 2    2.2       30.0
+	 3    2.3       40.0
+	-1    NaN       35.0
+	   Value  frequency
+	0    2.8       10.0
+	1    2.5       20.0
+	2    2.2       30.0
+	3    2.3       40.0
+	4    NaN       35.0
+	   Value  frequency
+	0    2.8       10.0
+	1    2.5       20.0
+	2    2.2       30.0
+	4    NaN       35.0
+	3    2.3       40.0
+
+example, sorting columns which have multiple-index,
+	i/p:
+								rating
+								size	mean
+	title		
+	'Til There Was You (1997)	9	2.333333
+	1-900 (1994)				5	2.600000
+
+	if we do,
+	highest_ratings = lens.groupby('title').agg({'rating':[np.size,np.mean]})
+	highest_ratings.sort_values([('rating')],ascending=False).head(20)
+
+	it will give error,"Cannot sort by column rating in a multi-index you need to explicity provide all the levels."
+
+	else, we should do,
+	highest_ratings.sort_values([('rating','mean')],ascending=False).head(20)
+
+	o/p:
+												rating
+												size	mean
+	title		
+	They Made Me a Criminal (1939)				1	5.000000
+	Marlene Dietrich: Shadow and Light (1996)	1	5.000000
+	Saint of Fort Washington, The (1993)		2	5.000000
+
+Using Numpy functions inside DataFrame Objects:
+example,
+	import pandas as pd
+	import numpy as np
+	# Create array of 3*3 dimensionality using standard normally distributed random vales
+	#np.random.seed(0)   #will seed and will the NOT change random numbers in consecutive numbers. 
+	dataframe = pd.DataFrame(np.random.randn(3,3),columns=['one','two','three'])  
+	print(dataframe)
+	print(np.abs(dataframe))                   # Absolute value
+	f = lambda x:x.max()-x.min()               # lambda function to get range i.e. max - min.
+	print (abs(dataframe).apply(f))            # applies to column (BY-DEFAULT)
+	print (abs(dataframe).apply(f,axis=1))     #axis=1, applies to row
+	
+	
+	o/p:
+		one			two			three
+	0	-0.057379	0.244387	0.128660
+	1	0.342184	1.080002	-0.528302
+	2	0.370405	-0.319412	1.427701
+	#
+		one			two			three
+	0	0.057379	0.244387	0.128660
+	1	0.342184	1.080002	0.528302
+	2	0.370405	0.319412	1.427701
+	# column range
+	one      0.313026
+	two      0.835614
+	three    1.299041
+	dtype: float64
+	#row range
+	0    0.187008
+	1    0.737818
+	2    1.108289
+	dtype: float64
+	
+example-2:
+	print(dataframe)
+	dataframe.sum()                          # Column wise sum
+	dataframe.sum(axis=1)                    # Row wise sum
+	dataframe.cumsum()                 		 # Get cumulative sum for columns 
+	
+o/p:
+#column-wise
+one      0.655210
+two      1.004977
+three    1.028059
+dtype: float64
+#row-wise
+0    0.315668
+1    0.893883
+2    1.478694
+dtype: float64
+#cumlative
+        one       two     three
+0       0.043830  1.328110  0.739642
+1       0.040941  1.518764  2.111642
+2      -0.331633  1.103796  3.745047
+i.e. each column value is added to the next column value. if dataframe.cumsum(axis=1), the sum of consecutive rows. 
+
+	
+function to create a series having mean, max and min of a set of DF rows using numpy functions.
+example,
+	def f(x):
+		return pd.Series([np.mean(x), x.max(), x.min()], index=['mean','max','min'])
+	print(dataframe)
+	print(dataframe.apply(f,axis=1))
+	
+o/p:
+	one       two     three
+0 -0.057379  0.244387  0.128660
+1  0.342184  1.080002 -0.528302
+2  0.370405 -0.319412  1.427701
+#
+	mean		max			min
+0	0.105223	0.244387	-0.057379
+1	0.297961	1.080002	-0.528302
+2	0.492898	1.427701	-0.319412
+	
+describe the characteristics of a dataframe,
+example, (when the data frame contains numbers)
+	dataframe = pd.DataFrame(np.random.randn(3,3),columns=['one','two','three']) 
+	dataframe.describe()
+	
+	o/p:
+				one       two     three
+	count  3.000000  3.000000  3.000000
+	mean   0.170356  1.069239 -0.593476
+	std    0.994400  0.551264  0.298080
+	min   -0.975123  0.432745 -0.849494
+	25%   -0.150436  0.906642 -0.757096
+	50%    0.674251  1.380539 -0.664698
+	75%    0.743096  1.387486 -0.465467
+	max    0.811941  1.394433 -0.266237
+	
+example, (when the dataframe is combination of string and number columns, describe will only aggregate the numeric fields in the DF
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+
+	print(data.describe())						 
+	data['Year'] = [2014] 
+	print(data.describe())
+	
+	o/p:
+			  price
+	count   5.00000
+	mean   64.80000
+	std    30.18609
+	min    25.00000
+	25%    41.00000
+	50%    78.00000
+	75%    85.00000
+	max    95.00000
+
+			  price  Year
+	count   5.00000     5
+	mean   64.80000  2014
+	std    30.18609     0
+	min    25.00000  2014
+	25%    41.00000  2014
+	50%    78.00000  2014
+	75%    85.00000  2014
+	max    95.00000  2014
+
+example, (when the data frame contains ONLY string),
+	data = pd.DataFrame({'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print(data.describe())
+	
+	o/p:
+				company ticker
+	count             5      5
+	unique            5      5
+	top     Walt Disney    DIS
+	freq              1      1
+
+To conclude,
+Describe will give - count, mean, std, min, max FOR NUMBERS
+					 count, unique, top, freq FOR STRINGS
+
+					 
+Dataframe value_counts:
+for each column in a dataframe, value_counts simply counts the number of occurrences of each value in the Series.
+example,
+	import pandas as pd 
+	from pandas import Series, DataFrame
+
+	data = DataFrame({'Qu1': [1, 3, 4, 3, 4],
+					  'Qu2': [2, 3, 1, 2, 3],
+					  'Qu3': [1, 5, 2, 4, 4]})
+	print(data)
+	result = data.apply(pd.value_counts).fillna(0)
+	print(result)
+
+	o/p:
+	   Qu1  Qu2  Qu3
+	0    1    2    1
+	1    3    3    5
+	2    4    1    2
+	3    3    2    4
+	4    4    3    4
+
+	result,
+		Qu1	Qu2	Qu3
+	1	1.0	1.0	1.0
+	2	0.0	2.0	1.0
+	3	2.0	2.0	0.0
+	4	2.0	0.0	2.0
+	5	0.0	0.0	1.0 
+
+	so in results, 
+	a) from data, in column Qu1, count of 1 = 1, count(2) = 0, count(3) = 2, count(4) = 2, count(5) = 0-n
+	b) similarly in column Qu2, count(1,2,3,4,5) i.e. all values in the data frame.
+	
+	value_counts can be used as a replacement of groupby(<column name>).size
+	i.e.
+	result1 = data.groupby('Qu1').size()
+	result2 = data.groupby('Qu2').size()
+	result3 = data.groupby('Qu3').size()
+	df_result = pd.DataFrame(columns = ['Qu1','Qu2','Qu3'],index = range(1,6))
+	df_result.Qu1 = result1
+	df_result.Qu2 = result2
+	df_result.Qu3 = result3
+	df_result.fillna(0)
+	
+	o/p:
+	same as value_counts
+	
+Use of agg() function in pandas:
+DataFrameGroupBy.agg(arg, *args, **kwargs)[source] is used for aggregating the data.
+
+	example,
+		df = pd.DataFrame({'A': [1, 1, 2, 2],
+						   'B': [1, 2, 3, 4],
+						   'C': np.random.randn(4)})
+		print(df)
+		# calculate minimum from each column in df dataframe
+		df.groupby('A').agg('min')				   
+		#Multiple aggregations on all columns
+		df.groupby('A').B.agg(['min', 'max'])
+		#Select a column for aggregation
+		df.groupby('A').B.agg(['min', 'max'])
+		#different aggregation on different columns
+		df.groupby('A').agg({'B': ['min', 'max'], 'C': 'sum'})
+
+		o/p:
+		df is,
+		   A  B         C
+		0  1  1  0.362838
+		1  1  2  0.227877
+		2  2  3  1.267767
+		3  2  4 -0.562860
+
+		min from each columns,
+		   B         C
+		A
+		1  1  0.227877
+		2  3 -0.562860
+
+		min, max for each column,
+			B             C
+		  min max       min       max
+		A
+		1   1   2  0.227877  0.362838
+		2   3   4 -0.562860  1.267767
+
+		sum on c and min,max on B,
+			B             C
+		  min max       sum
+		A
+		1   1   2  0.590716
+		2   3   4  0.704907
+		
+		NOTE: aggregation will happen for each category in the GroupBy clause
+		
+	example-2, how to ignore setting index in the groupBy option,
+	>>> df = pd.DataFrame(
+		  {'age': [28,63,28,45],
+		   'height': [183,156,170,201],
+		   'weight': [70.2, 62.5, 65.9, 81.0],
+		   'name': ['Kim', 'Pat', 'Yuu', 'Sacha']},
+		  columns=['name','age','weight', 'height'])
+	>>> df
+		name  age  weight  height
+	0    Kim   28    70.2     183
+	1    Pat   63    62.5     156
+	2    Yuu   28    65.9     170
+	3  Sacha   45    81.0     201
+	>>> df_out = df.groupby(['age'], as_index=False).agg(
+		  {'weight': sum, 'height': sum})
+	>>> df_out
+	   age  height  weight
+	0   28     353   136.1
+	1   45     201    81.0
+	2   63     156    62.5
+	>>> df_out.to_csv('out.csv', sep=',', columns=['age','height','weight'])
+	
+Pandas cut operation to define ranges for a value using pd.cut():
+pd.cut() create bins in a dataframe.
+
+	example-1,
+	test = pd.DataFrame({'days': [0,31,45]})
+	test['range'] = pd.cut(test.days, [0,30,60])
+	
+	o/p:
+		days    range
+	0   0       NaN
+	1   31      (30, 60]
+	2   45      (30, 60]
+	
+	NOTE:  0 is not in (0, 30], what should I do to categorize 0 as (0, 30]?
+	
+	example-2: Include 0 within a bin,
+	test['range'] = pd.cut(test.days, [0,30,60], include_lowest=True)
+	print (test)
+	
+	o/p:
+	   days     range
+	0     0   [0, 30]
+	1    31  (30, 60]
+	2    45  (30, 60]
+	
+	example-3: 
+	test3 = pd.DataFrame({'days': [0,31,45]})
+	test3['range'] = pd.cut(test3.days, [0,30,60], right=False)
+	print(test3)
+	
+	o/p:
+	   days     range
+	0     0   [0, 30)
+	1    31  [30, 60)
+	2    45  [30, 60)
+	
+	example-4, create explicit labels
+	# Let us create buckets age-wise
+	labels = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79']
+	lens['age_group'] = pd.cut(lens.age, range(0, 81, 10), right=True, labels=labels)
+	lens['age_group']
+	
+	o/p:
+	age	age_group
+	0	60	50-59
+	
+	o/p,if right=False,
+	age	age_group
+	0	60	60-69
+
+-----------------------------------------------------------------------------------------------------------					 
+concatenate 2 dataframes:
+You can pass a number of data structures to DataFrame such as a ndarray, lists, dict, Series, and another DataFrame.
+example,
+df1 = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+						 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+						 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+
+a) concatenating a series,
+	example,
+		series1 = pd.Series(['bank','telecom','entertainment','software','retail'])
+		df1['category'] = series1
+		print df1
+		
+	o/p:
+				company  price ticker       category
+	0  American Express     95    AXP           bank
+	1             Cisco     25   CSCO        telecom
+	2       Walt Disney     85    DIS  entertainment
+	3         Microsoft     41   MSFT       software
+	4           Walmart     78    WMT         retail
+	
+b) concatenating a list (or tuple)
+	example,
+		list1 = ['bank','telecom','entertainment','software','retail']
+		df1['category'] = list1
+		print(df1)
+		
+	o/p:
+				company  price ticker       category
+	0  American Express     95    AXP           bank
+	1             Cisco     25   CSCO        telecom
+	2       Walt Disney     85    DIS  entertainment
+	3         Microsoft     41   MSFT       software
+	4           Walmart     78    WMT         retail
+	
+c) concatenating a dataframe,
+	example,
+	1) column-wise concatenation,
+		series1 = pd.Series(['bank','telecom','entertainment','software','retail'])
+		series2 = pd.Series(['LA','NW','SF','SD','IL','MO'])
+		df2 = pd.DataFrame([])
+		df2['category'] = series1
+		df2['origin'] = series2
+		print(df2)
+		print("\n")
+		print("concatenate 2 DF column wise")
+		df_col_merged =pd.concat([df1, df2], axis=1)
+		print(df_col_merged)
+		print("\n")
+		
+	o/p:
+				company  price ticker
+	0  American Express     95    AXP
+	1             Cisco     25   CSCO
+	2       Walt Disney     85    DIS
+	3         Microsoft     41   MSFT
+	4           Walmart     78    WMT
+
+
+			category origin
+	0           bank     LA
+	1        telecom     NW
+	2  entertainment     SF
+	3       software     SD
+	4         retail     IL
+
+
+	concatenate 2 DF column wise
+				company  price ticker       category origin
+	0  American Express     95    AXP           bank     LA
+	1             Cisco     25   CSCO        telecom     NW
+	2       Walt Disney     85    DIS  entertainment     SF
+	3         Microsoft     41   MSFT       software     SD
+	4           Walmart     78    WMT         retail     IL
+	
+	2) row-wise concatenation:
+		example,
+			df3 = pd.DataFrame({'price':[90,20],'company':['southwest airlines','red lobster']})
+			print(df3)   #the column names are same as df1
+			print("\n")
+			df_row_merged =pd.concat([df1, df3], axis=0) //column not defined will be added as NaN
+			print(df_row_merged)
+			
+		o/p:
+					  company  price ticker
+		0    American Express     95    AXP
+		1               Cisco     25   CSCO
+		2         Walt Disney     85    DIS
+		3           Microsoft     41   MSFT
+		4             Walmart     78    WMT
+		0  southwest airlines     90    NaN
+		1         red lobster     20    NaN
+		
+		#column names are case sensitive,
+		example,
+			df3 = pd.DataFrame({'Price':[90,20],'Company':['southwest airlines','red lobster']})
+			print(df3)
+			print("\n")
+			df_row_merged =pd.concat([df1, df3], axis=0)
+			print(df_row_merged)
+			
+		o/p:
+					  Company  Price           company  price ticker
+		0                 NaN    NaN  American Express   95.0    AXP
+		1                 NaN    NaN             Cisco   25.0   CSCO
+		2                 NaN    NaN       Walt Disney   85.0    DIS
+		3                 NaN    NaN         Microsoft   41.0   MSFT
+		4                 NaN    NaN           Walmart   78.0    WMT
+		0  southwest airlines   90.0               NaN    NaN    NaN
+		1         red lobster   20.0               NaN    NaN    NaN
+
+	
+d) Merging 2 dataframes.
+		example-1, (merge on the basis of key)
+			left_frame = pd.DataFrame({'key': range(5),'left_value': ['a', 'b', 'c', 'd', 'e']})
+			right_frame = pd.DataFrame({'key': range(2, 7),'right_value': ['f', 'g', 'h', 'i', 'j']})
+			print(left_frame)
+			print("\n")
+			print(right_frame)
+			pd.merge(left_frame, right_frame, on='key')
+			
+		o/p:
+			   key left_value
+			0    0          a
+			1    1          b
+			2    2          c
+			3    3          d
+			4    4          e   
+			#
+			   key right_value
+			0    2           f
+			1    3           g
+			2    4           h
+			3    5           i
+			4    6           j
+			#
+			   key left_value right_value
+			0    2          c           f
+			1    3          d           g
+			2    4          e           h
+		
+		example-2, (merge on the basis of multiple keys)
+			left = pd.DataFrame({
+					 'id':[1,2,3,4,5],
+					 'Name': ['Alex', 'Amy', 'Allen', 'Alice', 'Ayoung'],
+					 'subject_id':['sub1','sub2','sub4','sub6','sub5']})
+			right = pd.DataFrame(
+					 {'id':[1,2,3,4,5],
+					 'Name': ['Billy', 'Brian', 'Bran', 'Bryce', 'Betty'],
+					 'subject_id':['sub2','sub4','sub3','sub6','sub5']})
+			print pd.merge(left, right, on='subject_id')
+			
+		o/p:
+				Name_x   id   subject_id   Name_y
+			0    Alice    4         sub6    Bryce
+			1   Ayoung    5         sub5    Betty
+			
+		example, for different kind of joins,
+		i/p:
+			Name  id   subject_id
+		0   Alex   1         sub1
+		1    Amy   2         sub2
+		2  Allen   3         sub4
+		3  Alice   4         sub6
+		4  Ayoung  5         sub5
+
+			Name  id   subject_id
+		0  Billy   1         sub2
+		1  Brian   2         sub4
+		2  Bran    3         sub3
+		3  Bryce   4         sub6
+		4  Betty   5         sub5
+
+		Merge_Method	SQL_Equivalent		Description
+		left 			LEFT OUTER JOIN 	Use keys from left object 
+		right 			RIGHT OUTER JOIN 	Use keys from right object 
+		outer 			FULL OUTER JOIN 	Use union of keys 
+		inner 			INNER JOIN 			Use intersection of keys 
+		
+		Left join : print pd.merge(left, right, on='subject_id', how='left')
+		Right join: print pd.merge(left, right, on='subject_id', how='right')
+		Outer join: print pd.merge(left, right, how='outer', on='subject_id')
+		Inner join: print pd.merge(left, right, on='subject_id', how='inner')
+		
+		o/p:
+			#left
+				Name_x   id_x   subject_id   Name_y   id_y
+			0     Alex      1         sub1      NaN    NaN
+			1      Amy      2         sub2    Billy    1.0
+			2    Allen      3         sub4    Brian    2.0
+			3    Alice      4         sub6    Bryce    4.0
+			4   Ayoung      5         sub5    Betty    5.0
+			#right
+				Name_x  id_x   subject_id   Name_y   id_y
+			0      Amy   2.0         sub2    Billy      1
+			1    Allen   3.0         sub4    Brian      2
+			2    Alice   4.0         sub6    Bryce      4
+			3   Ayoung   5.0         sub5    Betty      5
+			4      NaN   NaN         sub3     Bran      3
+			#outer
+				Name_x  id_x   subject_id   Name_y   id_y
+			0     Alex   1.0         sub1      NaN    NaN
+			1      Amy   2.0         sub2    Billy    1.0
+			2    Allen   3.0         sub4    Brian    2.0
+			3    Alice   4.0         sub6    Bryce    4.0
+			4   Ayoung   5.0         sub5    Betty    5.0
+			5      NaN   NaN         sub3     Bran    3.0
+			#inner
+				Name_x   id_x   subject_id   Name_y   id_y
+			0      Amy      2         sub2    Billy      1
+			1    Allen      3         sub4    Brian      2
+			2    Alice      4         sub6    Bryce      4
+			3   Ayoung      5         sub5    Betty      5
+		
+	example-3, (merge on the basis of multiple keys),
+Merges on multiple columns: can be done by adding the columns to a list of column names (as strings).
+example-1,
+	dataframe "a" 
+	A  B  value1
+	1  1      23
+	1  2      34
+	2  1    2342
+	2  2     333
+
+	dataframe "b"
+	A  B  value2
+	1  1    0.10
+	1  2    0.20
+	2  1    0.13
+	2  2    0.33
+
+	pd.merge(a, b, on=['A', 'B'])  //note, this cannot be on = '['A','B'] as this will be string having a list.
+
+	O/p:
+	   A  B  value1  value2
+	0  1  1      23    0.10
+	1  1  2      34    0.20
+	2  2  1    2342    0.13
+	3  2  2     333    0.33
+
+example-2, (when the columns for merge have different name in differet dataframes)
+			dataframe "a" 
+			   A  B  value1
+			0  1  1      23
+			1  1  2      34
+			2  2  1    2342
+			3  2  1     333
+
+			dataframe "b"
+			   C  D  value2
+			0  1  1    0.10
+			1  1  2    0.20
+			2  3  5    0.13
+			3  4  6    0.33
+
+			import numpy as np
+			import pandas as pd
+			#
+			a = pd.DataFrame({'A':(1,1,2,2),'B':(1,2,1,1),'value1':(23,34,2342,333)})
+			b = pd.DataFrame({'C':(1,1,2,2),'D':(1,2,1,1),'value2':(0.10,0.20,0.13,0.33)})
+			#
+			c = pd.merge(a,b, left_on=['A','B'],right_on=['C','D'],how='inner')  //cannot ignore either right or left. Have to include both.
+			print(c)
+			
+			O/p:
+			   A  B  value1  C  D  value2
+			0  1  1      23  1  1     0.1
+			1  1  2      34  1  2     0.2	
+
+-----------------------------------------------------------------------------------------------------------
+Pandas for handling missing data in a dataframe:
+
+1) how to create a dataFrame from a set of series, INITIALIZE to NaN and then populate it with series data as columns.
+
+	example,
+		import numpy as np
+		import pandas as pd
+		years = [90, 91, 92, 93, 94, 95]
+		f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11}
+		firm1 = pd.Series(f1,index=years)
+		print firm1
+		print("\n")
+		f2 = {90:14,92:9, 93:13, 94:5}
+		firm2 = pd.Series(f2,index=years)
+		print firm2
+		print("\n")
+		f3 = {93:10, 94:12, 95: 13}
+		firm3 = pd.Series(f3,index=years)
+		print firm3
+		print("\n")
+		df3 = pd.DataFrame(columns=['Firm1','Firm2','Firm3'],index=years)
+		print df3
+		print("\n")
+		df3.Firm1 = firm1
+		df3.Firm2 = firm2
+		df3.Firm3 = firm3
+		print df3
+		
+	o/p:
+	90     8
+	91     9
+	92     7
+	93     8
+	94     9
+	95    11
+	dtype: int64
+	90    14
+	91   NaN
+	92     9
+	93    13
+	94     5
+	95   NaN
+	dtype: float64
+	90   NaN
+	91   NaN
+	92   NaN
+	93    10
+	94    12
+	95    13
+	dtype: float64
+		 Firm1 Firm2 Firm3
+	90   NaN   NaN   NaN
+	91   NaN   NaN   NaN
+	92   NaN   NaN   NaN
+	93   NaN   NaN   NaN
+	94   NaN   NaN   NaN
+	95   NaN   NaN   NaN
+
+		 Firm1  Firm2  Firm3
+	90      8     14    NaN
+	91      9    NaN    NaN
+	92      7      9    NaN
+	93      8     13     10
+	94      9      5     12
+	95     11    NaN     13
+	
+2) drop NaN values from a series or DataFrame.
+	1) delete the entire row from series or DF which has NaN
+		years = [90, 91, 92, 93, 94, 95]
+		f2 = {90:14,92:9, 93:13, 94:5}
+		firm2 = pd.Series(f2,index=years)
+		print(firm2)
+		nadeleted = firm2.dropna()
+		print(nadeleted)
+		cleandf3 = df3.dropna(axis=1)          # DF3 row created above. REMOVES COLUMNS having even 1 NaN value.
+		#cleandf3 = df3.dropna(axis=0)         # df3.dropna() will REMOVE ROWS having even 1 NaN value.
+		print(cleandf3)
+		
+		o/p:
+		90    14
+		91   NaN
+		92     9
+		93    13
+		94     5
+		95   NaN
+		dtype: float64
+		#91 and 95th rows are deleted
+		90    14
+		92     9
+		93    13
+		94     5
+		dtype: float64
+		#DF3
+			 Firm1  Firm2  Firm3
+		90      8     14    NaN
+		91      9    NaN    NaN
+		92      7      9    NaN
+		93      8     13     10
+		94      9      5     12
+		95     11    NaN     13
+		#df3.dropna(axis=1) 
+			Firm1
+		90      8
+		91      9
+		92      7
+		93      8
+		94      9
+		95     11
+		#df3.dropna(axis=0)
+			Firm1  Firm2  Firm3
+		93      8     13     10
+		94      9      5     12
+		
+	3) drop a row only if ALL the values in the row is NaN. ex, clean2 = df3.dropna(how='all')
+
+	4) Define threshold of NaN i.e. number of NaN for a row/column is > threshhold.
+			thresholddf1 = df3.dropna(axis=1,thresh=2)    # Define threshold. In this case column having >= 2 NaN, drop the column
+			thresholddf2 = df3.dropna(axis=0,thresh=2)    # Define threshold. In this case row having >= 2 NaN, drop the row
+			
+	5) fill the NaN with another value.
+		example,
+		fillna1 = df3.fillna(0)      # Fill all NaN values with 0
+		print(fillna1)
+		fillna2 = df3.fillna({'Firm1':8, 'Firm2': 10, 'Firm3':14})	# We can specify what value should be replaced
+		print(fillna2)				
+		
+	o/p:
+				 Firm1  Firm2  Firm3
+			90      8     14    NaN
+			91      9    NaN    NaN
+			92      7      9    NaN
+			93      8     13     10
+			94      9      5     12
+			95     11    NaN     13
+			##### replaced with ZERO
+				Firm1  Firm2  Firm3
+			90      8     14      0
+			91      9      0      0
+			92      7      9      0
+			93      8     13     10
+			94      9      5     12
+			95     11      0     13
+			##### replace with different values
+				Firm1  Firm2  Firm3
+			90      8     14     14
+			91      9     10     14
+			92      7      9     14
+			93      8     13     10
+			94      9      5     12
+			95     11     10     13
+			
+		example 2,
+		#Forward fill and backward fill
+		fillna3 = df3.fillna(method='ffill')
+		print(fillna3)
+		fillna4 = df3.fillna(method='bfill')
+		print(fillna4)
+		
+	o/p:
+				 Firm1  Firm2  Firm3
+			90      8     14    NaN
+			91      9    NaN    NaN
+			92      7      9    NaN
+			93      8     13     10
+			94      9      5     12
+			95     11    NaN     13
+			#####forward fill
+				Firm1  Firm2  Firm3
+			90      8     14    NaN
+			91      9     14    NaN
+			92      7      9    NaN
+			93      8     13     10
+			94      9      5     12
+			95     11      5     13
+			#####backward fill
+				Firm1  Firm2  Firm3
+			90      8     14     10
+			91      9      9     10
+			92      7      9     10
+			93      8     13     10
+			94      9      5     12
+			95     11    NaN     13
+			
+	6) Interpolate: is usually used to replace a Nan, but it can also be used to populate a value with avg of 2 values.
+		as shown below
+		
+		example-1, replace NaN
+			years = [1988, 1989, 1990, 1991, 1992, 1993, 1994]
+			f1 = {1990:8, 1992:11}
+			firm1 = pd.Series(f1,index=years)
+			f2 = {1990:5,1992:3}
+			firm2 = pd.Series(f2,index=years)
+			f3 = {1990:4, 1992:2}
+			firm3 = pd.Series(f3,index=years)
+			df9 = pd.DataFrame(columns=['Firm1','Firm2','Firm3'],index=years)
+			df9
+			df9.Firm1 = firm1
+			df9.Firm2 = firm2
+			df9.Firm3 = firm3
+			print (df9)
+			print (df9.interpolate())
+			#print(df9.interpolate().fillna(method='bfill')) //for backward fill and forward fill together.
+
+			O/p:
+				  Firm1  Firm2  Firm3
+			1988    NaN    NaN    NaN
+			1989    NaN    NaN    NaN
+			1990    8.0    5.0    4.0
+			1991    NaN    NaN    NaN
+			1992   11.0    3.0    2.0
+			1993    NaN    NaN    NaN
+			1994    NaN    NaN    NaN
+			###forward fill
+				  Firm1  Firm2  Firm3
+			1988    NaN    NaN    NaN
+			1989    NaN    NaN    NaN
+			1990    8.0    5.0    4.0
+			1991    9.5    4.0    3.0
+			1992   11.0    3.0    2.0
+			1993   11.0    3.0    2.0
+			1994   11.0    3.0    2.0
+			###backward fill and forward fill together
+				  Firm1  Firm2  Firm3
+			1988    8.0    5.0    4.0
+			1989    8.0    5.0    4.0
+			1990    8.0    5.0    4.0
+			1991    9.5    4.0    3.0
+			1992   11.0    3.0    2.0
+			1993   11.0    3.0    2.0
+			1994   11.0    3.0    2.0
+			
+		example-2, use interpolate to fill values,
+		(add a line at frequency 35 with a value interpolated linearly between frequencies 30 and 40.)
+			datax = pd.DataFrame({'Value':[2.8,2.5,2.2,2.3],'frequency':[10,20,30,40]})
+			datax.loc[-1,'frequency']=35
+			datax =datax.reset_index(drop=True)
+			datax = datax.sort_values('frequency')
+			print(datax)
+			datax = datax.interpolate()
+			print(datax)
+			
+		o/p:
+			   Value  frequency
+			0    2.8       10.0
+			1    2.5       20.0
+			2    2.2       30.0
+			4    NaN       35.0
+			3    2.3       40.0
+			   Value  frequency
+			0   2.80       10.0
+			1   2.50       20.0
+			2   2.20       30.0
+			4   2.25       35.0
+			3   2.30       40.0
+		
+------------------------------------------------
+Linspace:
+provides result of the formula = (Max - Initial)/[number of elements - 1]
+example,
+	array(np.linspace(2,4,9))
+
+o/p:
+[2 2.25 2.75 3.0 3.25 3.50 3.75 4.0]
+
+example 2,
+arr = np.linspace(0,15,40)
+print (arr)
+add = arr+1
+print(add)  #will add 1 to each element of the array.
+
+o/p:
+[  0.           0.38461538   0.76923077   1.15384615   1.53846154 ......,14.23076923  14.61538462  15.        ]
+[  1.           1.38461538   1.76923077   2.15384615   2.53846154,......,15.61538462  16.        ]
+
+----------------------------------------------------
+Transposing a dataframe in Pandas:
+example,
+	data = pd.DataFrame({'price':[95, 25, 85, 41, 78],
+							 'ticker':['AXP', 'CSCO', 'DIS', 'MSFT', 'WMT'],
+							 'company':['American Express', 'Cisco', 'Walt Disney','Microsoft', 'Walmart']})
+	print(data)
+	data1 = data.T
+	print(data1)
+	del data1[4]
+	print(data1)
+
+	o/p:
+				company  price ticker
+	0  American Express     95    AXP
+	1             Cisco     25   CSCO
+	2       Walt Disney     85    DIS
+	3         Microsoft     41   MSFT
+	4           Walmart     78    WMT
+							0      1            2          3        4
+	company  American Express  Cisco  Walt Disney  Microsoft  Walmart
+	price                  95     25           85         41       78
+	ticker                AXP   CSCO          DIS       MSFT      WMT
+	
+	company  American Express  Cisco  Walt Disney  Microsoft
+	price                  95     25           85         41
+	ticker                AXP   CSCO          DIS       MSFT
+
+example-2,
+	years = [90, 91, 92, 93, 94, 95]
+	f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11}
+	firm1 = pd.Series(f1,index=years)
+	#print(firm1)
+	f2 = {90:14,92:9, 93:13, 94:5}
+	firm2 = pd.Series(f2,index=years)
+	#print(firm2)
+	f3 = {93:10, 94:12, 95: 13}
+	firm3 = pd.Series(f3,index=years)
+	#print(firm3)
+	df1 = pd.DataFrame(columns=['Firm1','Firm2','Firm3'],index=years)
+	df1.Firm1 = firm1
+	df1.Firm2 = firm2
+	df1.Firm3 = firm3
+	print(df1)
+	dft = df1.T
+	print (dft)
+		
+	o/p:
+			 90   91   92    93    94    95
+	Firm1   8.0  9.0  7.0   8.0   9.0  11.0
+	Firm2  14.0  NaN  9.0  13.0   5.0   NaN
+	Firm3   NaN  NaN  NaN  10.0  12.0  13.0
+
+			91   92    93    94    95
+	Firm1  9.0  7.0   8.0   9.0  11.0
+	Firm2  NaN  9.0  13.0   5.0   NaN
+	Firm3  NaN  NaN  10.0  12.0  13.0
+	
+----------------------------------------------------------------------------
+Setting column as index,
+
+example,
+	if we have a dataframe (data_gender) as,
+			   Year  Total  Males  Females
+		0   2000/01   1054    309      741
+		1   2001/02   1019    284      731
+		2   2002/03   1275    427      848
+		3   2003/04   1711    498     1213
+		4   2004/05   2035    589     1442
+		5   2005/06   2564    746     1786
+		6   2006/07   3862   1047     2807
+		7   2007/08   5018   1405     3613
+		8   2008/09   7988   2077     5910
+		9   2009/10  10571   2495     8074
+		10  2010/11  11574   2919     8654
+		11  2011/12  11736   2993     8740
+		
+	to set the 'Year' as column,
+	data_gender.set_index('Year',inplace=True)   # 'inplace=True': updates data_gender
+	data_gender1 = data_gender.set_index('Year')  # will create a new data frame 
+----------------------------------------------------------------------------
+Reindexing a dataframe:
+
+example-1,
+	years = [90, 91, 92, 93, 94, 95]
+	f1 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11}
+	firm1 = pd.Series(f1,index=years)
+	#print(firm1)
+	f2 = {90:14,92:9, 93:13, 94:5}
+	firm2 = pd.Series(f2,index=years)
+	#print(firm2)
+	f3 = {93:10, 94:12, 95: 13}
+	firm3 = pd.Series(f3,index=years)
+	#print(firm3)
+	df1 = pd.DataFrame(columns=['Firm1','Firm2','Firm3'],index=years)
+	df1.Firm1 = firm1
+	df1.Firm2 = firm2
+	df1.Firm3 = firm3
+	print(df1)
+	reindexdf1 = df1.reindex([88,89,90,91,92,93,94,95,96,97,98])
+	print(reindexdf1)
+	
+	o/p:
+		Firm1  Firm2  Firm3
+	90      8   14.0    NaN
+	91      9    NaN    NaN
+	92      7    9.0    NaN
+	93      8   13.0   10.0
+	94      9    5.0   12.0
+	95     11    NaN   13.0
+	#### re-index
+		Firm1  Firm2  Firm3
+	88    NaN    NaN    NaN
+	89    NaN    NaN    NaN
+	90    8.0   14.0    NaN
+	91    9.0    NaN    NaN
+	92    7.0    9.0    NaN
+	93    8.0   13.0   10.0
+	94    9.0    5.0   12.0
+	95   11.0    NaN   13.0
+	96    NaN    NaN    NaN
+	97    NaN    NaN    NaN
+	98    NaN    NaN    NaN
+	
+	#re-indexing,
+	print(df9)
+	reindexdf9 = df9.reindex(np.arange(1988,1998))
+	print(reindexdf9)
+	reindexdf9 = df9.reindex(['a','b','c','d'])  //all will be NaN
+	
+	o/p,
+		  Firm1  Firm2  Firm3
+	1988    NaN    NaN    NaN
+	1989    NaN    NaN    NaN
+	1990    8.0    5.0    4.0
+	1991    NaN    NaN    NaN
+	1992   11.0    3.0    2.0
+	1993    NaN    NaN    NaN
+	1994    NaN    NaN    NaN
+	1995    NaN    NaN    NaN
+	1996    NaN    NaN    NaN
+	1997    NaN    NaN    NaN
+	#
+	   Firm1  Firm2  Firm3
+	a    NaN    NaN    NaN
+	b    NaN    NaN    NaN
+	c    NaN    NaN    NaN
+	d    NaN    NaN    NaN
+	
+example-2,
+	years1 = [90, 91, 92, 93, 94, 95]
+	f4 = {90:8, 91:9, 92:7, 93:8, 94:9, 95:11}
+	firm4 = pd.Series(f4,index=years1)
+	f5 = {90:14,91:12, 92:9, 93:13, 94:5, 95:8}
+	firm5 = pd.Series(f5,index=years1)
+	f6 = {90:8, 91: 9, 92:9,93:10, 94:12, 95: 13}
+	firm6 = pd.Series(f6,index=years1)
+	df2 = pd.DataFrame(columns=['Firm1','Firm2','Firm3'],index=years1)
+	df2.Firm1 = firm4
+	df2.Firm2 = firm5
+	df2.Firm3 = firm6
+	print(df2)
+	reindexdf2 = df2.reindex([88,89,90,91,92,93,94,95,96,97,98],fill_value=0)
+	print(reindexdf2)
+	
+	o/p:
+		Firm1  Firm2  Firm3
+	88      0      0      0
+	89      0      0      0
+	90      8     14      8
+	91      9     12      9
+	92      7      9      9
+	93      8     13     10
+	94      9      5     12
+	95     11      8     13
+	96      0      0      0
+	97      0      0      0
+	98      0      0      0
+	
+----------------------------------------------------------------------------
+Hierarchal Indexing:
+allows you to have index on an index (multiple index).
+This helps select subsets of data and perform independent analyses on them.
+
+example,
+	import numpy as np
+	import pandas as pd
+	#
+	np.random.seed(0)
+	h_i_data = pd.Series(np.random.rand(10),index=[['Ind1','Ind1','Ind1','Ind1','Ind2','Ind2','Ind2','Ind3','Ind3','Ind3'],
+												[1,2,3,4,1,2,3,1,2,3]])
+	print(h_i_data)
+	h_i_data['Ind3'] #prints only the sub-indexes and values against 'Ind3'
+	h_i_data['Ind1':'Ind2'] #prints for the range.
+	h_i_data[['Ind1','Ind3']] #prints for Ind1 and Ind3
+
+	O/p:
+	Ind1  1    0.548814
+		  2    0.715189
+		  3    0.602763
+		  4    0.544883
+	Ind2  1    0.423655
+		  2    0.645894
+		  3    0.437587
+	Ind3  1    0.891773
+		  2    0.963663
+		  3    0.383442
+	dtype: float64
+	#
+	1    0.891773
+	2    0.963663
+	3    0.383442
+	dtype: float64
+	#range
+	Ind1  1    0.548814
+		  2    0.715189
+		  3    0.602763
+		  4    0.544883
+	Ind2  1    0.423655
+		  2    0.645894
+		  3    0.437587
+	dtype: float64
+	#
+	Ind1  1    0.548814
+		  2    0.715189
+		  3    0.602763
+		  4    0.544883
+	Ind3  1    0.891773
+		  2    0.963663
+		  3    0.383442
+	dtype: float64
+
+example-2,
+	import pandas as pd
+	print(h_i_data[:,3])
+	print(h_i_data[:,4])   #will provide values only for 'Ind1' as Ind2,Ind3 does not have [4]
+	print(h_i_data[:,5])   #KeyError: 5, i.e. there is no [5] in any of the index.
+	
+o/p:
+Ind1    0.602763
+Ind2    0.437587
+Ind3    0.383442
+dtype: float64
+Ind1    0.544883
+dtype: float64
+
+-------------------------------------------------------------
+Stack() and Unstack():
+The stack method turns column names into index values, 
+and the unstack method turns index values into column names.
+
+example, (unstacking)
+	print (h_i_data)
+	h_i_data.unstack(level=0) # level '0' is 1st level of indexing in hierarchal indexing.
+							  # h_i_data.unstack() is same.
+	h_i_data.unstack(level=1) # level '1' is 2nd level of indexing in hierarchal indexing.
+
+o/p:
+	Ind1  1    0.548814
+		  2    0.715189
+		  3    0.602763
+		  4    0.544883
+	Ind2  1    0.423655
+		  2    0.645894
+		  3    0.437587
+	Ind3  1    0.891773
+		  2    0.963663
+		  3    0.383442
+	dtype: float64
+	#level=0
+		   Ind1      Ind2      Ind3
+	1  0.548814  0.423655  0.891773
+	2  0.715189  0.645894  0.963663
+	3  0.602763  0.437587  0.383442
+	4  0.544883       NaN       NaN
+	#level=1
+				 1         2         3         4
+	Ind1  0.548814  0.715189  0.602763  0.544883
+	Ind2  0.423655  0.645894  0.437587       NaN
+	Ind3  0.891773  0.963663  0.383442       NaN
+	
+
+example, (stacking)
+	print(h_i_data.unstack(level=1))   
+	print(h_i_data.unstack(level=1).stack())  #(level=0), will also produce the same results.
+	
+	o/p:
+				 1         2         3         4
+	Ind1  0.548814  0.715189  0.602763  0.544883
+	Ind2  0.423655  0.645894  0.437587       NaN
+	Ind3  0.891773  0.963663  0.383442       NaN
+	Ind1  1    0.548814
+		  2    0.715189
+		  3    0.602763
+		  4    0.544883
+	Ind2  1    0.423655
+		  2    0.645894
+		  3    0.437587
+	Ind3  1    0.891773
+		  2    0.963663
+		  3    0.383442
+	dtype: float64
+	
+example of sum ing in heirarchal index levels,
+	h_i_data.sum()  //sum all the values
+	h_i_data.sum(level=1)
+	h_i_data.sum(level=0)
+	
+	o/p:
+	6.157662833145425
+	#
+	1    1.864241
+	2    2.324746
+	3    1.423792
+	4    0.544883
+	#
+	Ind1   -0.625953
+	Ind2    1.842805
+	Ind3   -0.342347
+---------------------------------------------------------------
+group by clause in Pandas:
+
+grouping a DF wrt a column can be done as:
+
+example,
+cars = pd.read_csv(your_local_path+'cars.csv')
+print (cars.head(5))
+carsgrp1 = cars.groupby('Cylinders')  #does not display anything as there is no aggregating function like mean, median...
+print (carsgrp1)
+carsgrp = cars.groupby('Cylinders').mean()     # aggregates all the fields which are numeric.String columns are ommitted.
+print(carsgrp)
+
+o/p:	
+DF looks like:
+	Model				Actual_MPG	Cylinders	Engine_Disp	Horsepower	Weight	Accelerate	Year	Origin
+0	amc ambassador dpl	15.0		8			390.0		190			3850	8.5			70		American
+1	amc gremlin			21.0		6			199.0		90			2648	15.0		70		American
+2	amc hornet			18.0		6			199.0		97			2774	15.5		70		American
+3	amc rebel sst		16.0		8			304.0		150			3433	12.0		70		American
+
+#group by without any action (like mean)
+<pandas.core.groupby.DataFrameGroupBy object at 0x00000000094CD400>
+
+#group by with mean:
+			Actual_MPG	Engine_Disp	Horsepower	Weight	Accelerate	Year
+Cylinders						
+3			20.550000	72.500000	99.250000	2398.500000	13.250000	75.500000
+4			29.283920	109.670854	78.281407	2305.110553	16.581910	77.030151
+5			27.366667	145.000000	82.333333	3103.333333	18.633333	79.000000
+6			19.973494	218.361446	101.506024	3202.120482	16.254217	75.951807
+8			14.963107	345.009709	158.300971	4114.718447	12.955340	73.902913
+---------------------------------------------------------------
+Pivot tables:
+Pivoting is the action of changing rows and column names as required.
+We use  pivot tables when we want to use only a few columns from the entire data.
+By default pivolt tables in Pandas calculates and shows mean.
+
+example,
+cars = pd.read_csv(your_local_path+'cars.csv')
+print (cars.head(5))
+table1 = pd.pivot_table(cars, values='Actual_MPG', index=['Cylinders','Origin'],columns=['Weight','Year'], aggfunc=np.median)
+print(table1)
+table2 = pd.pivot_table(cars, values=('Actual_MPG','Horsepower'), index=['Origin', 'Cylinders'],columns=['Year'])
+print(table2)
+table3 = pd.pivot_table(cars, values=('Actual_MPG'), index=['Origin'],columns=['Cylinders'])
+table3
+
+NOTE: if we do not use values clause, all the values are highlighted.
+
+o/p:
+DF looks like,
+	Model				Actual_MPG	Cylinders	Engine_Disp	Horsepower	Weight	Accelerate	Year	Origin
+0	amc ambassador dpl	15.0		8			390.0		190			3850	8.5			70		American
+1	amc gremlin			21.0		6			199.0		90			2648	15.0		70		American
+2	amc hornet			18.0		6			199.0		97			2774	15.5		70		American
+3	amc rebel sst		16.0		8			304.0		150			3433	12.0		70		American
+
+Table-1,
+			Weight	1613	1649	1755	1760	1773	1795	1800	1825	...	4699	4732	4735	4746	4906	4951	4952	4955	4997	5140
+			Year	71		74		81		81		71		75	76	78		76	77	...	74		70		73		71		73		73		73		71		73		71
+Cylinders	Origin																					
+3			JapaneseNaN		NaN		NaN		NaN		NaN		NaN	NaN	NaN		NaN	NaN	...	NaN		NaN		NaN		NaN		NaN		NaN		NaN		NaN		NaN		NaN
+4			American	NaN	NaN	NaN	NaN	NaN	NaN	NaN	36.1	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+			European	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	29.5	36.0	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+			Japanese	35.0	31.0	39.1	35.1	31.0	33.0	33.0	36.1	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+5			European	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+6			American	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+			European	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+			Japanese	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+8			American	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	...	13.0	9.0	13.0	13.0	12.0	12.0	12.0	12.0	11.0	13.0
+
+Table-2
+		Actual_MPG								...	Horsepower
+Year	70	71	72	73	74	75	76	77	78	79	...	73	74	75	76	77	78	79	80	81	82
+Origin	Cylinders																					
+American	4	NaN	24.750000	23.200000	20.000000	26.333333	23.000000	26.200000	28.250	28.183333	30.857143	...	78.500000	76.666667	80.50	71.000000	83.166667	81.166667	81.142857	88.600000	75.125	84.062500
+6	20.500000	18.000000	NaN	18.857143	17.333333	17.583333	20.562500	18.875	19.560000	22.950000	...	99.285714	101.666667	96.75	94.875000	103.250000	106.000000	105.000000	90.000000	98.250	102.333333
+8	14.111111	13.428571	13.615385	13.200000	14.200000	15.666667	14.666667	16.000	19.050000	18.630000	...	170.000000	146.000000	142.00	146.333333	152.375000	135.500000	131.900000	NaN	105.000	NaN
+European	4	25.200000	28.750000	22.000000	24.000000	27.000000	24.500000	25.357143	29.250	32.066667	32.133333	...	81.857143	74.166667	89.50	83.000000	81.000000	78.000000	70.333333	66.714286	77.000	63.000000
+5	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	20.300000	25.400000	...	NaN	NaN	NaN	NaN	NaN	103.000000	77.000000	67.000000	NaN	NaN
+6	NaN	NaN	NaN	NaN	NaN	NaN	16.500000	NaN	16.600000	NaN	...	NaN	NaN	NaN	120.000000	NaN	129.000000	NaN	NaN	76.000	NaN
+Japanese	3	NaN	NaN	19.000000	18.000000	NaN	NaN	NaN	21.500	NaN	NaN	...	90.000000	NaN	NaN	NaN	110.000000	NaN	NaN	100.000000	NaN	NaN
+4	25.500000	29.500000	25.500000	21.000000	29.333333	27.500000	31.000000	30.250	29.687500	32.950000	...	91.000000	72.500000	80.25	66.000000	70.000000	79.250000	65.000000	72.090909	70.400	74.000000
+6	NaN	NaN	NaN	20.000000	NaN	NaN	19.000000	22.000	NaN	NaN	...	122.000000	NaN	NaN	108.000000	97.000000	NaN	NaN	132.000000	118.000	NaN
+9 rows × 26 columns
+
+Table3,
+Cylinders	3	4	5	6	8
+Origin					
+American	NaN	28.013043	NaN	19.645205	14.963107
+European	NaN	28.106557	27.366667	20.100000	NaN
+Japanese	20.55	31.595652	NaN	23.883333	NaN
+---------------------------------------------------------------
+I/o in Pandas:
+
+Reading a CSV file:
+example,
+	roedatacsv = pd.read_csv(your_local_path+'roedata_Sc.csv')  #creates a series
+	#roedatacsv     											#will show the entire record.
+	print(roedatacsv.head(5))                        
+	
+	o/p:
+		Industry Name,Number of firms,ROE
+	0	Advertising,65,16.51%
+	1	Aerospace/Defense,95,21.60%
+	2	Air Transport,25,42.68%
+	3	Apparel,70,17.87%
+	4	Auto & Truck,26,22.05%
+	5	Auto Parts,75,17.54%
+	
+	location_df = roedatacsv['Industry Name,Number of firms,ROE'].apply(lambda x: pd.Series(x.split(',')))
+	location_df.columns = ['Industry Name','Number of firms','ROE']
+	print(location_df)
+	
+	o/p:
+	Industry Name			Number of firms	ROE
+	0	Advertising			65				16.51%
+	1	Aerospace/Defense	95				21.60%
+	2	Air Transport		25				42.68%
+	3	Apparel				70				17.87%
+	4	Auto & Truck		26				22.05%
+	5	Auto Parts			75				17.54%
+	6	Bank				7				15.03%
+	7	Banks (Regional)	721				9.52%
+	8	Beverage			47				27.62%
+	9	Beverage (Alcoholic)19				18.28%
+	10	Biotechnology		349				6.77%
+	11	Broadcasting		30				74.10%
+	.
+	.
+	.
+	
+	in case u do not want to use the first row as header, you use 'name',
+	i/p csv file, Pandas_file.csv
+		X,Y,Z,Value
+		18,55,1,70
+		18,55,2,67
+		18,57,2,75
+		18,58,1,35
+		19,54,2,70
+		
+	dem_csv1 = pd.read_csv('Pandas_file.csv')
+	print (dem_csv1)	
+	dem_csv2 = pd.read_csv('Pandas_file.csv',names=['A','B','C','D'])
+	print (dem_csv2)
+	
+	o/p:
+		X   Y  Z  Value
+	0  18  55  1     70
+	1  18  55  2     67
+	2  18  57  2     75
+	3  18  58  1     35
+	4  19  54  2     70
+	#with custom header
+		A   B  C      D
+	0   X   Y  Z  Value
+	1  18  55  1     70
+	2  18  55  2     67
+	3  18  57  2     75
+	4  18  58  1     35
+	5  19  54  2     70
+	
+	if header than the 1st row in csv file, u use header = '<row-number>'
+	dem_csv = pd.read_csv('Pandas_file.csv',header=1)
+	print (dem_csv)	
+
+	o/p:
+	   18  55  1  70
+	0  18  55  2  67
+	1  18  57  2  75
+	2  18  58  1  35
+	3  19  54  2  70
+	
+If the file does not have a header, then you can either let pandas assign default headers or you can specify custom headers. 
+If you want industry name to be the index of DataFrame, you can achieve that.
+		  
+example,
+	roedatacsv = pd.read_csv( your_local_path+'roedata.csv', index_col = 'Industry Name' )
+	print(roedatacsv)
+	
+	o/p:
+						Number of firms	ROE
+	Industry Name		
+	Advertising			65				16.51%
+	Aerospace/Defense	95				21.60%
+	Air Transport		25				42.68%
+	Apparel				70				17.87%
+	Auto & Truck		26				22.05%
+	
+	
+Selecting only specific columns from the dataset: (usecols)
+example,
+	roedatacsv = pd.read_csv(your_local_path+'roedata.csv', usecols = ['Industry Name','ROE'] )
+	print(roedatacsv)
+	
+	o/p:
+	    Industry Name		ROE
+	0	Advertising			16.51%
+	1	Aerospace/Defense	21.60%
+	2	Air Transport		42.68%
+	3	Apparel				17.87%
+	4	Auto & Truck		22.05%
+	5	Auto Parts			17.54%
+	6	Bank				15.03%
+	7	Banks (Regional)	9.52%
+	8	Beverage			27.62%
+	9	Beverage (Alcoholic)18.28%
+	10	Biotechnology		6.77%
+	11	Broadcasting		74.10%
+	.
+	.
+	.	
+	
+example-2,
+I/p:
+	1|Toy Story (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?Toy%20Story%20(1995)|0|0|0|1|1|1|0|0|0|0|0|0|0|0|0|0|0|0|0
+	2|GoldenEye (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?GoldenEye%20(1995)|0|1|1|0|0|0|0|0|0|0|0|0|0|0|0|0|1|0|0
+	3|Four Rooms (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?Four%20Rooms%20(1995)|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|1|0|0
+	4|Get Shorty (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?Get%20Shorty%20(1995)|0|1|0|0|0|1|0|0|1|0|0|0|0|0|0|0|0|0|0
+	5|Copycat (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?Copycat%20(1995)|0|0|0|0|0|0|1|0|1|0|0|0|0|0|0|0|1|0|0
+
+	m_cols = ['movie_id', 'title', 'release_date', 'video_release_date', 'imdb_url']
+	movies = pd.read_csv(my_data_loc+'u.item', sep='|', names=m_cols, usecols = range(5), encoding='latin1')
+
+o/p:
+	movie_id              title release_date  video_release_date  \
+	0         1   Toy Story (1995)  01-Jan-1995                 NaN   
+	1         2   GoldenEye (1995)  01-Jan-1995                 NaN   
+	2         3  Four Rooms (1995)  01-Jan-1995                 NaN   
+	3         4  Get Shorty (1995)  01-Jan-1995                 NaN   
+	4         5     Copycat (1995)  01-Jan-1995                 NaN   
+
+												imdb_url  
+	0  http://us.imdb.com/M/title-exact?Toy%20Story%2...  
+	1  http://us.imdb.com/M/title-exact?GoldenEye%20(...  
+	2  http://us.imdb.com/M/title-exact?Four%20Rooms%...  
+	3  http://us.imdb.com/M/title-exact?Get%20Shorty%...  
+	4  http://us.imdb.com/M/title-exact?Copycat%20(1995)  
+
+Importing only selected rows,
+example,
+	roedatacsv = pd.read_csv(your_local_path+'roedata.csv',nrows=50)
+	roedatacsv
+	
+	o/p:
+		Industry Name			Number of firms	ROE
+	0	Advertising				65				16.51%
+	1	Aerospace/Defense		95				21.60%
+	2	Air Transport			25				42.68%
+	.
+	.
+	47	Information Services	71				22.24%
+	48	Insurance (General)		26				4.08%
+	49	Insurance (Life)		27				6.08%
+	
+skipping rows from dataset:
+	i/p csv file, Pandas_file.csv
+			X,Y,Z,Value
+			18,55,1,70
+			18,55,2,67
+			18,57,2,75
+			18,58,1,35
+			19,54,2,70
+
+	example,
+		import pandas as pd
+		df=pd.read_csv("Pandas_file.csv", skiprows=2)
+		print df
+	
+	o/p:
+	#Actual dataframe
+		X   Y  Z  Value
+	0  18  55  1     70
+	1  18  55  2     67
+	2  18  57  2     75
+	3  18  58  1     35
+	4  19  54  2     70	
+	
+	#skipped 2 rows from top
+	   18  55  2  67
+	0  18  57  2  75
+	1  18  58  1  35
+	2  19  54  2  70
+
+How to convert a number of junk-values into one junk value:
+
+There can be situations when the i/p data (csv,txt) may have junk values in a particular column, which Python, by default, cannot convert into NaN.
+example,
+roemissing = pd.read_csv('roemissing.csv',na_values = ['NULL',-999,'RP'])   #replace 'NULL',-999,'RP' in any column with NaN 
+print roemissing
+roemissing = pd.read_csv('roemissing.csv',na_values = {'Number of firms':['NULL',-999],'ROE':['10000.00%']}) #replace NULL,-999 only if visible in 'Number of firms' column
+
+NOTE: 'NULL' will always be implicitely replaced by NaN.
+----
+Reading from text file,
+example,
+	capm_dem_data = pd.read_table(your_local_path+'capm_dem.txt',nrows = 50, delimiter=' ',header = None)
+	print(capm_dem_data)
+ 
+	o/p:
+		0		1		2			3
+	0	195710	880211	-0.012605	0.003871
+	1	195710	880212	-0.008511	0.007406
+	2	195710	880216	0.008584	0.001411
+	.
+	.
+	.
+	49	195710	880226	-0.008547	0.001747
+	
+example-2, ( if we skip the header )
+	capm_dem_data = pd.read_table(your_local_path+'capm_dem.txt',nrows = 5, delimiter=' ')
+	print(capm_dem_data)
+	
+	o/p:
+	   195710  880211  -0.012605  0.003871
+	0  195710  880212  -0.008511  0.007406
+	1  195710  880216   0.008584  0.001411
+	2  195710  880217  -0.004255  0.002414
+	3  195710  880218   0.000000  0.002845
+	4  195710  880219   0.008547  0.004753
+	
+Separator, (same as delimiter)
+	crsp_data = pd.read_table(your_local_path+'crsp.output', sep='\s+', header = None)
+	crsp_data
+	
+	example-2
+	i/p:raw.csv
+	number|colour|(a|1)|animal
+	1|green|x|dog
+	2|blue|y|cat
+	3|red|z|owl
+	
+	data = pd.read_csv('raw.csv',sep='|')
+	df = pd.read_csv('raw.csv', sep='|', skiprows=1, names=["number", "colour", "(a|1)", "animal"])
+	print df
+	
+	o/p:
+			number colour (a|1) animal
+	0       1  		green     x    dog
+	1       2   	blue      y    cat
+	2       3    	red       z    owl
+	
+----
+Writing data to csv file,
+roedata = pd.read_csv(your_local_path+'roedata.csv')
+print(roedata)
+roedata.to_csv(your_local_path+'roedatawrite89.csv')
+
+NOTE: the above method will also map indexes to the csv file in a column. In order to avoid mapping indexes, we can use,
+roedata.to_csv(your_local_path+'roedatawrite89.csv', index=False, columns=['Industry Name','ROE']) #by default index = True.
+	
+Writing data to text file,
+import numpy as np
+import pandas as pd
+np.savetxt(r'c:\data\np.txt', df.values, fmt='%d')
+-----------------------------------------------------------------
+Column and row wise maximum and minumum values in a dataframe:
+example,
+import pandas as pd
+df_TD_data = pd.DataFrame({'TB prevalence':[1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000],
+'Afghanistan':[436,429,422,415,407,397,397,387,374,373,346],
+'Albania':[42,40,41,42,42,43,42,44,43,42,40],
+'Algeria':[45,44,44,43,43,42,43,44,45,46,48],
+'American Samoa':[42,14,4,18,17,22,0,25,12,8,8],
+'Andorra':[39,37,35,33,32,30,28,23,24,22,20]})
+#
+print(df_TD_data)
+#set as index
+df_TD_data.set_index('TB prevalence',inplace=True)
+print(df_TD_data)
+#Determine for each year (index) which country (column) has highest value. i.e. max by row
+print (df_TD_data.apply(pd.Series.argmax, axis=1))  
+#Determine the max data of a country for each year. i.e. max by column.
+print (df_TD_data.apply(pd.Series.argmax, axis=0))
+
+o/p:
+Dataframe looks like,
+Afghanistan	Albania	Algeria	American Samoa	Andorra	TB prevalence
+0	436	42	45	42	39	1990
+1	429	40	44	14	37	1991
+2	422	41	44	4	35	1992
+3	415	42	43	18	33	1993
+4	407	42	43	17	32	1994
+5	397	43	42	22	30	1995
+6	397	42	43	0	28	1996
+7	387	44	44	25	23	1997
+8	374	43	45	12	24	1998
+9	373	42	46	8	22	1999
+10	346	40	48	8	20	2000
+
+Dataframe after setting 'Tb prevalence' as index looks like:
+				Afghanistan	Albania	Algeria	American Samoa	Andorra
+TB prevalence					
+1990			436	42	45	42	39
+1991			429	40	44	14	37
+1992			422	41	44	4	35
+1993			415	42	43	18	33
+1994			407	42	43	17	32
+1995			397	43	42	22	30
+1996			397	42	43	0	28
+1997			387	44	44	25	23
+1998			374	43	45	12	24
+1999			373	42	46	8	22
+2000			346	40	48	8	20
+
+highest by row,max by column:
+1990    Afghanistan
+1991    Afghanistan
+1992    Afghanistan
+1993    Afghanistan
+1994    Afghanistan
+1995    Afghanistan
+1996    Afghanistan
+1997    Afghanistan
+1998    Afghanistan
+1999    Afghanistan
+2000    Afghanistan
+
+Highest by column,max by column:
+Afghanistan       1990
+Albania           1997
+Algeria           2000
+American Samoa    1990
+Andorra           1990
+-----------------------------------------------------------------------
+Selecting a range from a series or dataframe:
+This can be done via :
+	df.loc[:5]
+	df.ix[:5]
+	df.iloc[:5]
+
+position-based and label-based indexing:
+a) position-based: will find for an item using its position in the series/dataframe.
+b) label-based: will find for an item using its label in the series/dataframe.
+
+Methods:
+loc  : gets rows (or columns) with particular labels from the index. 
+iloc : gets rows (or columns) at particular positions in the index (so it only takes integers).
+ix   : usually tries to behave like loc but falls back to behaving like iloc if a label is not present in the index. 
+
+example-1,
+	s = pd.Series(np.nan, index=[49,48,47,46,45, 1, 2, 3, 4, 5])
+
+	o/p: 
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+	2    NaN
+	3    NaN
+	4    NaN
+	5    NaN
+
+	s.iloc[:3] # slice the first three rows
+	49   NaN
+	48   NaN
+	47   NaN
+
+	s.loc[:3] # slice up to and including label 3
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+	2    NaN
+	3    NaN
+
+	s.ix[:3] # the integer is in the index so s.ix[:3] works like loc
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+	2    NaN
+	3    NaN
+	
+example-2: if label that isn't in the index (say 6),
+	s.iloc[:6]
+	49   NaN
+	48   NaN
+	47   NaN
+	46   NaN
+	45   NaN
+	1    NaN
+
+	s.loc[:6]
+	KeyError: 6
+
+	s.ix[:6]
+	KeyError: 6
+	
+example-3: if index was of mixed type,
+	s2 = pd.Series(np.nan, index=['a','b','c','d','e', 1, 2, 3, 4, 5])
+
+	o/p:
+	s2.ix[:6] # now behaves like iloc given integer
+	a   NaN
+	b   NaN
+	c   NaN
+	d   NaN
+	e   NaN
+	1   NaN
+
+	however, ix can still accept non-integers and behave like loc
+	s2.ix[:'c'] # behaves like loc given non-integer
+	a   NaN
+	b   NaN
+	c   NaN
+
+example-4, using dataframe
+	df = pd.DataFrame(np.nan,index=list('abcde'),columns=['x','y','z', 8, 9])
+
+	o/p:
+		x   y   z   8   9
+	a NaN NaN NaN NaN NaN
+	b NaN NaN NaN NaN NaN
+	c NaN NaN NaN NaN NaN
+	d NaN NaN NaN NaN NaN
+	e NaN NaN NaN NaN NaN
+	
+	df.ix[:'c', :4]
+		x   y   z   8
+	a NaN NaN NaN NaN
+	b NaN NaN NaN NaN
+	c NaN NaN NaN NaN
+	
+	df.iloc[:df.index.get_loc('c') + 1, :4]
+		x   y   z   8
+	a NaN NaN NaN NaN
+	b NaN NaN NaN NaN
+	c NaN NaN NaN NaN
+	
+	Here, get_loc() is an index method meaning "get the position of the label in this index".
+
+
+##############################################################################################################
+Pandas Assignment:
+##############################################################################################################
+import numpy as np
+import pandas as pd
+
+1. Write a Python program to read .xls file through Excelfiles.
+An. code,
+	xls = pd.ExcelFile('obes-phys-acti-diet.xls')
+	print(xls.sheet_names)
+	
+	o/p:
+	[u'Chapter 7', u'7.1', u'7.2', u'7.3', u'7.4', u'7.5', u'7.6', u'7.7', u'7.8', u'7.9', u'7.10']
+	
+----------------------------------------------------------------------------------------------
+2. Write a Python program to print sheet names present in the xls file
+
+An. code,
+	xls = pd.ExcelFile('obes-phys-acti-diet.xls')
+	print(xls.sheet_names)
+	
+	o/p:
+	[u'Chapter 7', u'7.1', u'7.2', u'7.3', u'7.4', u'7.5', u'7.6', u'7.7', u'7.8', u'7.9', u'7.10']	
+	
+----------------------------------------------------------------------------------------------
+3. Write a Python program to create a list of six columns:
+	Year
+	Total
+	Males
+	Females
+	Nan
+	None
+	
+An. code,
+	obes_cols = ['Year','Total','Males','Females','Nan','None']
+----------------------------------------------------------------------------------------------
+4. Write a python program to parse the data and read the six columns present in 7.1 sheet of data and skip first six rows and set skipfooter=14 and the column names as
+   the list defined above. Assign the dataframe to data_gender.
+   
+An. code,
+	df1 = pd.read_excel(xls, '7.1',header=None,skiprows = 6)
+	df1.columns = obes_cols
+	data_gender = df1[0:12]
+	print(data_gender)
+	
+	o/p:
+		   Year  Total  Males  Females  Nan  None
+	0   2000/01   1054    309      741  NaN   NaN
+	1   2001/02   1019    284      731  NaN   NaN
+	2   2002/03   1275    427      848  NaN   NaN
+	3   2003/04   1711    498     1213  NaN   NaN
+	4   2004/05   2035    589     1442  NaN   NaN
+	5   2005/06   2564    746     1786  NaN   NaN
+	6   2006/07   3862   1047     2807  NaN   NaN
+	7   2007/08   5018   1405     3613  NaN   NaN
+	8   2008/09   7988   2077     5910  NaN   NaN
+	9   2009/10  10571   2495     8074  NaN   NaN
+	10  2010/11  11574   2919     8654  NaN   NaN
+	11  2011/12  11736   2993     8740  NaN   NaN
+	
+	OR:
+	data_gender = xls.parse(u'7.1', skiprows=6, skip_footer=14,names=columns_read)
+	print(data_gender.head())
+	
+	o/p:
+		Year	Total	Males	Females	Nan	None
+	0	2001/02	1019	284		731		NaN	NaN
+	1	2002/03	1275	427		848		NaN	NaN
+	2	2003/04	1711	498		1213	NaN	NaN
+	3	2004/05	2035	589		1442	NaN	NaN
+	4	2005/06	2564	746		1786	NaN	NaN
+----------------------------------------------------------------------------------------------
+5. Write a python program to drop two columns NaN and None from the dataframe data_gender .
+
+An. code,
+	data_gender = data_gender.dropna(axis=1)
+	print("\n")
+	'''del data_gender['Nan']
+	del data_gender['None']'''   #will also work
+	print(data_gender)
+	
+	OR:
+	data_gender=data_gender.drop(['Nan','None'],axis=1)
+	
+	o/p:
+		   Year  Total  Males  Females
+	0   2000/01   1054    309      741
+	1   2001/02   1019    284      731
+	2   2002/03   1275    427      848
+	3   2003/04   1711    498     1213
+	4   2004/05   2035    589     1442
+	5   2005/06   2564    746     1786
+	6   2006/07   3862   1047     2807
+	7   2007/08   5018   1405     3613
+	8   2008/09   7988   2077     5910
+	9   2009/10  10571   2495     8074
+	10  2010/11  11574   2919     8654
+	11  2011/12  11736   2993     8740
+----------------------------------------------------------------------------------------------
+6. Write a python program to print the dataframe data_gender and remove NA values from it.
+
+An. code,
+	data_gender = data_gender.dropna(axis=1)
+	print("\n")
+	'''del data_gender['Nan']
+	del data_gender['None']'''   #will also work
+	print(data_gender)
+	
+	o/p:
+		   Year  Total  Males  Females
+	0   2000/01   1054    309      741
+	1   2001/02   1019    284      731
+	2   2002/03   1275    427      848
+	3   2003/04   1711    498     1213
+	4   2004/05   2035    589     1442
+	5   2005/06   2564    746     1786
+	6   2006/07   3862   1047     2807
+	7   2007/08   5018   1405     3613
+	8   2008/09   7988   2077     5910
+	9   2009/10  10571   2495     8074
+	10  2010/11  11574   2919     8654
+	11  2011/12  11736   2993     8740
+	
+----------------------------------------------------------------------------------------------
+7. Write a python program to reset the index as year.
+
+An. code,
+	data_gender.set_index('Year',inplace=True)
+	print(data_gender)
+	
+	o/p:
+			 Total  Males  Females
+	Year                          
+	2000/01   1054    309      741
+	2001/02   1019    284      731
+	2002/03   1275    427      848
+	2003/04   1711    498     1213
+	2004/05   2035    589     1442
+	2005/06   2564    746     1786
+	2006/07   3862   1047     2807
+	2007/08   5018   1405     3613
+	2008/09   7988   2077     5910
+	2009/10  10571   2495     8074
+	2010/11  11574   2919     8654
+	2011/12  11736   2993     8740
+----------------------------------------------------------------------------------------------
+8. Write a python program to plot the data_gender and observe the obesity curve.
+
+An. code,
+	import matplotlib.pyplot as plt
+	%pylab inline
+	pylab.rcParams['figure.figsize'] = (15, 6)
+----------------------------------------------------------------------------------------------
+9. Write a python program to read second sheet 7.2 as data_age.
+
+An. code,
+	xls = pd.ExcelFile('obes-phys-acti-diet.xls')
+	df2 = pd.read_excel(xls, '7.2', header=None, skiprows = 5)
+	df2_new = df2[1:13]
+	print df2_new
+	
+	o/p:
+         0      	1    2    3     4     5     6     7    8    9   10  11
+	1   2000/01   1054  226   45   147   255   214    96   56   14 NaN NaN
+	2   2001/02   1019  237   39   134   240   199    97   48   21 NaN NaN
+	3   2002/03   1275  400   65   136   289   216    94   52   23 NaN NaN
+	4   2003/04   1711  579   67   174   391   273   151   52   24 NaN NaN
+	5   2004/05   2035  547  107   287   487   364   174   36   32 NaN NaN
+	6   2005/06   2564  583   96   341   637   554   258   72   20 NaN NaN
+	7   2006/07   3862  656  184   461  1069   872   459  118   43 NaN NaN
+	8   2007/08   5018  747  228   564  1469  1198   598  157   53 NaN NaN
+	9   2008/09   7988  775  322  1013  2359  2133  1099  221   63 NaN NaN
+	10  2009/10  10571  632  361  1348  3132  3076  1555  378   87 NaN NaN
+	11  2010/11  11574  525  375  1425  3277  3573  1820  456  115 NaN NaN
+	12  2011/12  11736  495  391  1484  3104  3581  2119  468   94 NaN NaN
+----------------------------------------------------------------------------------------------
+10. Write a python program to rename the ‘Unnamed’ year column.
+
+An. code,
+	df2_new1 = df2_new.rename(columns={0:'Year',1:'Total'})
+	print df2_new1
+	
+	o/p:
+		Year  	 Total    2    3     4     5     6     7    8    9  10  11
+	1   2000/01   1054  226   45   147   255   214    96   56   14 NaN NaN
+	2   2001/02   1019  237   39   134   240   199    97   48   21 NaN NaN
+	3   2002/03   1275  400   65   136   289   216    94   52   23 NaN NaN
+	4   2003/04   1711  579   67   174   391   273   151   52   24 NaN NaN
+	5   2004/05   2035  547  107   287   487   364   174   36   32 NaN NaN
+	6   2005/06   2564  583   96   341   637   554   258   72   20 NaN NaN
+	7   2006/07   3862  656  184   461  1069   872   459  118   43 NaN NaN
+	8   2007/08   5018  747  228   564  1469  1198   598  157   53 NaN NaN
+	9   2008/09   7988  775  322  1013  2359  2133  1099  221   63 NaN NaN
+	10  2009/10  10571  632  361  1348  3132  3076  1555  378   87 NaN NaN
+	11  2010/11  11574  525  375  1425  3277  3573  1820  456  115 NaN NaN
+	12  2011/12  11736  495  391  1484  3104  3581  2119  468   94 NaN NaN
+----------------------------------------------------------------------------------------------
+11. Write a python program to drop Unnamed:10 and Unnamed:11 attributes.
+
+An. code,
+	df2_new2 = df2_new1.dropna(axis=1)
+	print df2_new2
+	
+	o/p:
+		Year  	 Total    2    3     4     5     6     7    8    9
+	1   2000/01   1054  226   45   147   255   214    96   56   14
+	2   2001/02   1019  237   39   134   240   199    97   48   21
+	3   2002/03   1275  400   65   136   289   216    94   52   23
+	4   2003/04   1711  579   67   174   391   273   151   52   24
+	5   2004/05   2035  547  107   287   487   364   174   36   32
+	6   2005/06   2564  583   96   341   637   554   258   72   20
+	7   2006/07   3862  656  184   461  1069   872   459  118   43
+	8   2007/08   5018  747  228   564  1469  1198   598  157   53
+	9   2008/09   7988  775  322  1013  2359  2133  1099  221   63
+	10  2009/10  10571  632  361  1348  3132  3076  1555  378   87
+	11  2010/11  11574  525  375  1425  3277  3573  1820  456  115
+	12  2011/12  11736  495  391  1484  3104  3581  2119  468   94
+----------------------------------------------------------------------------------------------
+12. Write a python program to drop empties and set index as year.
+
+An. code,
+	df2_new2.set_index('Year',inplace=True)
+	print(df2_new2)
+	
+	o/p:
+			Total    2     3     4     5     6     7    8    9
+	Year                                                      
+	2000/01   1054  226   45   147   255   214    96   56   14
+	2001/02   1019  237   39   134   240   199    97   48   21
+	2002/03   1275  400   65   136   289   216    94   52   23
+	2003/04   1711  579   67   174   391   273   151   52   24
+	2004/05   2035  547  107   287   487   364   174   36   32
+	2005/06   2564  583   96   341   637   554   258   72   20
+	2006/07   3862  656  184   461  1069   872   459  118   43
+	2007/08   5018  747  228   564  1469  1198   598  157   53
+	2008/09   7988  775  322  1013  2359  2133  1099  221   63
+	2009/10  10571  632  361  1348  3132  3076  1555  378   87
+	2010/11  11574  525  375  1425  3277  3573  1820  456  115
+	2011/12  11736  495  391  1484  3104  3581  2119  468   94
+----------------------------------------------------------------------------------------------
+13. Write a python program to plot all the ages.
+----------------------------------------------------------------------------------------------
+14. Write a python program to remove ‘Total’ attribute and plot all ages.
+
+An. code,
+	del df2_new2['Total']
+	print df2_new2
+
+	o/p,
+			   2    3     4     5     6     7    8    9
+	Year                                               
+	2000/01  226   45   147   255   214    96   56   14
+	2001/02  237   39   134   240   199    97   48   21
+	2002/03  400   65   136   289   216    94   52   23
+	2003/04  579   67   174   391   273   151   52   24
+	2004/05  547  107   287   487   364   174   36   32
+	2005/06  583   96   341   637   554   258   72   20
+	2006/07  656  184   461  1069   872   459  118   43
+	2007/08  747  228   564  1469  1198   598  157   53
+	2008/09  775  322  1013  2359  2133  1099  221   63
+	2009/10  632  361  1348  3132  3076  1555  378   87
+	2010/11  525  375  1425  3277  3573  1820  456  115
+	2011/12  495  391  1484  3104  3581  2119  468   94
+----------------------------------------------------------------------------------------------
+15. Write a python program to plot under 16 and 25-34 age data.
+	
+	
+##############################################################################################################
+Pandas Assignment: Missing Value Problems
+##############################################################################################################
+import numpy as np
+import pandas as pd
+
+1. Reindex the below dataframe to a timeline between 2008 – 2017 and fill out the NaN values.
+		Company A	Company B	Company C
+	0	12			13			NaN
+	1	24			NaN			10
+	2	34			16			17
+	3	43			54			NaN
+	4	NaN			NaN			3
+	
+An. Code:
+	comp_DF = pd.DataFrame({'Company_A':[12,24,34,43,np.NaN],'Company_B':[13,np.NaN,16,54,np.NaN],'Company_C':[np.NaN,10,17,np.NaN,3]})
+	comp_DF = comp_DF.fillna(0)    			 #fill all the NaN values with 0
+	comp_DF.index = np.arange(2008,2017,2)   #reindexing
+	print(comp_DF)
+
+	o/p:
+		  Company_A  Company_B  Company_C
+	2008         12         13          0
+	2010         24          0         10
+	2012         34         16         17
+	2014         43         54          0
+	2016          0          0          3
+	
+	NOTE: The following code to reindex will not work:
+	a) if comp_DF.index = np.arange(2008,2017)   #i.e. the number of indexes is greater than or less than the current number of index.
+	   ERROR: ValueError: Length mismatch: Expected axis has 5 elements, new values have 9 elements
+	   
+	b) comp_DF = comp_DF.reindex([2008,2010,2012,2014,2016])
+	   OR
+	   comp_DF = comp_DF.reindex(np.arange(2008,2017,2))
+	   O/p:
+			  Company_A  Company_B  Company_C
+		2008        NaN        NaN        NaN
+		2010        NaN        NaN        NaN
+		2012        NaN        NaN        NaN
+		2014        NaN        NaN        NaN
+		2016        NaN        NaN        NaN
+-----------------------------------------------------
+2) Consider the below Dataframe.
+	df = pd.DataFrame({ 'Col1' : [1,np.NaN,3,np.NaN],'Col2' : [8,9,7,10]})
+    replace the NaN values in Col1 with the mean of values in Col2 if the "mean" is greater than 5. Or else the NaN values should be set to 0.
+	
+An. Code:
+		df = pd.DataFrame({ 'Col1' : [1,np.NaN,3,np.NaN],'Col2' : [8,9,7,10]})
+		df_col2_mean = np.mean(df.Col2)  #mean is 8.5
+		print(df)
+		print("\n")
+		if (df_col2_mean > 5):
+		 df = df.fillna(df_col2_mean)
+		else:
+		 df = df.fillna(0)
+		print(df)
+		
+	o/p:
+	Before:
+	   Col1  Col2
+	0     1     8
+	1   NaN     9
+	2     3     7
+	3   NaN    10
+
+	After:
+	   Col1  Col2
+	0   1.0     8
+	1   8.5     9
+	2   3.0     7
+	3   8.5    10
+	
+	
+	The same o/p can be generated with:
+	a) Approach-2:
+			f = lambda x: x.fillna(df_col2_mean) if (df_col2_mean > 5) else x.fillna(0)
+			print (df.apply(f))
+			
+	b) Approach-3:
+		def impute(df):
+			if (np.mean(df.Col2) > 5):
+				df = df.fillna(np.mean(df.Col2))
+			else:
+				df = df.fillna(0)
+			return df 
+			
+		impute(df)
+		
+----------------------------------------------------------
+3) In the roedata.csv file, replace all the Negative values in the ROE column reset to 0
+
+An. code:
+	roedata_DF = pd.read_csv("roedata.csv",delimiter=',')
+	print(roedata_DF.head())
+	f1 = lambda x: x = 0 if (x<0) else x
+	roedata_DF["ROE"].apply(f)
+	print(roedata_DF.head())
+	
+	roedata_DF = pd.read_csv("roedata.csv",delimiter=',')
+	roedata_DF['ROE'] = roedata_DF['ROE'].apply(lambda x: re.sub(r'\-+\d*\.\d*\%','0',x)) #regex
+	print(roedata_DF.head(30))
+	
+	o/p:
+                      Industry Name  Number of firms     ROE
+0                       Advertising               65  16.51%
+1                 Aerospace/Defense               95  21.60%
+2                     Air Transport               25  42.68%
+.
+.
+19            Coal & Related Energy               45       0
+-----------------------------------------------------------------
+4) In the below dataframe, 
+	a) replace all the NaN values in the First_name, last_name, age and sex
+	b) fill in missing postTestScore values with each sex's mean value
+	
+An. Code:
+	person_df = pd.DataFrame({'fname':['Jason',np.NaN,'Tina','Jake','Amy'],'lname':['Miller',np.NaN,'Ali','Milner','Cooze'],
+							 'age':[42,np.NaN,36,24,73],'sex':['m',np.NaN,'f','m','f'],
+							 'preTestScore':[4,3,3,2,3],'postTestScore':[25,np.NaN,70,62,70],
+							 'location':[np.NaN,np.NaN,np.NaN,np.NaN,np.NaN]})
+	#
+	person_df['fname'] = person_df['fname'].fillna('Conan')
+	person_df['lname'] = person_df['lname'].fillna('Brien')
+	person_df['sex'] = person_df['sex'].fillna('m')	
+	person_df['age'] = person_df['age'].fillna(32)	
+	#
+	person_df['postTestScore'] = person_df['postTestScore'].interpolate()			 
+
+	o/p:
+	   age  fname   lname  location  postTestScore  preTestScore  sex
+	0   42  Jason  Miller       NaN             25             4    m
+	1  NaN    NaN     NaN       NaN            NaN             3  NaN
+	2   36   Tina     Ali       NaN             70             3    f
+	3   24   Jake  Milner       NaN             62             2    m
+	4   73    Amy   Cooze       NaN             70             3    f
+
+
+	   age  fname   lname  location  postTestScore  preTestScore sex
+	0   42  Jason  Miller       NaN           25.0             4   m
+	1   37  Conan   Brien       NaN           47.5             3   m
+	2   36   Tina     Ali       NaN           70.0             3   f
+	3   24   Jake  Milner       NaN           62.0             2   m
+	4   73    Amy   Cooze       NaN           70.0             3   f
+
+	Alternative,
+	df4.age=df4.age.fillna(np.mean(df4.age))
+	df4[['first_name','last_name']]=df4[['first_name','last_name']].fillna("XYZ")
+	df4.sex=df4.sex.fillna(df4.sex.value_counts().idxmax()) #filling with most frequently occuring gender
+	df4.postTestScore=df4.postTestScore.fillna(df4.groupby("sex")["postTestScore"].transform("mean"))
+	df4
+-----------------------------------------------------------------
+5) In the below DFs, NaN values in left dataframe to be replaced with those of right dataframe.
+
+		0   1
+	0 NaN   3
+	1   2 NaN
+
+		0   1
+	0  10  12
+	1  11  13
+
+An.	Code:
+	df5 = pd.DataFrame([[np.NaN,2],[3,np.NaN]])
+	df6 = pd.DataFrame([[10,11],[12,13]])
+	print(df5)
+	print(df6)
+	df5.fillna(df6)
+
+	o/p:
+		0   1
+	0  10   2
+	1   3  13
