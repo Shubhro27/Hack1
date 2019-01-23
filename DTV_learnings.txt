@@ -1,0 +1,45 @@
+Bharati
+
+CDO team (data scientists) develops the model.Surekha Surendran(DS) -> Prabir Nandi (associate director), Jim mappus, Abhay Dabholkar -> Jeremy (director)
+
+DTV:
+predicting the likelyhood of DTV installation completion.
+DTV work order are undergoing migration
+2 systems involved
+legacy systems (WO)
+edge (RC-1 stack) is the new system. All data is arranged region wise
+UMART/RMET (going to get data via RMET system)
+Weather data (not being used in the model)
+Census (static data which changes after 5-6 months)
+
+4 regions:
+RMET
+ECDW
+Census
+EDGE
+
+So WO are split between RIO and Edge.We have 2 models to operationalize.
+
+RIO Data gets replicated vis GG and goes to DTV Teradata where they publish 12 files (data for training and predictions)
+Training data is going to reside in Datalake and predictions data is in kepler. 
+Both are same. where 
+training data is initally 13 months and then incremental.This training modelis mojo (Q - what is mojo). Mojo files are reason wise
+Prediction data is day-1 and then incremental.
+
+we connect to DL for training data thru kubernetes pod and mojo will be created which will be used for predictions.
+
+For predictions, we load 10 files.
+
+When we operationalize a model from prediction pipeline. 
+RC1 stack (for work order data) -> GG -> Mongo
+Legacy -> Hive (as CDO had written the scripts in Hive) 
+(Legacy, RMET, Weather, Census) -> loaded to Hive -> Hive data (day 0 first) -> csv o/p -> (csv+ training model using spark-R) used for prediction
+Publish o/p for other teams to consume thru DMAAP
+
+csv file is created via hive script from daily data.
+
+day-0 data: run 10 shell scripts on 10 legacy files - run the day-0 script -> run predictions
+
+-----
+what are PODs?
+
