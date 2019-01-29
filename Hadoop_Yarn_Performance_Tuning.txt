@@ -1,0 +1,62 @@
+References:
+https://stackoverflow.com/questions/43441437/container-is-running-beyond-virtual-memory-limits
+http://crazyadmins.com/tag/tuning-yarn-to-get-maximum-performance/
+
+########################################################################################################
+Hive error Resolution:
+Error while running a Hive query/script:
+Container [ pid=,container_id=] is running beyond virtual memory limits. Current usage: 311.1 MB of 1 GB physical memory used: 2.1 GB of 2.1 GB virtual memory used. Killing container.
+
+Solution:
+<configuration>
+<property>
+  <name>yarn.nodemanager.aux-services</name>
+  <value>mapreduce_shuffle</value>
+</property>
+<property>
+  <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+  <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+</property>
+<property>
+ <name>yarn.nodemanager.vmem-check-enabled</name>
+ <value>false</value>
+ </property>
+</configuration>
+
+STEP-1: change map red default memory allocation to suite your requirements.
+Changes in mapred-site.xml:
+<!-- Put site-specific property overrides in this file. -->
+<configuration>
+<property>
+  <name>mapreduce.framework.name</name>
+  <value>yarn</value>
+</property>
+<property>
+  <name>mapreduce.map.memory.mb</name>
+  <value>5120</value>
+</property>
+<property>
+  <name>mapreduce.reduce.memory.mb</name>
+  <value>10240</value>
+</property>
+<property>
+  <name>mapreduce.map.java.opts</name>
+  <value>3072</value>
+</property>
+<property>
+  <name>mapreduce.reduce.java.opts</name>
+  <value>6144</value>
+</property>
+</configuration>
+
+  
+STEP-2 : restart YARN
+cd /opt/app/workload/deployments/servers/hadoop-2.8.5/etc/hadoop
+cd sbin/
+./stop-yarn.sh
+./start-yarn.sh
+less /opt/app/workload/deployments/servers/hadoop-2.8.5/logs/yarn-raptor-nodemanager-zlt21318.out
+less /opt/app/workload/deployments/servers/hadoop-2.8.5/logs/yarn-raptor-resourcemanager-zlt21318.out
+
+STEP-3
+hive --hiveconf hive.root.logger=DEBUG,console

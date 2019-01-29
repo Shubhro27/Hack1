@@ -1,0 +1,330 @@
+Popular Deployment modes:
+1) VM Machine
+2) containerization platform.
+
+VM Architecture:
+VM Server -> Host OS -> Hypervisor (Type 1,2) -> Guest OS (can be multiple) -> Applications (A, B, C .... can be multiple)
+                                                       |------------------- VM ----------------|  
+
+What is a Hypervisor? 
+Hypervisor, also known as a virtual machine monitor, is a process that creates and runs virtual machines (VMs). 
+A hypervisor allows one host computer to support multiple guest VMs by virtually sharing its resources, like memory and processing. 
+Generally, there are two types of hypervisors,
+1) Type-1 hypervisors, called “bare metal,” run directly on the host’s hardware. 
+2) Type-2 hypervisors, called “hosted,” run as a software layer on an operating system, like other computer programs. 
+Oracle Virtual box is an example of hypervisor.
+													   
+so in VM, there are 2 OS i.e. Host OS and Guest OS and each Guest OS occupies its own set of resources which are not shared by other Guest OS.
+
+In case of docker: (Docker: is a containerization platform. )
+Server -> Host OS -> Docker Engine -> Applications ( A, A', B, B' ..... ) as containers 
+
+so the same kernel (or resources) is shared by multiple applications.
+
+container is a package containing application binaries and resources (libraries, dependencies, network, storage). Thus the application can work in different environments.
+
+A container can be created on virtual machine, public cloud, hardware.
+
+VM Vs Container:
+so VM size is more than Container
+Time taken by VM is more than container.
+VM if integrated with devops tool is inefficient as compared to container.
+Container takes less time to start while VM takes more time to start.
+
+---------------------------------------------------------------------
+Docker Architecture: is a client server architecture.
+A docker binary contains client and server components. 
+- Clients is responsible for directing servers what to do. 
+- Servers host containerized applications.
+
+Client (i.e Host machine or cli where you have docker engine) -> runs Docker Host which has docker daemon which accepts command coming from client CLI and performs operation.
+example
+
+Client CLI           Docker Daemon
+docker Build			will check if image is present and then pull image from docker registry.
+						will pull the image from Docker registry (i.e. public registry like github comprising of pre-defined images)
+docker pull
+docker push				
+docker run
+
+Image: static entity which can create multiple containers.
+
+ 
+Kubernetes: is an orchestration tool.
+i.e. for a production like environment which may contain a lot of containers, orchestration tool helps manage the containers and life cycle of containers.
+can be used for resource mgmt, scheduling containers, restart containers, creating new containers, scale up/down containers.
+
+Both Docker and Kubernetes are different things.
+
+Before kubernetes (i.e. limitation if just using containers),
+containers cannot communicate with each other.
+containers must be deployed appropriately. Monitoring is necessary.
+containers must be managed properly.
+autoscaling is not available.
+distributing traffic was challenging. 
+
+with Kubernetes, all these are possible.
+
+Kubernetes is originated from a google containerization concept called BROG. K is written in GO language.
+
+Features
+fail safe: if any node on server is failed, it will automatically start server on different nodes. Ensure if container is failed, it will be restarted.
+self healing: if any container fails, it restarts on its own. No manual restart required. It will create a new container for crashed container. 
+Horizontal/Auto scaling : based on usage, one can increase/decrease the number of containers running. It can be based on CPU Usage. This can be done by CLI or GUI.
+Storage orchestration : K mounts the storage volume.
+service discovery: K manages networking by assigning IPs/hostnames to PODs (i.e. group of container)
+Automatic rollouts and rollbacks: 
+config management: one does not have to recreate the container if one has to implement any configurations.
+batch execution: K can manage batch.
+
+Kubernetes Cluster Architecture:
+
+Master -----------> Minion [ Docker [ POD [ Container ] POD2 [ Containers ] POD3 [ Containers ] ] ]
+ |----------------> Minion [ Docker [ POD [ Container ] POD2 [ Containers ] POD3 [ Containers ] ] ]
+ |----------------> Minion [ Docker [ POD [ Container ] POD2 [ Containers ] POD3 [ Containers ] ] ]
+
+i.e. Master is one node which controls/assigns tasks on multiple minions. In Master node we can run commands to know the number of minions or pods.
+     Minion is worker node which run tasks delegated by master on multiple pods.
+	 Pods are logical collection of containers that belong to an application. These are deployable units which can be created and scheduled.
+	    A Pod can have one container or multiple applications. Applications are deployed on pod i.e. all application containers as a pod.
+		Pod can run single instance of an application.
+		Pod represents running process on your cluster. 1 pod implies single instance of a given application.
+		In order to scale out (i.e. horizontally) your application, use multiple pods, one for each instance. 
+		
+POD Networking:
+each pod has its own IP address and pods can inter-communicate with other pods using IP address. 
+
+---------------------------------------------------------------------     
+Components of Master:
+
+Master ---------------> Replication Controller ( API ensures the requested number of pods are running on minions at all times. If a pod fails, RC will restart
+                                                 it. If a node fails, all the pods will be restarted on a different node.  ) 
+  |------------------->	Service (  A pod comprising of an application is not by default available to end-user. To make application available, the pod has to be 
+                                   exported as a service. Service is an object comprising of logical set of pods on an external IP accessible to user )
+  |-------------------> Label ( Key/Value pair that is used for deployment. Each POD is labeled depending upon application deployed in it. i.e. Pods having
+                                one task are assigned a label, A selector will select a label for a particular task)
+  
+Minion ---------------> Kuberlet ( manages the PODs present within the minion. Kuberlet ensures that the pods are started and continue running,
+                                   Kuberlet reads the containers as YAML* file. It has Docker client, root directory, Pod Workers, Etcd client, CAdvisor client ) 
+							   
+So,
+NODE (IP 172.17.8.102) -> Service (this service will use LABEL L1, Domain-name Service-1, IP 10.2.10.20, Port 9443, Node Port 32001 ) -> POD-1,2,3 (All assigned LABEL as L1 and Port: 9443) 								   
+	
+
+--------------------------------------------------------------	
+Detailed Kubernetes Architecture:
+
+Developer -> Kubernetes Master ( API Server (all commands are interpreted by API Server) --> Controller Manager (maintains all types of controller)
+                                 |    |--------> Scheduler (finds suitable node to run a container in particular pod. So for a new pod not assigned a node,
+								                             scheduler will assign a node to the pod)    
+								 |    |--------> ETCD (persistent storage used by K to store node information in key-value format. This maintains state of the 
+														cluster)
+                                 |
+                    ------<------ --------->------
+                    |							 |
+                Kubernetes Node	<--------------> Kubernetes Node
+    Kuberlet CAdvisor Kube-Proxy                 Kube-Proxy CAdvisor Kuberlet
+    POD POD POD .....	|						 	|		POD POD POD .....
+	                    |                           |
+						-----------------------------
+						             |
+                                    End User
+
+K Master:
+	a) API Server : Communicates with the cluster.
+					listens to the remote connections on secure HTTP Port 443 with one of more clients.
+					Nodes communicate via client creds and are provisioned with public root certificate.
+					API server communication paths include,
+					1) API server to kuberlet process on each node of the cluster.
+					2) API server to node, pod or service thru proxy functionality.
+									
+In a minion, the following components are available: 
+Kuberlet : 
+	a) Interacts with the API Server on K master.
+	b) Responsible for managing life-cycle of a container and a POD. Ensures that all containers on nodes are healthy. 
+	c) Responsible for starting and stopping containers and maintaining running state of a POD.
+	   So the scheduler in K Master will send the information of the node where the container resides to kuberlet and kuberlet will then 
+	   start the container. Kuberlet sends a heartbeat message to Master to mention the health of nodes to master.
+	   Once master detects node failure, RC launches the PODs on a new node.
+
+kube proxy : 
+	a) manages the network to make the containers available to external application.
+	b) Routes user traffic to appropriate container based on IP/Port number of incoming request. 
+	   User of the application/service will send the ip details to kube proxy and KP will do load balancing to route the request.
+
+cAdvisor : 
+	a) agent which monitors the memory and CPU usage and network utilization on each node.
+	b) It knows the CPU Usage by all the PODs running on the node.
+	c) Scheduler gets information from Cadvisor on the load of the node.
+			
+Other components : 
+	a) SupervisorId : keeps kuberlet and docker running.
+	b) fluentd : a logging layer which does cluster level logging.
+			
+Each Kubernetes cluster has one master and n minions.			
+									
+NOTE: All kubernetes nodes (i.e. worker nodes) are connected by plugin network like ( ex Falnnel, Weavernet ). Flannel is used by-default.
+
+------------------------------------------------
+K Architecture with cloud controller manager: Used to Decouple cloud with kubernetes architecture.
+
+Developer -> Kubernetes Master 
+                                 |--------> Cloud Controller manager ----|------------> CLOUD    
+								 |--------> Kuber Controller manager -> API Server ---> Scheduler  
+                                 |<----------------------------------------|       |--> etcd
+                    ------<------ --------->------
+                    |							 |
+                Kubernetes Node	<--------------> Kubernetes Node
+    Kuberlet CAdvisor Kube-Proxy                 Kube-Proxy CAdvisor Kuberlet
+    POD POD POD .....	|						 	|		POD POD POD .....
+	                    |                           |
+						-----------------------------
+						             |
+                                  End User
+	
+Cloud Controller manager was introduced with release 1.6.
+1) separates cloud dependent functionality and manages it separately thus being a single point of integration with client.
+2) It interacts with underlying cloud manager
+3) Runs controllers which interact with cloud providers like,
+	a) Node controller: checks state of a node from cloud provider.
+	b) Route Controller: sets up routes with cloud infrastructure.
+	c) Service Controller: controllers cloud provider load balancer.
+	d) Volume Controller: 
+	
+------------------------------------------------
+How Service works in kubernetes:
+
+RC1 [ Role: FE; Version: v1; #pods: 2] -------------------------                        --------------- RC2 [ Role: FE; Version: v2; #pods: 1]
+										|                      |                        |
+										POD			   		   POD						POD
+										[version-1, Role FE]   [version-1, Role FE]     [version-2, Role FE]
+										|----------------------|						|
+										          |------------------<-------------------
+	                                              Service [Label Selector; Role: FE] <-------------> Application
+												  
+So the Application/User accessing the kubernetes cluster will send the version it wants to access and the Service will access the POD holding that version and 
+respond to the Application/User.
+
+-----------------------------------------------
+Creating a POD:
+
+YAML is a config file used by K which follows a format that describes the object, apiVersion, metadata of the object, specification of the containers.
+using YAML file (i.e. .yml) one can create single or multiple container POD.
+
+to create a POD : 
+	a) kubectl create -f <filename.yaml>  --i.e. via a yaml file. This can be done for both single and multi container pod.
+	b) kubectl run <name of pod> --image = <name of image from registry> -- Only for single container pod.
+
+to view all the POD: kubectl get pods
+
+Kubernetes also supports JSON, so instead of YAML, we can also use a JSON file.
+
+Single Container pod YAML file:
+apiVersion: v1
+kind: Pod      -- creates a "pod" object when kubectl run command is used. Kind can be "replicationController","Pod", others
+metadata:      
+	name: Tomcat -- name for the pod
+spec:
+	containers: -- one for single, multiple for multi container
+	- name: Tomcat -- Optional
+	  image: tomcat: 8.0 -- Mandatory
+	  ports:
+containerPort: 7500
+	imagePullPolicy: Always -- whether ur image has to pulled every time pod is created or use an existing one.
+	
+Multi Container pod YAML file:
+apiVersion: v1
+kind: Pod
+metadata:
+	name: Tomcat
+spec:
+	containers:
+	- name: Tomcat
+	  image: tomcat: 8.0
+	  ports:
+containerPort: 7500
+	imagePullPolicy: Always
+	-name: Database
+		Image: mongoDB
+		Ports:
+containerPort: 7501
+	imagePullPolicy: Always
+	
+Also, PODs provide 2 kinds of shared resources for their constituent containers: i.e. Networking and Storage
+Networking:
+	1) Every container inside a POD shares a network namespace, including IP Address and network ports.
+	2) Containers inside a pod interact using localhost.
+	
+Storage:
+	1) Pod can specify a set of shared storage volumes.
+	2) Containers within a pod can access the shared storage allowing containers to share data.
+	3) Data can also be persisted in a shared volume i.e. in case one of the containers restart, the data will not be deleted.
+	
+	Different kind of storage:
+	1) Volume
+	2) Persistent Volume
+	3) Dynamic Volume Provisioning
+	
+Inter pod communication is also possible as each pod has a unique IP address.
+
+-----------------------------------------
+Kubernetes vs docker swarm
+K has GUI for scaling up/down containers ; DS does not have GUI
+K is difficult to install ; DS is easier.
+K load balancing is manual but reliable ; DS has built in load balancing.
+K has inbuilt logging/monitoring tool for container state; DS needs 3rd party tool for logging/monitoring.
+K has a huge online presence/help.
+
+-----------------------------------------
+kubernetes set up:
+Minikube for single node K cluster
+Kops for high availability cluster on aws
+Kubeadm for secure multi node cluster
+
+
+Steps to install K on a cluster via Kubadm:
+1) to install K, you also have to install Docker (on Master and all minions).
+   If we are trying to install K on VM, atleast 2 instances of VM should be created, one for master and other for minions.
+
+2) For K, install the following packages (i.e. components) on master and all minions:
+	1) Kubeadm : bootstrap the cluster. 
+	2) Kubelet : for installing and maintaining PODs.
+	3) Kubectl : CLI Util to interact with cluster.
+	
+
+3) Initialize the master node. This requires to deploy the network (i.e. Container Network Interface for kubeadm).
+   There are multiple CNI networks like flannel, Canal, Calico etc. CNI network is synonym for POD network. 
+   NOTE: for single node cluster, this step is not required. For multi node, this step is done only on master node.
+   i.e. single node : sudo kubeadm init
+        multi node : sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+		
+4) Once the cluster has been initialized, we get a join token. example,
+	kubeadm join --token <.....>
+	we can use this join whenever we are joining a new minion to the cluster.
+	
+	To start cluster, one needs to do following,
+	On master node,
+	a) copy admin.conf as regular user to /config in $HOME.
+	b) sudo chown i.e. change ownership 
+	
+	On worker, run the join token command
+	
+	On mAster, run 'kubectl get nodes' to see nodes which joined the cluster.
+	
+	the result of nodes is STATUS = 'NotReady'. We need to apply the flannel or other CNI network on 
+	master and worker node to start communiczation between nodes.
+	command : kubectl apply -f <location/bube-flannel.yml>
+
+	With this, all pods will start going to "Running" state and then only the nodes will be in "Ready" status.
+
+	kubectl get pods //will show all pods that are specifically created by user.
+	kubectl get pods --all-namespaces //all pods present in cluster.
+	
+	Note: check kube-dns is running to imply nodes are in proper running state.
+	
+	kubectl cluster-info //identifies the nodes in a cluster.
+	
+----------------------------------------------
+
+   
+
