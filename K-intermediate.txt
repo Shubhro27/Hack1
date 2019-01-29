@@ -1,0 +1,52 @@
+kubernetes set up:
+Minikube for single node K cluster
+Kops for high availability cluster on aws
+Kubeadm for secure multi node cluster
+
+
+Steps to install K on a cluster via Kubadm:
+1) to install K, you also have to install Docker (on Master and all minions).
+   If we are trying to install K on VM, atleast 2 instances of VM should be created, one for master and other for minions.
+
+2) For K, install the following packages (i.e. components) on master and all minions:
+	1) Kubeadm : bootstrap the cluster. 
+	2) Kubelet : for installing and maintaining PODs.
+	3) Kubectl : CLI Util to interact with cluster.
+	
+
+3) Initialize the master node. This requires to deploy the network (i.e. Container Network Interface for kubeadm).
+   There are multiple CNI networks like flannel, Canal, Calico etc. CNI network is synonym for POD network. 
+   NOTE: for single node cluster, this step is not required. For multi node, this step is done only on master node.
+   i.e. single node : sudo kubeadm init
+        multi node : sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+		
+4) Once the cluster has been initialized, we get a join token. example,
+	kubeadm join --token <.....>
+	we can use this join whenever we are joining a new minion to the cluster.
+	
+	To start cluster, one needs to do following,
+	On master node,
+	a) copy admin.conf as regular user to /config in $HOME.
+	b) sudo chown i.e. change ownership 
+	
+	On worker, run the join token command
+	
+	On mAster, run 'kubectl get nodes' to see nodes which joined the cluster.
+	
+	the result of nodes is STATUS = 'NotReady'. We need to apply the flannel or other CNI network on 
+	master and worker node to start communiczation between nodes.
+	command : kubectl apply -f <location/bube-flannel.yml>
+
+	With this, all pods will start going to "Running" state and then only the nodes will be in "Ready" status.
+
+	kubectl get pods //will show all pods that are specifically created by user.
+	kubectl get pods --all-namespaces //all pods present in cluster.
+	
+	Note: check kube-dns is running to imply nodes are in proper running state.
+	
+	kubectl cluster-info //identifies the nodes in a cluster.
+	
+----------------------------------------------
+
+   
+
