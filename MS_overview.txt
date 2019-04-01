@@ -1,0 +1,64 @@
+Monolythic architecture:
+Web Interface (UI Specialists) -> Business Layer (designed by Middleware specialist) -> DB (by DBA's)
+
+Ms Architecture:
+Ms 1 (comprising of UI, Server side and DB) to accomplish a funtionality -> rest API ------> 
+Ms 1 (comprising of UI, Server side and DB) to accomplish another funtionality  <----------|
+
+Microservice scaling methods:
+1) functional decomposition : scale by splitting different functionality. example, in Amazon website, 
+   split functionality for billing/payment, recommendation, suggestions etc into different microservices.
+ 
+2) Horizontal decomposition : scale by cloning i.e. deploying the microservices into multiple servers so that 
+   multiple instances of the service is running and the load balancer will divide the load among servers.
+   
+3) Data Partitioning : i.e. each service will have its own database schema or private tables or separate database (may be built)
+   on different technologies. This architecture where each service uses a different DB type for its polygot
+   persistence architecture.
+   
+Ms characteristics:
+1) Componentization : an independent unit of s/w which can be independently replaced/upgraded.
+	Indivisual component can be,
+	a) Libraries : components linked to a program and called via function calls.
+	b) Services : components which communicate via web-service request, remote procedure call.
+	
+2) Organized around Business capabilities where each component is worked upon by cross functional teams 
+   (comprising of UI Developer, Server side developer and DBA) each team working on a business capability.
+
+3) Works on products i.e. each MS is a product.
+
+4) Smart endpoints and dumb pipes: as opposed to Monolithic applications with SOA architecture.
+   module 1 ----> ESB i.e. pipe <---- module 2
+   module 3 --->---|-----<----- module 4
+
+   i.e. all endpoints ( modules) are connected to an intelligent pipe (Enterprise service bus)
+
+	MS uses the architecture where endpoints (i.e. services) are intelligent and interact with each other via a dumb
+    pipe ( ex messaging bus like Kafka, RabbitMQ) etc.	
+	
+5) Decentralized Governance : i.e. splitting monolith's components into services and each services are build using the 
+   technology required.
+   
+6) Decentralized data management: each services use the DB (using different data service technologies) relevant to it.
+   This architecture is polygot persistance.
+   
+7) Infrastructure automation : i.e. using devops for continuous development and continuous integration (CICD) of
+   MS.
+   
+8) Design to tolerate failure : like health monitoring and central logging. 
+
+Basic Microservie architecture principal : 
+1) MS should have a self contained unit of functionality i.e. single responsibility principal. 
+2) It should be losely coupled with other microservices i.e. once MS should not know much about other MS.
+3) High cohesion : all logic to run the MS is kept together.
+4) Each MS will interact with other MS with a REST API/queue.
+5) Independently managed.
+6) bounded business context i.e. each MS is associated with extreme isolation and has a defined boundary enabled by
+   domain-driven design (DDD).
+   Here domain is what a business does. A subdomain represents smaller groups/units of the business.
+
+	
+---------------------------
+Components of a Microservices : (check the word document "ms_components")
+
+ 
